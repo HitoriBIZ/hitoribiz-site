@@ -1,0 +1,5 @@
+@tailwind base; @tailwind components; @tailwind utilities;
+:root { --radius: 1rem; } html, body { height: 100%; } body { @apply bg-white text-neutral-900; }
+.container { @apply max-w-6xl mx-auto px-4; }
+.btn-primary { @apply inline-flex items-center justify-center px-5 py-3 rounded-2xl shadow-soft bg-primary text-white font-medium hover:opacity-90 transition; }
+.btn-ghost { @apply inline-flex items-center justify-center px-5 py-3 rounded-2xl border border-neutral-200 text-neutral-900 hover:bg-neutral-50 transition; }

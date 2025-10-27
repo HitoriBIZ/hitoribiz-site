@@ -1,0 +1,1 @@
+feat: HitoriBIZ site init (Next.js + Tailwind + Vercel)
