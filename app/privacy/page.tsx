@@ -1,37 +1,31 @@
-import React from "react";
+// app/privacy/page.tsx
+export const metadata = {
+  title: "プライバシーポリシー - HitoriBIZ",
+  description:
+    "HitoriBIZ（Orchestra Metronome）のプライバシーポリシー。個人情報は収集・共有しません。お問い合わせ: contact@hitori-biz.com",
+  robots: { index: true, follow: true },
+};
 
-export default function PrivacyPolicy() {
+export default function PrivacyPage() {
   return (
-    <main style={{ padding: "2rem", lineHeight: 1.8, maxWidth: "800px", margin: "0 auto" }}>
-      <h1 style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: "1rem" }}>
-        プライバシーポリシー
-      </h1>
-      <p>HitoriBIZ（以下、「当方」といいます）は、ユーザーのプライバシーを尊重し、個人情報を適切に取り扱います。</p>
+    <main style={{ padding: "40px", fontFamily: "system-ui, -apple-system, sans-serif", lineHeight: 1.8, maxWidth: 900, margin: "0 auto" }}>
+      <h1 style={{ fontSize: "28px", marginBottom: "12px" }}>プライバシーポリシー</h1>
+      <p>最終更新日：2025年11月1日</p>
 
-      <h2 style={{ fontSize: "1.25rem", marginTop: "2rem" }}>1. 個人情報の利用目的</h2>
-      <p>当方は、ユーザーサポート、製品改善、サービスの案内等のために個人情報を利用することがあります。</p>
+      <h2 style={{ marginTop: "24px", fontSize: "20px" }}>1. 収集する情報</h2>
+      <p>本アプリ「Orchestra Metronome」は、ユーザーの個人情報を一切収集しません。</p>
 
-      <h2 style={{ fontSize: "1.25rem", marginTop: "2rem" }}>2. 個人情報の第三者提供</h2>
-      <p>法令に基づく場合を除き、本人の同意なく第三者に提供することはありません。</p>
+      <h2 style={{ marginTop: "24px", fontSize: "20px" }}>2. データの共有・第三者提供</h2>
+      <p>当社はユーザーデータを外部サービスや第三者に送信・共有しません。</p>
 
-      <h2 style={{ fontSize: "1.25rem", marginTop: "2rem" }}>3. セキュリティ</h2>
-      <p>当方は個人情報の漏洩・滅失・毀損を防ぐため、必要かつ適切な安全管理措置を講じます。</p>
+      <h2 style={{ marginTop: "24px", fontSize: "20px" }}>3. 保存・暗号化</h2>
+      <p>サーバー側で個人情報を保存・処理しません。したがって暗号化や削除リクエストの対象となるデータはありません。</p>
 
-      <h2 style={{ fontSize: "1.25rem", marginTop: "2rem" }}>4. お問い合わせ</h2>
+      <h2 style={{ marginTop: "24px", fontSize: "20px" }}>4. お問い合わせ</h2>
       <p>
-        本ポリシーに関するお問い合わせは、以下までお願いいたします：
-        <br />
-        <strong>HitoriBIZ 管理部</strong>
-        <br />
-        E-mail: contact@hitori-biz.com
-      </p>
-
-      <h2 style={{ fontSize: "1.25rem", marginTop: "2rem" }}>5. 改定</h2>
-      <p>当方は、本ポリシーの内容を予告なく改定する場合があります。改定後は、本サイト上で速やかに公開いたします。</p>
-
-      <p style={{ marginTop: "2rem", fontSize: "0.9rem", color: "#666" }}>
-        制定日: 2025年11月1日
+        本ポリシーに関するお問い合わせは、<a href="mailto:contact@hitori-biz.com">contact@hitori-biz.com</a> までご連絡ください。
       </p>
     </main>
   );
+}
 }
