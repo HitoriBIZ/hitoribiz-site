@@ -1,35 +1,55 @@
-export default function Page() {
-  return (<section className="container py-16">
-    <div className="grid md:grid-cols-2 gap-10 items-center">
-      <div>
-        <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-          ひとりで、全部できる。<br/>AI と、あなたのビジネスに。
-        </h1>
-        <p className="mt-6 text-lg text-neutral-600">
-          アプリ・WEB・EC・SNS・デザイン・販促・メール——デジタルの全部を一気通貫で。
-          運営：有限会社オリーブ（Olive Inc.）/ 代表：松村 衆三
-        </p>
-        <div className="mt-8 flex gap-3">
-          <a className="btn-primary" href="/contact">無料相談を予約</a>
-          <a className="btn-ghost" href="/works">制作実績を見る</a>
-        </div>
-        <p className="mt-4 text-sm text-neutral-600">“Do it all—solo, with AI.”</p>
-      </div>
-      <div className="rounded-2xl shadow-soft border p-8">
-        <ul className="space-y-4">
-          <li><span className="font-semibold">Services:</span> アプリ / ホームページ / EC / SNS / デザイン / メール</li>
-          <li><span className="font-semibold">Tech:</span> Next.js + Tailwind + Vercel + Cloudflare</li>
-          <li><span className="font-semibold">Contact:</span> contact@hitoribiz.com</li>
-        </ul>
-      </div>
-    </div>
-    <div className="mt-16 grid md:grid-cols-3 gap-6">
-      {['相談 → 設計 → 制作 → 運用','3プラン見積（ライト/標準/プロ）','1営業日以内に返信'].map((t,i)=>(
-        <div key={i} className="rounded-2xl border p-6 shadow-soft">
-          <div className="text-lg font-semibold">Point {i+1}</div>
-          <div className="mt-2 text-neutral-600">{t}</div>
-        </div>
-      ))}
-    </div>
-  </section>)
+import './globals.css'
+import type { Metadata } from 'next'
+import Image from "next/image";
+
+export const metadata: Metadata = {
+  title: 'HitoriBIZ | ひとりビジネスプロジェクト',
+  description: 'アプリ・WEB・EC・SNS・デザイン・メールまで一気通貫。有限会社オリーブ（Olive Inc.）が運営。',
+  metadataBase: new URL('https://hitoribiz.com'),
+  openGraph: { title:'HitoriBIZ | ひとりで、全部できる。AIと、あなたのビジネスに。', description:'アプリ・WEB・EC・SNS・デザイン・メールまで一気通貫。',
+    url:'https://hitoribiz.com', siteName:'HitoriBIZ', images:[{url:'/og.png',width:1200,height:630}], locale:'ja_JP', type:'website' },
+  icons: { icon: '/favicon.ico' },
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="ja">
+      <body>
+        <header className="border-b">
+          <div className="container flex items-center justify-between h-16">
+
+            {/* ← ロゴ追加部分ここ */}
+            <a href="/" className="flex items-center gap-2">
+              <Image 
+                src="/hitori-biz-logo.png" 
+                alt="HitoriBIZ"
+                width={36}
+                height={36}
+              />
+              <span className="font-semibold text-lg">HitoriBIZ</span>
+            </a>
+
+            <nav className="flex gap-4 text-sm">
+              <a href="/services" className="hover:underline">Services</a>
+              <a href="/works" className="hover:underline">Works</a>
+              <a href="/about" className="hover:underline">About</a>
+              <a href="/pricing" className="hover:underline">Pricing</a>
+              <a href="/contact" className="hover:underline">Contact</a>
+            </nav>
+
+          </div>
+        </header>
+
+        <main>{children}</main>
+
+        <footer className="mt-16 border-t">
+          <div className="container py-8 text-sm text-neutral-600">
+            <div>© 2025 HitoriBIZ / Olive Inc. All rights reserved.</div>
+            <div className="mt-2">“Orchestra Metronome” is produced by HitoriBIZ under the sponsorship of Olive Inc. (Japan).</div>
+            <div className="mt-2"><a href="/legal" className="hover:underline">Legal</a></div>
+          </div>
+        </footer>
+      </body>
+    </html>
+  );
 }
