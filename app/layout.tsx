@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: 'HitoriBIZ | ひとりビジネスプロジェクト',
   description: 'アプリ・WEB・EC・SNS・デザイン・メールまで一気通貫。有限会社オリーブ（Olive Inc.）が運営。',
   metadataBase: new URL('https://hitoribiz.com'),
-  openGraph: { title:'HitoriBIZ | ひとりで、全部できる。AIと、あなたのビジネスに。', description:'アプリ・WEB・EC・SNS・デザイン・メールまで一気通貫。',
+  openGraph: { title:'HitoriBIZ | ひとりで全部できる、AIとあなたのビジネス', description:'アプリ・WEB・EC・SNS・デザイン・メールまで一気通貫。',
     url:'https://hitoribiz.com', siteName:'HitoriBIZ', images:[{url:'/og.png',width:1200,height:630}], locale:'ja_JP', type:'website' },
   icons: { icon: '/favicon.ico' },
 }
