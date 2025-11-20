@@ -35,8 +35,8 @@ export default function RootLayout({
               <Image
                 src="/hitori-biz-logo.png"
                 alt="HitoriBIZ Logo"
-                width={54}   // ★ 150% サイズ（旧36→54）
-                height={54}  // ★ 150% サイズ
+                width={81}   // ★ 150% サイズ（旧36→54）
+                height={81}  // ★ 150% サイズ
                 priority
               />
             </a>
