@@ -29,33 +29,24 @@ export default function RootLayout({
       <body>
         <header className="border-b">
           <div className="container flex items-center justify-between h-16">
-            {/* ← 新しいロゴ + テキスト */}
-            <a href="/" className="flex items-center gap-2">
+            
+            {/* --- 新ロゴのみ（大きめサイズ） --- */}
+            <a href="/" className="flex items-center">
               <Image
-                src="/hitori-biz-logo.png" // public に置いたロゴ
-                alt="HitoriBIZ"
-                width={36}
-                height={36}
+                src="/hitori-biz-logo.png"
+                alt="HitoriBIZ Logo"
+                width={54}   // ★ 150% サイズ（旧36→54）
+                height={54}  // ★ 150% サイズ
+                priority
               />
-              <span className="font-semibold text-lg">HitoriBIZ</span>
             </a>
 
             <nav className="flex gap-4 text-sm">
-              <a href="/services" className="hover:underline">
-                Services
-              </a>
-              <a href="/works" className="hover:underline">
-                Works
-              </a>
-              <a href="/about" className="hover:underline">
-                About
-              </a>
-              <a href="/pricing" className="hover:underline">
-                Pricing
-              </a>
-              <a href="/contact" className="hover:underline">
-                Contact
-              </a>
+              <a href="/services" className="hover:underline">Services</a>
+              <a href="/works" className="hover:underline">Works</a>
+              <a href="/about" className="hover:underline">About</a>
+              <a href="/pricing" className="hover:underline">Pricing</a>
+              <a href="/contact" className="hover:underline">Contact</a>
             </nav>
           </div>
         </header>
