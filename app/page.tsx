@@ -10,13 +10,7 @@ export default function Home() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             {/* HitoriBIZ ロゴ画像（例） */}
-            <Image
-              src="/hitori-biz-logo.png"
-              alt="HitoriBIZ"
-              width={180}
-              height={40}
-              priority
-            />
+          
           </div>
           <nav className="hidden gap-6 text-sm md:flex">
             <Link href="#services">サービス</Link>
