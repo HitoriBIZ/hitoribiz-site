@@ -1,6 +1,8 @@
+// app/layout.tsx
 import "./globals.css";
 import type { Metadata } from "next";
 import Image from "next/image";
+import React from "react";
 
 export const metadata: Metadata = {
   title: "HitoriBIZ | ひとりビジネスプロジェクト",
@@ -27,26 +29,40 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body>
-        <header className="border-b">
-          <div className="container flex items-center justify-between h-16">
-            
-            {/* --- 新ロゴのみ（大きめサイズ） --- */}
-            <a href="/" className="flex items-center">
+        {/* ヘッダー：スマホではロゴとナビを縦並びに */}
+        <header className="border-b bg-white">
+          <div className="container mx-auto flex flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:justify-between">
+            {/* ロゴ */}
+            <a
+              href="/"
+              className="flex items-center justify-center md:justify-start"
+            >
               <Image
                 src="/hitori-biz-logo.png"
                 alt="HitoriBIZ Logo"
-                width={81}   // ★ 150% サイズ（旧36→54）
-                height={81}  // ★ 150% サイズ
+                width={81} // 150% サイズ
+                height={81}
                 priority
               />
             </a>
 
-            <nav className="flex gap-4 text-sm">
-              <a href="/services" className="hover:underline">Services</a>
-              <a href="/works" className="hover:underline">Works</a>
-              <a href="/about" className="hover:underline">About</a>
-              <a href="/pricing" className="hover:underline">Pricing</a>
-              <a href="/contact" className="hover:underline">Contact</a>
+            {/* ナビ：スマホでは中央寄せで2段になってもOKなように wrap */}
+            <nav className="flex flex-wrap justify-center gap-4 text-sm md:justify-end">
+              <a href="/services" className="hover:underline">
+                Services
+              </a>
+              <a href="/works" className="hover:underline">
+                Works
+              </a>
+              <a href="/about" className="hover:underline">
+                About
+              </a>
+              <a href="/pricing" className="hover:underline">
+                Pricing
+              </a>
+              <a href="/contact" className="hover:underline">
+                Contact
+              </a>
             </nav>
           </div>
         </header>
@@ -54,7 +70,7 @@ export default function RootLayout({
         <main>{children}</main>
 
         <footer className="mt-16 border-t">
-          <div className="container py-8 text-sm text-neutral-600">
+          <div className="container mx-auto py-8 px-4 text-sm text-neutral-600">
             <div>© 2025 HitoriBIZ / Olive Inc. All rights reserved.</div>
             <div className="mt-2">
               “Orchestra Metronome” is produced by HitoriBIZ under the

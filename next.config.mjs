@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = { 
-  reactStrictMode: true, 
-  experimental: { typedRoutes: true },
-  output: 'export' // ←★ この1行を追加！
+const nextConfig = {
+  output: 'export',
+  images: {
+    unoptimized: true,
+  },
 };
 
-export default nextConfig;
+export default nextConfig;   // ← ★ ES Module の正しい書き方！

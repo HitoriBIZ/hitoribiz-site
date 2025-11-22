@@ -1,43 +1,104 @@
-export const metadata = {
-  title: "About | HitoriBIZ",
-  description: "HitoriBIZ（ひとりビジネスプロジェクト）と有限会社オリーブの概要。",
-};
+// app/about/page.tsx
+import Image from "next/image";
+import Link from "next/link";
 
-export default function About() {
+export default function AboutPage() {
   return (
-    <section className="container py-12">
-      <h1 className="text-3xl md:text-4xl font-bold">About</h1>
-
-      <div className="mt-6 grid md:grid-cols-2 gap-10">
-        <div>
-          <h2 className="text-xl font-semibold">HitoriBIZ（ひとりビジネスプロジェクト）</h2>
-          <p className="mt-3 text-neutral-700">
-            アプリ制作・WEB構築・EC・SNS・デザイン・メールまで、デジタルの全部を一気通貫で。“ひとり”で推進できる体制を、AIと実務ノウハウで構築します。
-          </p>
-          <ul className="mt-4 list-disc pl-5 space-y-2 text-neutral-700">
-            <li>AI活用前提の制作フロー（要件→設計→制作→運用）</li>
-            <li>Next.js + Vercel + Cloudflare による高速・安定の運用</li>
-            <li>Google Workspace / SPF・DKIM・DMARCでの到達率対策</li>
-          </ul>
-
-          <h3 className="mt-8 text-lg font-semibold">プロジェクトの背景</h3>
-          <p className="mt-2 text-neutral-700">
-            従来は十数名規模で必要だった制作・運用を、ChatGPT（将来的にSora等）と体系化により“ひとり”で完結可能にする「AI革命」を実証します。
-          </p>
+    <main className="min-h-screen bg-slate-50 text-slate-900">
+      {/* ヘッダー */}
+      <header className="border-b bg-white/80 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+          <Link href="/" className="flex items-center gap-3">
+            <Image
+              src="/hitori-biz-logo.png"
+              alt="HitoriBIZ"
+              width={160}
+              height={36}
+              priority
+            />
+          </Link>
+          <nav className="hidden gap-6 text-sm md:flex">
+            <Link href="/">Home</Link>
+            <Link href="/services">Services</Link>
+            <Link href="/works">Works</Link>
+            <Link href="/about" className="font-semibold">
+              About
+            </Link>
+            <Link href="/pricing">Pricing</Link>
+          </nav>
         </div>
+      </header>
 
-        <div className="rounded-2xl border p-6 shadow-soft">
-          <h2 className="text-xl font-semibold">運営会社</h2>
-          <p className="mt-3"><span className="font-semibold">有限会社オリーブ（Olive Inc. / Japan）</span></p>
-          <p className="text-neutral-700">代表者：松村 衆三（Shuzo Matsumura）</p>
-          <p className="mt-2 text-neutral-700">
-            クリエイティブとテクノロジーを横断し、ブランド/プロダクトを“手触りよく”立ち上げることを目指します。
-          </p>
-          <div className="mt-6 text-sm text-neutral-600">
-            “Orchestra Metronome” is produced by HitoriBIZ under the sponsorship of Olive Inc. (Japan).
+      {/* バナー */}
+      <section aria-label="About banner" className="border-b bg-slate-900">
+        <div className="banner-wrap relative">
+          <Image
+            src="/banners/about.png"
+            alt="About HitoriBIZ Banner"
+            fill
+            className="banner-image"
+            priority
+          />
+          <div className="pointer-events-none absolute inset-0 flex items-center bg-slate-900/25">
+            <div className="mx-auto max-w-6xl px-4">
+              <p className="text-xs tracking-[0.25em] text-slate-100/80">
+                ABOUT
+              </p>
+              <h1 className="mt-2 text-2xl font-bold text-white md:text-3xl">
+                ひとりで悩みすぎないための、
+                <br className="hidden md:block" />
+                小さな伴走サービス。
+              </h1>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
-  );
-}
+      </section>
+
+      {/* 本文 */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-12 md:py-16">
+          <div className="grid gap-8 md:grid-cols-[3fr,2fr]">
+            <div className="space-y-4 text-sm leading-relaxed text-slate-700 md:text-base">
+              <h2 className="text-lg font-semibold md:text-xl">
+                HitoriBIZ の背景
+              </h2>
+              <p>
+                HitoriBIZ は、松村 衆三（Shu Matsumura）が運営する
+                小さなデジタル伴走サービスです。
+              </p>
+              <p>
+                IoTコーヒーメーカーの企画・販促、ガラスプロダクト、
+                ECサイト運営、デジタルサイネージなど、
+                いくつかのプロジェクトを横断して進める中で、
+                「デジタルまわりを一人で抱えている人」が多いと感じてきました。
+              </p>
+              <p>
+                「制作会社に頼むほど大きな案件ではないけれど、
+                自分だけでは進めづらい」といった領域を、一緒に埋めていきたい。
+                そんな思いから HitoriBIZ を立ち上げています。
+              </p>
+
+              <h3 className="pt-2 text-sm font-semibold text-slate-900 md:text-base">
+                スタイルについて
+              </h3>
+              <ul className="list-disc pl-5 text-sm md:text-base">
+                <li>専門用語をできるだけ使わず、噛み砕いて説明します。</li>
+                <li>「こうすべき」ではなく、選択肢を一緒に検討します。</li>
+                <li>一度作って終わりではなく、運用して育てていく前提で考えます。</li>
+              </ul>
+
+              <p>
+                相談のスタート地点は、ちいさくて大丈夫です。
+                「今の状態だと、どこから手をつけたら良いか」を一緒に整理するところから始めましょう。
+              </p>
+            </div>
+
+            <div className="space-y-4 text-sm text-slate-700">
+              <div className="relative h-52 overflow-hidden rounded-2xl bg-slate-100">
+                <Image
+                  src="/banners/home.png"
+                  alt="HitoriBIZ Daily Work"
+                  fill
+                  className="object-cover"
+                />
+              </d
