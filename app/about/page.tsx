@@ -1,34 +1,11 @@
 // app/about/page.tsx
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function AboutPage() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-      {/* ヘッダー */}
-      <header className="border-b bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link href="/" className="flex items-center gap-3">
-            <Image
-              src="/hitori-biz-logo.png"
-              alt="HitoriBIZ"
-              width={160}
-              height={36}
-              priority
-            />
-          </Link>
-          <nav className="hidden gap-6 text-sm md:flex">
-            <Link href="/">Home</Link>
-            <Link href="/services">Services</Link>
-            <Link href="/works">Works</Link>
-            <Link href="/about" className="font-semibold">
-              About
-            </Link>
-            <Link href="/pricing">Pricing</Link>
-          </nav>
-        </div>
-      </header>
-
       {/* バナー */}
       <section aria-label="About banner" className="border-b bg-slate-900">
         <div className="banner-wrap relative">
@@ -84,7 +61,9 @@ export default function AboutPage() {
               <ul className="list-disc pl-5 text-sm md:text-base">
                 <li>専門用語をできるだけ使わず、噛み砕いて説明します。</li>
                 <li>「こうすべき」ではなく、選択肢を一緒に検討します。</li>
-                <li>一度作って終わりではなく、運用して育てていく前提で考えます。</li>
+                <li>
+                  一度作って終わりではなく、運用して育てていく前提で考えます。
+                </li>
               </ul>
 
               <p>
@@ -101,4 +80,38 @@ export default function AboutPage() {
                   fill
                   className="object-cover"
                 />
-              </d
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <h3 className="text-sm font-semibold text-slate-900">
+                  プロフィール（ショート）
+                </h3>
+                <p className="mt-2 text-xs leading-relaxed md:text-sm">
+                  松村 衆三 / Shu Matsumura
+                  <br />
+                  デジタル活用・EC・コンテンツ制作を横断して支援するフリーランス。
+                  IoTコーヒー機器ブランドや工芸コラボ商品などの企画・販促にも携わる。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-10 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-700 md:text-base">
+            <p>
+              「HitoriBIZ の考え方に少し共感したかも」と感じていただけたら、
+              ぜひ一度オンラインでお話ししてみませんか。
+            </p>
+          </div>
+
+          <div className="mt-8">
+            <Link
+              href="/pricing"
+              className="text-sm font-semibold text-slate-900 underline underline-offset-4"
+            >
+              相談しやすい料金の考え方を見る（Pricing）
+            </Link>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
