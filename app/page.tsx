@@ -9,7 +9,7 @@ export default function HomePage() {
       <section className="bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-8">
           {/* 横長バナー：高さ固定＆relative */}
-          <div className="relative h-[260px] overflow-hidden rounded-3xl bg-sky-900 text-white md:h-[320px]">
+          <div className="relative h-[220px] overflow-hidden rounded-3xl bg-sky-900 text-white md:h-[280px]">
             {/* 背景イラスト */}
             <Image
               src="/hero-home.png"
