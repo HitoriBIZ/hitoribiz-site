@@ -1,6 +1,5 @@
 // app/works/page.tsx
 import Image from "next/image";
-import Link from "next/link";
 
 const works = [
   {
@@ -29,10 +28,11 @@ const works = [
 export default function WorksPage() {
   return (
     <main>
-      {/* Works用ヒーロー画像 */}
+      {/* ヒーローセクション */}
       <section className="bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-8">
           <div className="relative overflow-hidden rounded-3xl bg-sky-900 text-white">
+            {/* ヒーロー画像 */}
             <Image
               src="/2ef18b1d-b6e5-4712-ba8c-cba4cb8a80b3.png"
               alt="HitoriBIZ works hero"
@@ -46,33 +46,24 @@ export default function WorksPage() {
                 WORKS
               </p>
               <h1 className="mt-3 text-2xl font-bold leading-snug md:text-3xl">
-                「つくって終わり」ではなく、<br />
-                届けるところまで一緒に。
+                「つくって終わり」ではなく、届けるところまで一緒に。
               </h1>
               <p className="mt-4 max-w-xl text-sm leading-relaxed text-sky-50/90 md:text-base">
                 実際にご一緒したプロジェクトの一部を、公開できる範囲でご紹介します。
-                ここに掲載していない非公開案件も多数ありますので、
-                近い業種の事例があるかどうかはお問い合わせください。
+                非公開案件も多くありますので、近い事例があるかどうかは
+                お気軽にお問い合わせください。
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* カード一覧 */}
+      {/* 制作・導入事例カード一覧 */}
       <section className="bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 pb-12">
-          <div className="mb-4 flex items-center justify-between">
-            <span className="text-xs text-slate-500">
-              公開可能な事例の一部をご紹介しています。
-            </span>
-            <Link
-              href="/contact"
-              className="hidden text-xs font-semibold text-sky-700 hover:text-sky-900 md:inline-block"
-            >
-              近い事例があるか問い合わせる →
-            </Link>
-          </div>
+          <p className="mb-4 text-xs text-slate-500">
+            公開可能な事例の一部をご紹介しています。
+          </p>
 
           <div className="grid gap-6 md:grid-cols-3">
             {works.map((work) => (
