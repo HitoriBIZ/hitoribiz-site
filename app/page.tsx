@@ -30,7 +30,8 @@ export default function HomePage() {
               <p className="max-w-xl text-sm leading-relaxed text-sky-50/90 md:text-base">
                 HitoriBIZ は、ひとりビジネスや小さなチームの
                 「ホームページ・EC・LINE・SNS・AI活用」を、
-                企画から運用まで横に並んでサポートするデジタルパートナーです。
+                企画から運用まで横に並んでサポートする
+                デジタルパートナーです。
               </p>
 
               <div className="mt-2 flex flex-wrap gap-3">
@@ -81,7 +82,8 @@ export default function HomePage() {
                 3. 外部サービスに依存しすぎない設計
               </h2>
               <p className="mt-2 text-slate-600">
-                将来的に「自社の資産になるメディア」を育てる設計を大切にしています。
+                将来的に「自社の資産になるメディア」を
+                育てる設計を大切にしています。
               </p>
             </div>
           </div>
