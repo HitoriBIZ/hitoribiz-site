@@ -1,114 +1,97 @@
-// app/about/page.tsx
-import React from "react";
+// app/works/page.tsx
 import Image from "next/image";
-import Link from "next/link";
 
-export default function AboutPage() {
+const works = [
+  {
+    category: "WEBサイト設計・制作",
+    title: "HARIO Memorial Tsubo 特設サイト",
+    description:
+      "ブランドコンセプト設計から情報設計、商品ストーリーの文章構成までを担当。",
+    tags: ["ブランド設計", "商品ストーリー", "Shopify"],
+  },
+  {
+    category: "IOTプロダクト",
+    title: "IoT電動ドリップコーヒーメーカー アプリUI",
+    description:
+      "Bluetooth連携アプリの情報設計・画面フロー・コピーライティングを支援。",
+    tags: ["モバイルアプリ", "UI/UX", "IoT"],
+  },
+  {
+    category: "ブログ / メディア",
+    title: "Andante & Allegro ブログ構築",
+    description:
+      "クラシック音楽とライフスタイルをテーマにしたブログ立ち上げの企画・構成。",
+    tags: ["WordPress", "コンテンツ設計", "SEO"],
+  },
+];
+
+export default function WorksPage() {
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      {/* バナー */}
-      <section aria-label="About banner" className="border-b bg-slate-900">
-        <div className="banner-wrap relative">
-          <Image
-            src="/banners/about.png"
-            alt="About HitoriBIZ Banner"
-            fill
-            className="banner-image"
-            priority
-          />
-          <div className="pointer-events-none absolute inset-0 flex items-center bg-slate-900/25">
-            <div className="mx-auto max-w-6xl px-4">
-              <p className="text-xs tracking-[0.25em] text-slate-100/80">
-                ABOUT
+    <main>
+      {/* ヒーローセクション */}
+      <section className="bg-slate-50">
+        <div className="mx-auto max-w-6xl px-4 py-8">
+          <div className="relative h-[240px] overflow-hidden rounded-3xl bg-sky-900 text-white md:h-[280px]">
+            {/* 背景イラスト */}
+            <Image
+              src="/2ef18b1d-b6e5-4712-ba8c-cba4cb8a80b3.png"
+              alt="HitoriBIZ works hero"
+              fill
+              className="object-cover opacity-80"
+              priority
+            />
+
+            <div className="relative z-10 flex h-full flex-col justify-center gap-4 px-6 md:px-10">
+              <p className="text-xs font-semibold tracking-[0.2em] text-sky-100">
+                WORKS
               </p>
-              <h1 className="mt-2 text-2xl font-bold text-white md:text-3xl">
-                ひとりで悩みすぎないための、
-                <br className="hidden md:block" />
-                小さな伴走サービス。
+              <h1 className="text-2xl font-bold leading-snug md:text-3xl">
+                「つくって終わり」ではなく、届けるところまで一緒に。
               </h1>
+              <p className="max-w-xl text-sm leading-relaxed text-sky-50/90 md:text-base">
+                実際にご一緒したプロジェクトの一部を、公開できる範囲でご紹介します。
+                非公開案件も多くありますので、近い事例があるかどうかは
+                お気軽にお問い合わせください。
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 本文 */}
-      <section className="bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-12 md:py-16">
-          <div className="grid gap-8 md:grid-cols-[3fr,2fr]">
-            <div className="space-y-4 text-sm leading-relaxed text-slate-700 md:text-base">
-              <h2 className="text-lg font-semibold md:text-xl">
-                HitoriBIZ の背景
-              </h2>
-              <p>
-                HitoriBIZ は、松村 衆三（Shu Matsumura）が運営する
-                小さなデジタル伴走サービスです。
-              </p>
-              <p>
-                IoTコーヒーメーカーの企画・販促、ガラスプロダクト、
-                ECサイト運営、デジタルサイネージなど、
-                いくつかのプロジェクトを横断して進める中で、
-                「デジタルまわりを一人で抱えている人」が多いと感じてきました。
-              </p>
-              <p>
-                「制作会社に頼むほど大きな案件ではないけれど、
-                自分だけでは進めづらい」といった領域を、一緒に埋めていきたい。
-                そんな思いから HitoriBIZ を立ち上げています。
-              </p>
+      {/* 制作・導入事例カード一覧 */}
+      <section className="bg-slate-50">
+        <div className="mx-auto max-w-6xl px-4 pb-12">
+          <p className="mb-4 text-xs text-slate-500">
+            公開可能な事例の一部をご紹介しています。
+          </p>
 
-              <h3 className="pt-2 text-sm font-semibold text-slate-900 md:text-base">
-                スタイルについて
-              </h3>
-              <ul className="list-disc pl-5 text-sm md:text-base">
-                <li>専門用語をできるだけ使わず、噛み砕いて説明します。</li>
-                <li>「こうすべき」ではなく、選択肢を一緒に検討します。</li>
-                <li>
-                  一度作って終わりではなく、運用して育てていく前提で考えます。
-                </li>
-              </ul>
-
-              <p>
-                相談のスタート地点は、ちいさくて大丈夫です。
-                「今の状態だと、どこから手をつけたら良いか」を一緒に整理するところから始めましょう。
-              </p>
-            </div>
-
-            <div className="space-y-4 text-sm text-slate-700">
-              <div className="relative h-52 overflow-hidden rounded-2xl bg-slate-100">
-                <Image
-                  src="/banners/home.png"
-                  alt="HitoriBIZ Daily Work"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <h3 className="text-sm font-semibold text-slate-900">
-                  プロフィール（ショート）
-                </h3>
-                <p className="mt-2 text-xs leading-relaxed md:text-sm">
-                  松村 衆三 / Shu Matsumura
-                  <br />
-                  デジタル活用・EC・コンテンツ制作を横断して支援するフリーランス。
-                  IoTコーヒー機器ブランドや工芸コラボ商品などの企画・販促にも携わる。
+          <div className="grid gap-6 md:grid-cols-3">
+            {works.map((work) => (
+              <article
+                key={work.title}
+                className="flex flex-col rounded-2xl bg-white p-5 shadow-sm"
+              >
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-sky-700">
+                  {work.category}
+                </div>
+                <h2 className="mt-2 text-sm font-semibold text-slate-900 md:text-base">
+                  {work.title}
+                </h2>
+                <p className="mt-3 flex-1 text-xs leading-relaxed text-slate-600 md:text-sm">
+                  {work.description}
                 </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-10 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-700 md:text-base">
-            <p>
-              「HitoriBIZ の考え方に少し共感したかも」と感じていただけたら、
-              ぜひ一度オンラインでお話ししてみませんか。
-            </p>
-          </div>
-
-          <div className="mt-8">
-            <Link
-              href="/pricing"
-              className="text-sm font-semibold text-slate-900 underline underline-offset-4"
-            >
-              相談しやすい料金の考え方を見る（Pricing）
-            </Link>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {work.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-medium text-slate-600 md:text-xs"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </section>
