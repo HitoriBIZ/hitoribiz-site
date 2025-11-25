@@ -1,100 +1,91 @@
-// app/works/page.tsx
+// app/page.tsx
 import Image from "next/image";
+import Link from "next/link";
 
-const works = [
-  {
-    category: "WEBサイト設計・制作",
-    title: "HARIO Memorial Tsubo 特設サイト",
-    description:
-      "ブランドコンセプト設計から情報設計、商品ストーリーの文章構成までを担当。",
-    tags: ["ブランド設計", "商品ストーリー", "Shopify"],
-  },
-  {
-    category: "IOTプロダクト",
-    title: "IoT電動ドリップコーヒーメーカー アプリUI",
-    description:
-      "Bluetooth連携アプリの情報設計・画面フロー・コピーライティングを支援。",
-    tags: ["モバイルアプリ", "UI/UX", "IoT"],
-  },
-  {
-    category: "ブログ / メディア",
-    title: "Andante & Allegro ブログ構築",
-    description:
-      "クラシック音楽とライフスタイルをテーマにしたブログ立ち上げの企画・構成。",
-    tags: ["WordPress", "コンテンツ設計", "SEO"],
-  },
-];
-
-export default function WorksPage() {
+export default function HomePage() {
   return (
     <main>
-      {/* ヒーローセクション */}
+      {/* ヒーロー画像＋タイトル */}
       <section className="bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-8">
-          <div className="relative h-[220px] overflow-hidden rounded-3xl bg-slate-100 text-white md:h-[260px]">
-            {/* 背景イラストそのもの */}
+          {/* 横長バナー：高さ固定＆relative */}
+          <div className="relative h-[220px] overflow-hidden rounded-3xl bg-sky-900 text-white md:h-[260px]">
+            {/* 背景イラスト */}
             <Image
-              src="/2ef18b1d-b6e5-4712-ba8c-cba4cb8a80b3.png"
-              alt="HitoriBIZ works hero"
+              src="/hero-home.png"
+              alt="HitoriBIZ hero"
               fill
-              className="object-cover"
+              className="object-cover opacity-80"
               priority
             />
 
-            {/* 下半分にグラデーション＋テキスト */}
-            <div className="absolute inset-0 bg-gradient-to-t from-sky-900/90 via-sky-900/60 to-transparent" />
-
+            {/* 文字オーバーレイ */}
             <div className="relative z-10 flex h-full flex-col justify-center gap-4 px-6 md:px-10">
               <p className="text-xs font-semibold tracking-[0.2em] text-sky-100">
-                WORKS
+                HitoriBIZ
               </p>
               <h1 className="text-2xl font-bold leading-snug md:text-3xl">
-                「つくって終わり」ではなく、届けるところまで一緒に。
+                ひとりで全部できる、AIとあなたのビジネス。
               </h1>
               <p className="max-w-xl text-sm leading-relaxed text-sky-50/90 md:text-base">
-                実際にご一緒したプロジェクトの一部を、公開できる範囲でご紹介します。
-                非公開案件も多くありますので、近い事例があるかどうかは
-                お気軽にお問い合わせください。
+                HitoriBIZ は、ひとりビジネスや小さなチームの
+                「ホームページ・EC・LINE・SNS・AI活用」を、
+                企画から運用まで横に並んでサポートする
+                デジタルパートナーです。
               </p>
+
+              <div className="mt-2 flex flex-wrap gap-3">
+                <Link
+                  href="/services"
+                  className="rounded-full bg-white px-5 py-2 text-sm font-semibold text-sky-900 shadow-sm hover:bg-sky-50"
+                >
+                  サービスを見る
+                </Link>
+                <Link
+                  href="/works"
+                  className="rounded-full border border-sky-200/80 bg-sky-900/30 px-5 py-2 text-sm font-semibold text-white backdrop-blur hover:bg-sky-800/60"
+                >
+                  制作事例を見る
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 制作・導入事例カード一覧 */}
+      {/* 特徴カード３つ */}
       <section className="bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 pb-12">
-          <p className="mb-4 text-xs text-slate-500">
-            公開可能な事例の一部をご紹介しています。
-          </p>
+          <div className="grid gap-4 text-sm md:grid-cols-3 md:text-xs">
+            <div className="rounded-2xl bg-white p-4 shadow-sm">
+              <h2 className="text-sm font-semibold text-slate-800">
+                1. 企画から一緒に
+              </h2>
+              <p className="mt-2 text-slate-600">
+                「何から始めればいいのか分からない」状態から、
+                言語化・情報設計・サイト構造まで伴走します。
+              </p>
+            </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            {works.map((work) => (
-              <article
-                key={work.title}
-                className="flex flex-col rounded-2xl bg-white p-5 shadow-sm"
-              >
-                <div className="text-[11px] font-semibold uppercase tracking-wide text-sky-700">
-                  {work.category}
-                </div>
-                <h2 className="mt-2 text-sm font-semibold text-slate-900 md:text-base">
-                  {work.title}
-                </h2>
-                <p className="mt-3 flex-1 text-xs leading-relaxed text-slate-600 md:text-sm">
-                  {work.description}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {work.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-medium text-slate-600 md:text-xs"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </article>
-            ))}
+            <div className="rounded-2xl bg-white p-4 shadow-sm">
+              <h2 className="text-sm font-semibold text-slate-800">
+                2. 制作と運用まで
+              </h2>
+              <p className="mt-2 text-slate-600">
+                Webサイト、LP、ブログ、アプリなど、
+                制作後の運用・改善も継続サポート可能です。
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-white p-4 shadow-sm">
+              <h2 className="text-sm font-semibold text-slate-800">
+                3. 外部サービスに依存しすぎない設計
+              </h2>
+              <p className="mt-2 text-slate-600">
+                将来的に「自社の資産になるメディア」を
+                育てる設計を大切にしています。
+              </p>
+            </div>
           </div>
         </div>
       </section>
