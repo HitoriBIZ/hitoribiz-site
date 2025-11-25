@@ -31,7 +31,7 @@ export default function WorksPage() {
       {/* ヒーローセクション */}
       <section className="bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-8">
-          <div className="relative h-[240px] overflow-hidden rounded-3xl bg-sky-900 text-white md:h-[280px]">
+          <div className="relative h-[220px] overflow-hidden rounded-3xl bg-sky-900 text-white md:h-[260px]">
             {/* 背景イラスト */}
             <Image
               src="/2ef18b1d-b6e5-4712-ba8c-cba4cb8a80b3.png"
@@ -45,8 +45,9 @@ export default function WorksPage() {
               <p className="text-xs font-semibold tracking-[0.2em] text-sky-100">
                 WORKS
               </p>
+              {/* ← この文の一部をわざと変えています */}
               <h1 className="text-2xl font-bold leading-snug md:text-3xl">
-                「つくって終わり」ではなく、届けるところまで一緒に。
+                「つくって終わり」ではなく、届けるところまで一緒に（テスト）。
               </h1>
               <p className="max-w-xl text-sm leading-relaxed text-sky-50/90 md:text-base">
                 実際にご一緒したプロジェクトの一部を、公開できる範囲でご紹介します。
