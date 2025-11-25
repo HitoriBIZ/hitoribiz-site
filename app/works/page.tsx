@@ -31,23 +31,25 @@ export default function WorksPage() {
       {/* ヒーローセクション */}
       <section className="bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-8">
-          <div className="relative h-[220px] overflow-hidden rounded-3xl bg-sky-900 text-white md:h-[260px]">
-            {/* 背景イラスト */}
+          <div className="relative h-[220px] overflow-hidden rounded-3xl bg-slate-100 text-white md:h-[260px]">
+            {/* 背景イラストそのもの */}
             <Image
               src="/2ef18b1d-b6e5-4712-ba8c-cba4cb8a80b3.png"
               alt="HitoriBIZ works hero"
               fill
-              className="object-cover opacity-80"
+              className="object-cover"
               priority
             />
+
+            {/* 下半分にグラデーション＋テキスト */}
+            <div className="absolute inset-0 bg-gradient-to-t from-sky-900/90 via-sky-900/60 to-transparent" />
 
             <div className="relative z-10 flex h-full flex-col justify-center gap-4 px-6 md:px-10">
               <p className="text-xs font-semibold tracking-[0.2em] text-sky-100">
                 WORKS
               </p>
-              {/* ← この文の一部をわざと変えています */}
               <h1 className="text-2xl font-bold leading-snug md:text-3xl">
-                「つくって終わり」ではなく、届けるところまで一緒に（テスト）。
+                「つくって終わり」ではなく、届けるところまで一緒に。
               </h1>
               <p className="max-w-xl text-sm leading-relaxed text-sky-50/90 md:text-base">
                 実際にご一緒したプロジェクトの一部を、公開できる範囲でご紹介します。
