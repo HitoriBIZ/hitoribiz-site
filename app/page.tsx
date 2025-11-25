@@ -8,9 +8,9 @@ export default function HomePage() {
       {/* ヒーロー画像＋タイトル */}
       <section className="bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-8">
-          <div className="relative overflow-hidden rounded-3xl bg-sky-900 text-white">
-
-            {/* ヒーロー画像（fill） */}
+          {/* 横長バナー：高さ固定＆relative */}
+          <div className="relative h-[260px] overflow-hidden rounded-3xl bg-sky-900 text-white md:h-[320px]">
+            {/* 背景イラスト */}
             <Image
               src="/hero-home.png"
               alt="HitoriBIZ hero"
@@ -19,21 +19,21 @@ export default function HomePage() {
               priority
             />
 
-            {/* テキスト */}
-            <div className="relative z-10 px-6 py-12 md:px-10 md:py-16">
+            {/* 文字オーバーレイ */}
+            <div className="relative z-10 flex h-full flex-col justify-center gap-4 px-6 md:px-10">
               <p className="text-xs font-semibold tracking-[0.2em] text-sky-100">
                 HitoriBIZ
               </p>
-              <h1 className="mt-3 text-2xl font-bold leading-snug md:text-3xl">
+              <h1 className="text-2xl font-bold leading-snug md:text-3xl">
                 ひとりで全部できる、AIとあなたのビジネス。
               </h1>
-              <p className="mt-4 max-w-xl text-sm leading-relaxed text-sky-50/90 md:text-base">
+              <p className="max-w-xl text-sm leading-relaxed text-sky-50/90 md:text-base">
                 HitoriBIZ は、ひとりビジネスや小さなチームの
                 「ホームページ・EC・LINE・SNS・AI活用」を、
                 企画から運用まで横に並んでサポートするデジタルパートナーです。
               </p>
 
-              <div className="mt-6 flex flex-wrap gap-3">
+              <div className="mt-2 flex flex-wrap gap-3">
                 <Link
                   href="/services"
                   className="rounded-full bg-white px-5 py-2 text-sm font-semibold text-sky-900 shadow-sm hover:bg-sky-50"
@@ -48,12 +48,11 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
-
           </div>
         </div>
       </section>
 
-      {/* 特徴カード */}
+      {/* 特徴カード３つ */}
       <section className="bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 pb-12">
           <div className="grid gap-4 text-sm md:grid-cols-3 md:text-xs">
