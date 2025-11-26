@@ -8,19 +8,18 @@ export default function HomePage() {
       {/* ヒーロー画像＋タイトル */}
       <section className="bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-8">
-
-          {/* ← 高さが絶対必要！！ */}
+          {/* 横長バナー：高さを固定しておく */}
           <div className="relative h-[220px] overflow-hidden rounded-3xl bg-sky-900 text-white md:h-[280px]">
-            {/* 背景イラスト */}
+            {/* 背景イラスト（public/hero-home.png） */}
             <Image
-              src="/15952b6c-cf30-47d1-8f5b-a7965e4beee3.png"
+              src="/hero-home.png"
               alt="HitoriBIZ hero"
               fill
               className="object-cover opacity-80"
               priority
             />
 
-            {/* 文字 */}
+            {/* テキストオーバーレイ */}
             <div className="relative z-10 px-6 py-12 md:px-10 md:py-16">
               <p className="text-xs font-semibold tracking-[0.2em] text-sky-100">
                 HitoriBIZ
@@ -52,3 +51,42 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* 特徴カード３つ */}
+      <section className="bg-slate-50">
+        <div className="mx-auto max-w-6xl px-4 pb-12">
+          <div className="grid gap-4 text-sm md:grid-cols-3 md:text-xs">
+            <div className="rounded-2xl bg-white p-4 shadow-sm">
+              <h2 className="text-sm font-semibold text-slate-800">
+                1. 企画から一緒に
+              </h2>
+              <p className="mt-2 text-slate-600">
+                「何から始めればいいのか分からない」状態から、
+                言語化・情報設計・サイト構造まで伴走します。
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-white p-4 shadow-sm">
+              <h2 className="text-sm font-semibold text-slate-800">
+                2. 制作と運用まで
+              </h2>
+              <p className="mt-2 text-slate-600">
+                Webサイト、LP、ブログ、アプリなど、
+                制作後の運用・改善も継続サポート可能です。
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-white p-4 shadow-sm">
+              <h2 className="text-sm font-semibold text-slate-800">
+                3. 外部サービスに依存しすぎない設計
+              </h2>
+              <p className="mt-2 text-slate-600">
+                将来的に「自社の資産になるメディア」を育てる設計を大切にしています。
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
