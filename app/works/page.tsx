@@ -32,7 +32,7 @@ export default function WorksPage() {
 
       {/* ===== ヒーロー ===== */}
       <section className="border-b bg-slate-50">
-        <div className="mx-auto max-w-6xl px-4 py-10">
+        <div className="mx-auto max-w-6xl px-4 py-8">
           <div className="overflow-hidden rounded-3xl bg-sky-900 px-5 py-8 text-white md:px-8 md:py-10">
             <p className="text-xs font-semibold tracking-[0.2em] text-sky-200">
               WORKS
@@ -137,7 +137,10 @@ export default function WorksPage() {
           <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-slate-100 px-4 py-5 text-xs text-slate-600 md:text-sm">
             非公開案件については、概要レベルであればお話できるものもあります。
             「こういうことはできますか？」という形でお気軽に
-            <Link href="/contact" className="font-semibold text-sky-700 underline-offset-2 hover:underline">
+            <Link
+              href="/contact"
+              className="font-semibold text-sky-700 underline-offset-2 hover:underline"
+            >
               お問い合わせ
             </Link>
             ください。
@@ -148,10 +151,7 @@ export default function WorksPage() {
       {/* ===== フッター ===== */}
       <footer className="border-t bg-white">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 text-xs text-slate-500 md:flex-row md:items-center md:justify-between">
-          <p>
-            © {new Date().getFullYear()} HitoriBIZ / Olive Inc. All rights
-            reserved.
-          </p>
+          <p>© {new Date().getFullYear()} HitoriBIZ / Olive Inc. All rights reserved.</p>
           <div className="flex flex-wrap gap-4">
             <Link href="/privacy" className="hover:underline">
               プライバシーポリシー
