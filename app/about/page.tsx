@@ -1,47 +1,156 @@
 // app/about/page.tsx
+import Image from "next/image";
+import Link from "next/link";
+
 export default function AboutPage() {
   return (
-    <main>
-      <section className="bg-slate-50">
-        <div className="mx-auto max-w-6xl px-4 py-8">
-          <h1 className="text-2xl font-bold text-slate-900 md:text-3xl">
-            HitoriBIZ の背景
-          </h1>
+    <main className="min-h-screen bg-slate-50 text-slate-900">
+      {/* ===== ヘッダー ===== */}
+      <header className="sticky top-0 z-20 border-b bg-white/80 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+          <Link href="/" className="flex items-center gap-3">
+            <Image
+              src="/hitori-biz-logo.png"
+              alt="HitoriBIZ"
+              width={200}
+              height={45}
+              priority
+            />
+          </Link>
+          <nav className="hidden gap-6 text-sm md:flex">
+            <Link href="/">Home</Link>
+            <Link href="/services">Services</Link>
+            <Link href="/works">Works</Link>
+            <Link href="/about" className="font-semibold">
+              About
+            </Link>
+            <Link href="/pricing">Pricing</Link>
+            <Link href="/contact">Contact</Link>
+          </nav>
+        </div>
+      </header>
 
-          <p className="mt-4 text-sm leading-relaxed text-slate-700 md:text-base">
-            HitoriBIZ は、松村 衆三（Shu Matsumura）が運営する
-            小さなデジタル伴走サービスです。
-          </p>
-
-          <p className="mt-3 text-sm leading-relaxed text-slate-700 md:text-base">
-            IoT コーヒーメーカーの企画・販促、ガラスプロダクト、EC サイト運営、
-            デジタルサイネージなど、いくつかのプロジェクトを横断して進める中で、
-            「デジタルまわりを一人で抱えている人」が多いと感じてきました。
-          </p>
-
-          <p className="mt-3 text-sm leading-relaxed text-slate-700 md:text-base">
-            制作会社に頼むほど大きな案件ではないけれど、自分だけでは進めづらい。
-            そういった領域を、一緒に整理し、かたちにしていくパートナーとして
-            HitoriBIZ を立ち上げています。
-          </p>
-
-          <h2 className="mt-8 text-lg font-semibold text-slate-900">
-            スタイルについて
-          </h2>
-
-          <ul className="mt-3 space-y-2 text-sm leading-relaxed text-slate-700 md:text-base">
-            <li>・専門用語をできるだけ使わず、噛み砕いて説明します。</li>
-            <li>・「こうすべき」ではなく、選択肢を一緒に検討します。</li>
-            <li>・一度作って終わりではなく、運用して育てていく前提で考えます。</li>
-          </ul>
-
-          <p className="mt-6 text-sm leading-relaxed text-slate-700 md:text-base">
-            相談のスタート地点は、ちいさくて大丈夫です。
-            「今の状態だと、どこから手をつけたら良いか」を一緒に整理するところから
-            始めましょう。
-          </p>
+      {/* ===== ヒーロー（テキストのみ。hero-home.png は使わない）===== */}
+      <section className="border-b bg-slate-50">
+        <div className="mx-auto max-w-6xl px-4 py-10">
+          <div className="overflow-hidden rounded-3xl bg-white px-5 py-8 shadow-sm md:px-8 md:py-10">
+            <p className="text-xs font-semibold tracking-[0.2em] text-sky-700">
+              ABOUT
+            </p>
+            <h1 className="mt-3 text-2xl font-bold leading-tight md:text-3xl">
+              HitoriBIZ は、ひとりビジネスの
+              「デジタル係」を引き受ける存在です。
+            </h1>
+            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-700 md:text-base">
+              Webサイト制作やアプリ開発、デジタル集客の設計は、
+              多くのひとりビジネスにとって「本業ではないけれど必要なもの」。
+              HitoriBIZ は、その部分を横で支える小さなパートナーです。
+            </p>
+          </div>
         </div>
       </section>
+
+      {/* ===== 本文 ===== */}
+      <section className="bg-slate-50">
+        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)]">
+          {/* テキスト側 */}
+          <div className="space-y-6 text-sm leading-relaxed text-slate-700 md:text-base">
+            <section>
+              <h2 className="text-base font-bold text-slate-900 md:text-lg">
+                ひとりビジネスだからこそ、「デジタル一等地」を。
+              </h2>
+              <p className="mt-2">
+                広告費を大きくかけずとも、きちんと伝わる Web と
+                デジタルの仕組みを持つことで、
+                ひとりビジネスでも「選ばれる理由」を丁寧に届けることができます。
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-base font-bold text-slate-900 md:text-lg">
+                代表プロフィール
+              </h2>
+              <p className="mt-2">
+                Web / アプリ開発、IoT プロダクト、EC サイト運営など、
+                デジタルを軸にした事業づくりに長く携わってきました。
+                その経験を活かし、「ひとり / 小さなチーム」の事業を
+                デジタル面から支えることを目的に HitoriBIZ を立ち上げました。
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-base font-bold text-slate-900 md:text-lg">
+                得意なこと
+              </h2>
+              <ul className="mt-2 list-disc space-y-1 pl-5">
+                <li>ゼロからのサービス・ブランドコンセプトの言語化</li>
+                <li>Next.js / Shopify / Flutter などを使った実装</li>
+                <li>LINE公式・EC・SNS を組み合わせた集客導線設計</li>
+              </ul>
+            </section>
+          </div>
+
+          {/* サイドカード */}
+          <aside className="space-y-4 text-sm text-slate-700">
+            <div className="rounded-3xl border bg-white p-5 shadow-sm">
+              <h3 className="text-sm font-bold text-slate-900">
+                概要
+              </h3>
+              <dl className="mt-3 space-y-2 text-xs md:text-sm">
+                <div className="flex gap-2">
+                  <dt className="w-20 text-slate-500">名称</dt>
+                  <dd>HitoriBIZ（ひとりビジネス・デジタル支援）</dd>
+                </div>
+                <div className="flex gap-2">
+                  <dt className="w-20 text-slate-500">運営</dt>
+                  <dd>Olive Inc.</dd>
+                </div>
+                <div className="flex gap-2">
+                  <dt className="w-20 text-slate-500">拠点</dt>
+                  <dd>東京 ※オンライン中心に全国対応</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div className="rounded-3xl border bg-white p-5 text-xs shadow-sm md:text-sm">
+              <h3 className="text-sm font-bold text-slate-900">
+                ご相談について
+              </h3>
+              <p className="mt-2">
+                「まだ何も決まっていないけれど、アイデアを整理したい」
+                という段階からのご相談も歓迎しています。
+              </p>
+              <Link
+                href="/contact"
+                className="mt-3 inline-flex rounded-full bg-sky-900 px-4 py-2 text-xs font-semibold text-white hover:bg-sky-800"
+              >
+                お問い合わせフォームへ
+              </Link>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      {/* ===== フッター ===== */}
+      <footer className="border-t bg-white">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 text-xs text-slate-500 md:flex-row md:items-center md:justify-between">
+          <p>
+            © {new Date().getFullYear()} HitoriBIZ / Olive Inc. All rights
+            reserved.
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <Link href="/privacy" className="hover:underline">
+              プライバシーポリシー
+            </Link>
+            <Link href="/terms" className="hover:underline">
+              利用規約
+            </Link>
+            <Link href="/about" className="hover:underline">
+              事業者情報
+            </Link>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
