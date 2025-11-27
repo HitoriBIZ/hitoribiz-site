@@ -31,16 +31,15 @@ export default function RootLayout({
                   priority
                 />
               </Link>
-              <nav className="flex flex-wrap justify-center gap-4 text-xs sm:text-sm">
-                <Link href="/" className="font-semibold">
-                  Home
-                </Link>
-                <Link href="/services">Services</Link>
-                <Link href="/works">Works</Link>
-                <Link href="/about">About</Link>
-                <Link href="/pricing">Pricing</Link>
-                <Link href="/contact">Contact</Link>
-              </nav>
+                        <nav className="flex flex-wrap justify-center gap-4 text-xs sm:text-sm">
+            <Link href="/">Home</Link>
+            <Link href="/services">Services</Link>
+            <Link href="/works">Works</Link>
+            <Link href="/about">About</Link>
+            <Link href="/pricing">Pricing</Link>
+            <Link href="/contact">Contact</Link>
+          </nav>
+
             </div>
           </header>
 
