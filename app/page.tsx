@@ -1,36 +1,10 @@
 // app/page.tsx
 import Image from "next/image";
-import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      {/* ===== ヘッダー ===== */}
-      <header className="sticky top-0 z-20 border-b bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link href="/" className="flex items-center gap-3">
-            <Image
-              src="/hitori-biz-logo.png"
-              alt="HitoriBIZ"
-              width={200}
-              height={45}
-              priority
-            />
-          </Link>
-          <nav className="hidden gap-6 text-sm md:flex">
-            <Link href="/" className="font-semibold">
-              Home
-            </Link>
-            <Link href="/services">Services</Link>
-            <Link href="/works">Works</Link>
-            <Link href="/about">About</Link>
-            <Link href="/pricing">Pricing</Link>
-            <Link href="/contact">Contact</Link>
-          </nav>
-        </div>
-      </header>
-
-      {/* ===== ヒーローセクション ===== */}
+    <div className="bg-slate-50">
+      {/* ヒーロー */}
       <section className="border-b bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-10">
           <div className="overflow-hidden rounded-3xl bg-sky-900 text-white">
@@ -55,7 +29,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="mt-8 space-y-4">
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
             <div className="rounded-2xl bg-white p-4 shadow-sm">
               <h2 className="text-sm font-semibold md:text-base">
                 1. 企画から一緒に
@@ -86,6 +60,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }
