@@ -9,13 +9,14 @@ export default function HomePage() {
         <div className="mx-auto max-w-6xl px-4 py-10">
           <div className="overflow-hidden rounded-3xl bg-sky-900 text-white">
             <Image
-              src="/hero-home.png"
-              alt="HitoriBIZ hero"
-              width={1200}
-              height={600}
-              className="h-auto w-full object-cover"
-              priority
-            />
+  src="/hero-home.png"
+  alt="HitoriBIZ hero"
+  width={1200}
+  height={600}
+  className="h-[220px] w-full object-cover sm:h-[260px] md:h-[320px]"
+  priority
+/>
+
           </div>
 
           <div className="mt-8 space-y-4">
