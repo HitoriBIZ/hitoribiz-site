@@ -1,36 +1,10 @@
 // app/about/page.tsx
-import Image from "next/image";
 import Link from "next/link";
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      {/* ===== ヘッダー ===== */}
-      <header className="sticky top-0 z-20 border-b bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link href="/" className="flex items-center gap-3">
-            <Image
-              src="/hitori-biz-logo.png"
-              alt="HitoriBIZ"
-              width={200}
-              height={45}
-              priority
-            />
-          </Link>
-          <nav className="hidden gap-6 text-sm md:flex">
-            <Link href="/">Home</Link>
-            <Link href="/services">Services</Link>
-            <Link href="/works">Works</Link>
-            <Link href="/about" className="font-semibold">
-              About
-            </Link>
-            <Link href="/pricing">Pricing</Link>
-            <Link href="/contact">Contact</Link>
-          </nav>
-        </div>
-      </header>
-
-      {/* ===== ヒーロー（テキストのみ。hero-home.png は使わない）===== */}
+    <div className="bg-slate-50">
+      {/* ヒーロー */}
       <section className="border-b bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-10">
           <div className="overflow-hidden rounded-3xl bg-white px-5 py-8 shadow-sm md:px-8 md:py-10">
@@ -50,7 +24,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* ===== 本文 ===== */}
+      {/* 本文 */}
       <section className="bg-slate-50">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)]">
           {/* テキスト側 */}
@@ -93,9 +67,7 @@ export default function AboutPage() {
           {/* サイドカード */}
           <aside className="space-y-4 text-sm text-slate-700">
             <div className="rounded-3xl border bg-white p-5 shadow-sm">
-              <h3 className="text-sm font-bold text-slate-900">
-                概要
-              </h3>
+              <h3 className="text-sm font-bold text-slate-900">概要</h3>
               <dl className="mt-3 space-y-2 text-xs md:text-sm">
                 <div className="flex gap-2">
                   <dt className="w-20 text-slate-500">名称</dt>
@@ -130,27 +102,6 @@ export default function AboutPage() {
           </aside>
         </div>
       </section>
-
-      {/* ===== フッター ===== */}
-      <footer className="border-t bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 text-xs text-slate-500 md:flex-row md:items-center md:justify-between">
-          <p>
-            © {new Date().getFullYear()} HitoriBIZ / Olive Inc. All rights
-            reserved.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <Link href="/privacy" className="hover:underline">
-              プライバシーポリシー
-            </Link>
-            <Link href="/terms" className="hover:underline">
-              利用規約
-            </Link>
-            <Link href="/about" className="hover:underline">
-              事業者情報
-            </Link>
-          </div>
-        </div>
-      </footer>
-    </main>
+    </div>
   );
 }
