@@ -11,7 +11,11 @@ export default function ContactPage() {
             お問い合わせ
           </h1>
           <p className="mt-3 text-xs text-slate-600 sm:text-sm">
-            HitoriBIZのサービスや制作のご相談など、こちらのフォームよりお気軽にお問い合わせください。
+            サービス内容のご相談、ホームページ制作やリニューアルのご相談、
+            AI活用についてのご質問など、どうぞお気軽にお送りください。
+          </p>
+          <p className="mt-1 text-[11px] text-slate-500 sm:text-xs">
+            ※ ご入力いただいた内容を確認のうえ、通常1〜2営業日以内にメールでご返信いたします。
           </p>
         </div>
       </section>
@@ -99,12 +103,12 @@ export default function ContactPage() {
               type="submit"
               className="w-full rounded-full bg-sky-700 py-3 text-sm font-semibold text-white hover:bg-sky-600 transition"
             >
-              送信する
+              この内容で送信する
             </button>
           </form>
 
           <p className="mt-5 text-[11px] text-slate-400 sm:text-xs">
-            送信後、自動的に確認ページへ移動します。
+            送信後、自動的に確認ページへ移動します。そちらの表示をもって送信完了となります。
           </p>
         </div>
       </section>
