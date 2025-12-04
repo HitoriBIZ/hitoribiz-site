@@ -1,81 +1,113 @@
-export const metadata = {
-  title: "Contact | HitoriBIZ",
-  description: "無料相談・お見積りのご依頼はこちらから。1営業日以内に返信します。",
-};
+// app/contact/page.tsx
+import React from "react";
 
-// ★ FormspreeのフォームIDを取得後に差し替え
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/FORM_ID_REPLACE";
-
-export default function Contact() {
+export default function ContactPage() {
   return (
-    <section className="container py-12">
-      <h1 className="text-3xl md:text-4xl font-bold">Contact</h1>
-      <p className="mt-4 text-neutral-600">
-        無料相談・お見積りは下記よりお気軽に。1営業日以内にご連絡します。<br />
-        メール：
-        <a className="underline" href="mailto:contact@hitori-biz.com">
-          contact@hitori-biz.com
-        </a>
-      </p>
+    <main className="min-h-screen bg-slate-50 text-slate-900">
+      {/* ページタイトルセクション */}
+      <section className="border-b bg-white">
+        <div className="mx-auto max-w-3xl px-4 py-8 sm:py-10">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            お問い合わせ
+          </h1>
+          <p className="mt-3 text-xs text-slate-600 sm:text-sm">
+            HitoriBIZのサービスや制作のご相談など、こちらのフォームよりお気軽にお問い合わせください。
+          </p>
+        </div>
+      </section>
 
-      <div className="mt-8 rounded-2xl border p-6 shadow-soft max-w-2xl">
-        <form action={FORMSPREE_ENDPOINT} method="POST" className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium">お名前</label>
+      {/* フォーム本体 */}
+      <section className="mx-auto max-w-3xl px-4 py-8 sm:py-10">
+        <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
+          <form
+            action="https://submit-form.com/UWNAVrVsy"
+            method="POST"
+            className="space-y-6 sm:space-y-8"
+          >
+            {/* 送信後のリダイレクト先 */}
             <input
-              name="name"
-              required
-              className="w-full border rounded-xl px-3 py-2 mt-1"
+              type="hidden"
+              name="_redirect"
+              value="https://hitori-biz.com/contact/thanks"
             />
-          </div>
+            <input type="hidden" name="_append" value="false" />
 
-          <div>
-            <label className="block text-sm font-medium">メールアドレス</label>
-            <input
-              type="email"
-              name="email"
-              required
-              className="w-full border rounded-xl px-3 py-2 mt-1"
-            />
-          </div>
+            {/* お名前 */}
+            <div>
+              <label className="block text-xs font-medium text-slate-700 sm:text-sm">
+                お名前 <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="name"
+                required
+                className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium">ご相談種別</label>
-            <select
-              name="topic"
-              className="w-full border rounded-xl px-3 py-2 mt-1"
+            {/* メールアドレス */}
+            <div>
+              <label className="block text-xs font-medium text-slate-700 sm:text-sm">
+                メールアドレス <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="email"
+                name="email"
+                required
+                className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+              />
+            </div>
+
+            {/* 件名（セレクトボックス） */}
+            <div>
+              <label className="block text-xs font-medium text-slate-700 sm:text-sm">
+                件名
+              </label>
+              <select
+                name="subject"
+                className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-sky-500 focus:ring-1 focus:ring-sky-500 bg-white"
+                defaultValue=""
+              >
+                <option value="" disabled>
+                  件名をお選びください
+                </option>
+                <option value="サービスのご相談">サービスのご相談</option>
+                <option value="お見積りのご依頼">お見積りのご依頼</option>
+                <option value="Webサイト制作について">Webサイト制作について</option>
+                <option value="AI活用について">AI活用について</option>
+                <option value="その他">
+                  その他（下のお問い合わせ内容に詳細をご記入ください）
+                </option>
+              </select>
+            </div>
+
+            {/* お問い合わせ内容 */}
+            <div>
+              <label className="block text-xs font-medium text-slate-700 sm:text-sm">
+                お問い合わせ内容 <span className="text-rose-500">*</span>
+              </label>
+              <textarea
+                name="message"
+                rows={6}
+                required
+                className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+              />
+            </div>
+
+            {/* 送信ボタン */}
+            <button
+              type="submit"
+              className="w-full rounded-full bg-sky-700 py-3 text-sm font-semibold text-white hover:bg-sky-600 transition"
             >
-              <option>アプリ制作</option>
-              <option>ホームページ制作</option>
-              <option>EC構築（Shopify）</option>
-              <option>SNS運用/広告</option>
-              <option>デザイン/パンフレット</option>
-              <option>その他</option>
-            </select>
-          </div>
+              送信する
+            </button>
+          </form>
 
-          <div>
-            <label className="block text-sm font-medium">ご相談内容</label>
-            <textarea
-              name="message"
-              rows={6}
-              required
-              className="w-full border rounded-xl px-3 py-2 mt-1"
-            />
-          </div>
-
-          {/* 必要に応じて Formspree のリダイレクトなどを指定 */}
-          {/* <input type="hidden" name="_redirect" value="https://www.hitori-biz.com/thanks" /> */}
-
-          <div className="text-xs text-neutral-500">
-            送信によりプライバシーポリシーに同意したものとみなします。営業目的のご連絡はご遠慮ください。
-          </div>
-
-          <button className="btn-primary" type="submit">
-            送信する
-          </button>
-        </form>
-      </div>
-    </section>
+          <p className="mt-5 text-[11px] text-slate-400 sm:text-xs">
+            送信後、自動的に確認ページへ移動します。
+          </p>
+        </div>
+      </section>
+    </main>
   );
 }
