@@ -27,14 +27,16 @@ export default function AboutPage() {
             </div>
 
             {/* 右側イラスト（HOME のイラストを小さく使用） */}
-            <div className="relative hidden h-52 w-full overflow-hidden rounded-2xl bg-slate-100 md:block">
-              <Image
-                src="/hero-home.png"
-                alt="デジタルサポートのイメージ"
-                fill
-                className="object-cover"
-              />
-            </div>
+            <div className="relative h-40 sm:h-56 md:h-72 w-full overflow-hidden rounded-2xl bg-slate-100">
+  <Image
+    src="/hero-home.png"
+    alt="デジタルサポートのイメージ"
+    fill
+    className="object-cover rounded-2xl"
+    priority
+  />
+</div>
+
           </div>
         </div>
       </section>
