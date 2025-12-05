@@ -22,7 +22,8 @@ export default function RootLayout({
           {/* 共通ヘッダー */}
           <header className="border-b bg-white/90 backdrop-blur">
             <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 px-3 py-3 md:flex-row md:justify-between md:py-4">
-              {/* ロゴ：スマホ時は少し小さめ、PCは大きめ */}
+
+              {/* ロゴ */}
               <Link href="/" className="flex items-center justify-center">
                 <Image
                   src="/hitori-biz-logo.png"
@@ -34,9 +35,9 @@ export default function RootLayout({
                 />
               </Link>
 
-              {/* ナビ：スマホでは横スクロール可能にして詰める */}
+              {/* ナビ */}
               <nav className="flex w-full justify-center overflow-x-auto text-xs md:w-auto md:justify-end md:text-sm">
-                <div className="flex min-w-max gap-4 md:gap-6">
+                <div className="flex min-w-max items-center gap-4 md:gap-6">
                   <Link href="/" className="hover:text-sky-700">
                     Home
                   </Link>
@@ -55,6 +56,15 @@ export default function RootLayout({
                   <Link href="/contact" className="hover:text-sky-700">
                     Contact
                   </Link>
+
+                  {/* ▼▼▼ 追加：相談予約ボタン ▼▼▼ */}
+                  <Link
+                    href="/booking"
+                    className="rounded-full bg-sky-600 px-4 py-1.5 text-white shadow-sm hover:bg-sky-700 text-xs md:text-sm"
+                  >
+                    相談予約
+                  </Link>
+                  {/* ▲▲▲ 追加ここまで ▲▲▲ */}
                 </div>
               </nav>
             </div>
