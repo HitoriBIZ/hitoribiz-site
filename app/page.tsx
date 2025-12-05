@@ -48,6 +48,17 @@ export default function HomePage() {
               <p className="mt-4 text-[10px] text-slate-500 sm:text-xs">
                 ※ 初回オンライン相談（約30分）は無料です。Zoom／Google Meet に対応しています。
               </p>
+
+              {/* ▼▼▼ 追加：予約ページへのリンクボタン ▼▼▼ */}
+              <div className="mt-4">
+                <Link
+                  href="/booking"
+                  className="inline-flex items-center justify-center rounded-full bg-sky-600 px-6 py-3 text-xs font-semibold text-white shadow-md hover:bg-sky-700 sm:text-sm"
+                >
+                  無料オンライン相談を予約する
+                </Link>
+              </div>
+              {/* ▲▲▲ 追加ここまで ▲▲▲ */}
             </div>
 
             {/* 画像側 */}
