@@ -16,18 +16,32 @@ export default function HomePage() {
             </h1>
 
             {/* Lead */}
-            <p className="mt-6 whitespace-pre-line text-base leading-7 text-slate-700 sm:text-lg">
-              {`個人事業主・フリーランスなど、
-小規模事業のための
-ホームページ・ECサイト制作と
-デジタル活用をサポートしています。
-
-難しい専門用語はできるだけ使わず、
-「一緒に手を動かすパートナー」として、
-集客と業務効率化をお手伝いします。`}
+            <p className="mt-6 text-base leading-7 text-slate-700 sm:text-lg">
+              <span className="font-medium">
+                個人事業主・フリーランス
+              </span>
+              など、小規模事業のための
+              <span className="font-medium">
+                ホームページ・ECサイト制作
+              </span>
+              と
+              <span className="font-medium">
+                デジタル活用
+              </span>
+              をサポートしています。
+              難しい専門用語はできるだけ使わず、
+              「
+              <span className="font-medium">
+                一緒に手を動かすパートナー
+              </span>
+              」として、
+              <span className="font-medium">
+                集客と業務効率化
+              </span>
+              をお手伝いします。
             </p>
 
-            {/* CTA (必要なら使ってください) */}
+            {/* CTA */}
             <div className="mt-8 flex flex-wrap gap-3">
               <a
                 href="/contact"
