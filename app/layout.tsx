@@ -1,13 +1,12 @@
 // app/layout.tsx
 import "./globals.css";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "HitoriBIZ | ひとりビジネスのAI × デジタル活用パートナー",
+  title: "HitoriBIZ｜スモールビジネスにAIとWebの力を",
   description:
-    "HitoriBIZは、ひとり社長・フリーランス・小さなチームのための「ホームページ・EC・LINE・SNS・AI活用」伴走サービスです。",
+    "HitoriBIZは、個人事業主・フリーランスなど小規模事業のための、Web制作とAI・デジタル活用支援を行うプロジェクトです。",
 };
 
 export default function RootLayout({
@@ -17,75 +16,71 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className="min-h-screen bg-slate-50 text-slate-900">
-        <div className="flex min-h-screen flex-col">
-          {/* 共通ヘッダー */}
-          <header className="border-b bg-white/90 backdrop-blur">
-            <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 px-3 py-3 md:flex-row md:justify-between md:py-4">
+      <body className="bg-white text-slate-900 antialiased">
+        {/* ===== Header ===== */}
+        <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur">
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+            {/* ロゴ */}
+            <Link
+              href="/"
+              className="text-sm font-extrabold tracking-tight text-slate-900"
+            >
+              HitoriBIZ
+            </Link>
 
-              {/* ロゴ */}
-              <Link href="/" className="flex items-center justify-center">
-                <Image
-                  src="/hitori-biz-logo.png"
-                  alt="HitoriBIZ"
-                  width={160}
-                  height={40}
-                  className="h-auto w-32 md:w-40"
-                  priority
-                />
+            {/* ナビ（PC） */}
+            <nav className="hidden items-center gap-6 text-sm font-medium text-slate-700 md:flex">
+              <Link href="/" className="hover:text-sky-700">
+                Home
+              </Link>
+              <Link href="/services" className="hover:text-sky-700">
+                Services
+              </Link>
+              <Link href="/works" className="hover:text-sky-700">
+                Works
+              </Link>
+              <Link href="/about" className="hover:text-sky-700">
+                About
+              </Link>
+              <Link href="/pricing" className="hover:text-sky-700">
+                Pricing
+              </Link>
+              <Link href="/contact" className="hover:text-sky-700">
+                Contact
+              </Link>
+              <Link href="/blog" className="hover:text-sky-700">
+                Blog
+              </Link>
+            </nav>
+
+            {/* 右側CTA */}
+            <div className="flex items-center gap-2">
+              <Link
+                href="/contact"
+                className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+              >
+                相談予約
               </Link>
 
-              {/* ナビ */}
-              <nav className="flex w-full justify-center overflow-x-auto text-xs md:w-auto md:justify-end md:text-sm">
-                <div className="flex min-w-max items-center gap-4 md:gap-6">
-                  <Link href="/" className="hover:text-sky-700">
-                    Home
-                  </Link>
-                  <Link href="/services" className="hover:text-sky-700">
-                    Services
-                  </Link>
-                  <Link href="/works" className="hover:text-sky-700">
-                    Works
-                  </Link>
-                  <Link href="/about" className="hover:text-sky-700">
-                    About
-                  </Link>
-                  <Link href="/pricing" className="hover:text-sky-700">
-                    Pricing
-                  </Link>
-                  <Link href="/contact" className="hover:text-sky-700">
-                    Contact
-                  </Link>
-
-                  {/* ▼▼▼ 追加：相談予約ボタン ▼▼▼ */}
-                  <Link
-                    href="/booking"
-                    className="rounded-full bg-sky-600 px-4 py-1.5 text-white shadow-sm hover:bg-sky-700 text-xs md:text-sm"
-                  >
-                    相談予約
-                  </Link>
-                  {/* ▲▲▲ 追加ここまで ▲▲▲ */}
-                </div>
-              </nav>
+              <Link
+                href="/blog"
+                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-50"
+              >
+                Blogを見る
+              </Link>
             </div>
-          </header>
+          </div>
+        </header>
 
-          {/* 各ページ内容 */}
-          <main className="flex-1">{children}</main>
+        {/* ===== Main ===== */}
+        <main>{children}</main>
 
-          {/* フッター */}
-          <footer className="border-t bg-white/80">
-            <div className="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-6 text-xs text-slate-500 md:flex-row md:items-center md:justify-between">
-              <div>
-                &copy; {new Date().getFullYear()} HitoriBIZ / Shu Matsumura. All
-                rights reserved.
-              </div>
-              <div className="flex flex-wrap gap-4">
-                <span>Produced by Olive Inc.</span>
-              </div>
-            </div>
-          </footer>
-        </div>
+        {/* ===== Footer ===== */}
+        <footer className="border-t border-slate-200 bg-slate-50">
+          <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-slate-600">
+            © {new Date().getFullYear()} HitoriBIZ
+          </div>
+        </footer>
       </body>
     </html>
   );
