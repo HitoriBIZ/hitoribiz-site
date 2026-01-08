@@ -1,121 +1,126 @@
 // app/about/page.tsx
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+export const metadata: Metadata = {
+  title: "About｜HitoriBIZ",
+  description:
+    "HitoriBIZ代表・松村衆三のプロフィールと、HitoriBIZの考え方についてご紹介します。",
+};
+
 export default function AboutPage() {
   return (
-    <main className="bg-slate-50">
-      {/* HERO（ABOUT 専用・右に小さめイラスト） */}
-      <section className="bg-slate-50">
-        <div className="mx-auto max-w-6xl px-4 py-10">
-          <div className="grid gap-8 rounded-3xl bg-white p-6 shadow-sm md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:p-8">
-            {/* テキスト側 */}
-            <div>
-              <p className="text-xs font-semibold tracking-[0.2em] text-sky-700">
-                ABOUT
-              </p>
-              <h1 className="mt-3 text-2xl font-bold leading-tight md:text-3xl">
-                HitoriBIZ は、ひとりビジネスの
-                <br />
-                「デジタル係」を引き受ける存在です。
-              </h1>
-              <p className="mt-4 max-w-xl text-sm leading-relaxed text-slate-700 md:text-base">
-                Webサイト制作やアプリ開発、デジタル集客の設計は、
-                多くのひとりビジネスにとって「本業ではないけれど必要なもの」。
-                HitoriBIZ は、その部分を横で支える小さなパートナーです。
+    <main className="bg-white text-slate-900">
+      {/* =========================
+          Profile Section
+      ========================= */}
+      <section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
+          <div className="grid gap-8 md:grid-cols-2 md:items-center">
+            {/* Profile Image */}
+            <div className="mx-auto w-full max-w-sm">
+              <Image
+                src="/profile-matsumura.jpg"
+                alt="松村衆三 プロフィール写真"
+                width={600}
+                height={800}
+                className="rounded-2xl object-cover shadow-sm"
+                priority
+              />
+              <p className="mt-3 text-xs text-slate-500">
+                2025年8月 ホノルル・ワイキキにて撮影
               </p>
             </div>
 
-            {/* 右側イラスト（HOME のイラストを小さく使用） */}
-            <div className="relative h-40 sm:h-56 md:h-72 w-full overflow-hidden rounded-2xl bg-slate-100">
-  <Image
-    src="/hero-home.png"
-    alt="デジタルサポートのイメージ"
-    fill
-    className="object-cover rounded-2xl"
-    priority
-  />
-</div>
+            {/* Profile Text */}
+            <div>
+              <p className="text-xs font-semibold tracking-[0.25em] text-slate-500">
+                PROFILE
+              </p>
 
+              <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
+                代表者プロフィール
+              </h1>
+
+              <p className="mt-4 text-base leading-7 text-slate-700">
+                <span className="font-medium">松村 衆三（まつむら しゅうぞう）</span>
+                <br />
+                1949年 東京生まれ
+                <br />
+                HitoriBIZ ／ 有限会社オリーブ 代表
+                <br />
+                趣味：ヴァイオリン
+              </p>
+
+              <div className="mt-6 space-y-4 text-base leading-7 text-slate-700">
+                <p className="font-medium text-slate-900">
+                  国際物流とものづくりの現場から、デジタルの世界へ。
+                </p>
+
+                <p>
+                  松村衆三は、1971年より国際ビジネスの最前線で経験を積んできました。
+                  東京・港区の泰運商会にて外資系計測機器メーカーの国際業務部門に携わり、
+                  国際物流・貿易実務を基礎から学んだことが、キャリアの原点です。
+                </p>
+
+                <p>
+                  1987年にはHARIO株式会社に入社。
+                  国際貿易部門の立ち上げに関わり、見積書や契約書、
+                  輸出入関連書類を効率的に管理するため、
+                  FileMaker Proを用いた独自の業務システムを一人で構築しました。
+                  その後、6か国における現地法人設立にも関与し、
+                  グローバルな販売・調達の現場を長年支えてきました。
+                </p>
+
+                <p>
+                  2000年代に入り、ECとインターネット販売が急速に広がる中、
+                  社内でネット事業部門を立ち上げ、ECビジネスの推進を担当。
+                  「良い商品を、必要としている人にどう届けるか」
+                  という課題に、実務の立場から向き合い続けてきました。
+                </p>
+
+                <p>
+                  2025年にHARIOを定年退社。
+                  そして2026年、これまでの実務経験と、
+                  AIをはじめとする新しいデジタル技術を組み合わせた
+                  <span className="font-medium">
+                    ひとりビジネス支援プロジェクト「HitoriBIZ」
+                  </span>
+                  を立ち上げました。
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 本文セクション */}
-      <section className="bg-slate-50 pb-14">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)]">
-          {/* テキスト側 */}
-          <div className="space-y-6 text-sm leading-relaxed text-slate-700 md:text-base">
-            <section>
-              <h2 className="text-base font-bold text-slate-900 md:text-lg">
-                ひとりビジネスだからこそ、「デジタル一等地」を。
-              </h2>
-              <p className="mt-2">
-                広告費を大きくかけずとも、きちんと伝わる Web とデジタルの仕組みを
-                持つことで、ひとりビジネスでも「選ばれる理由」を丁寧に届けることができます。
-              </p>
-            </section>
+      {/* =========================
+          Existing About Content
+      ========================= */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
+          {/* ↓↓↓ ここに「既存のAboutページ本文」をそのまま貼ってください ↓↓↓ */}
 
-            <section>
-              <h2 className="text-base font-bold text-slate-900 md:text-lg">
-                代表プロフィール
-              </h2>
-              <p className="mt-2">
-                Web / アプリ開発、IoT プロダクト、EC サイト運営など、
-                デジタルを軸にした事業づくりに長く携わってきました。
-                その経験を活かし、「ひとり / 小さなチーム」の事業を
-                デジタル面から支えることを目的に HitoriBIZ を立ち上げました。
-              </p>
-            </section>
+          <h2 className="text-2xl font-bold tracking-tight">
+            HitoriBIZについて
+          </h2>
 
-            <section>
-              <h2 className="text-base font-bold text-slate-900 md:text-lg">
-                得意なこと
-              </h2>
-              <ul className="mt-2 list-disc space-y-1 pl-5">
-                <li>ゼロからのサービス・ブランドコンセプトの言語化</li>
-                <li>Next.js / Shopify / Flutter などを使った実装</li>
-                <li>LINE公式・EC・SNS を組み合わせた集客導線設計</li>
-              </ul>
-            </section>
+          <p className="mt-6 max-w-3xl text-base leading-7 text-slate-700">
+            HitoriBIZは、個人事業主や小規模事業者のための、
+            Web制作とデジタル活用支援を行うプロジェクトです。
+            専門用語をできるだけ使わず、
+            一緒に手を動かしながら進める伴走型の支援を大切にしています。
+          </p>
+
+          <div className="mt-10">
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+            >
+              相談してみる
+            </Link>
           </div>
-
-          {/* サイドカード */}
-          <aside className="space-y-4 text-sm text-slate-700">
-            <div className="rounded-3xl border bg-white p-5 shadow-sm">
-              <h3 className="text-sm font-bold text-slate-900">概要</h3>
-              <dl className="mt-3 space-y-2 text-xs md:text-sm">
-                <div className="flex gap-2">
-                  <dt className="w-20 text-slate-500">名称</dt>
-                  <dd>HitoriBIZ（ひとりビジネス・デジタル支援）</dd>
-                </div>
-                <div className="flex gap-2">
-                  <dt className="w-20 text-slate-500">運営</dt>
-                  <dd>Olive Inc.</dd>
-                </div>
-                <div className="flex gap-2">
-                  <dt className="w-20 text-slate-500">拠点</dt>
-                  <dd>東京 ※オンライン中心に全国対応</dd>
-                </div>
-              </dl>
-            </div>
-
-            <div className="rounded-3xl border bg-white p-5 text-xs shadow-sm md:text-sm">
-              <h3 className="text-sm font-bold text-slate-900">
-                ご相談について
-              </h3>
-              <p className="mt-2">
-                「まだ何も決まっていないけれど、アイデアを整理したい」
-                という段階からのご相談も歓迎しています。
-              </p>
-              <Link
-                href="/contact"
-                className="mt-3 inline-flex rounded-full bg-sky-900 px-4 py-2 text-xs font-semibold text-white hover:bg-sky-800"
-              >
-                お問い合わせフォームへ
-              </Link>
-            </div>
-          </aside>
         </div>
       </section>
     </main>
