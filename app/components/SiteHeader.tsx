@@ -63,12 +63,9 @@ export default function SiteHeader() {
 
           {/* PC CTA */}
           <div className="hidden items-center gap-2 md:flex">
-            <Link
-              href="/contact"
-              className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
-            >
-              相談予約
-            </Link>
+            <Link href="/booking" className="...">
+  相談予約
+</Link>
             <Link
               href="/blog"
               className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50"
@@ -142,14 +139,9 @@ export default function SiteHeader() {
             {/* CTA：中央寄せ＆横いっぱいにならない */}
             <div className="px-4 py-5">
               <div className="flex flex-col items-center gap-2">
-                <Link
-                  href="/contact"
-                  className="inline-flex w-fit items-center justify-center rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"
-                  onClick={() => setOpen(false)}
-                >
-                  相談予約
-                </Link>
-
+                <Link href="/booking" className="..." onClick={() => setOpen(false)}>
+  相談予約
+</Link>
                 <Link
                   href="/blog"
                   className="inline-flex w-fit items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-50"
