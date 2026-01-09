@@ -16,131 +16,156 @@ const navItems = [
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
 
-  // メニューOPEN中は背景スクロールを止める（スマホ操作性UP）
+  // メニューOPEN中は背景スクロールを止める
   useEffect(() => {
-    if (!open) return;
     const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    if (open) document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prev;
     };
   }, [open]);
 
+  // ESCで閉じる（PCでも便利）
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        {/* ロゴ */}
-        <Link
-          href="/"
-          className="text-sm font-extrabold tracking-tight text-slate-900"
-        >
-          HitoriBIZ
-        </Link>
+    <>
+      {/* ===== Header（常時） ===== */}
+      <header className="fixed left-0 right-0 top-0 z-[9999] border-b border-slate-200 bg-white/90 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+          {/* ロゴ */}
+          <Link
+            href="/"
+            className="text-sm font-extrabold tracking-tight text-slate-900"
+            onClick={() => setOpen(false)}
+          >
+            HitoriBIZ
+          </Link>
 
-        {/* ナビ（PC） */}
-        <nav className="hidden items-center gap-6 text-sm font-medium text-slate-700 md:flex">
-          {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="hover:text-sky-700">
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+          {/* PC ナビ */}
+          <nav className="hidden items-center gap-6 text-sm font-medium text-slate-700 md:flex">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="hover:text-sky-700"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
 
-        {/* 右側（PC: CTA / スマホ: ハンバーガー） */}
-        <div className="flex items-center gap-2">
-          {/* PC用CTA */}
+          {/* PC CTA */}
           <div className="hidden items-center gap-2 md:flex">
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+              className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
             >
               相談予約
             </Link>
-
             <Link
               href="/blog"
-              className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-50"
+              className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50"
             >
               Blogを見る
             </Link>
           </div>
 
-          {/* スマホ用ハンバーガー */}
+          {/* スマホ Menu ボタン */}
           <button
             type="button"
-            className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-50 md:hidden"
+            className="md:hidden inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-50"
+            onClick={() => setOpen(true)}
             aria-label="メニューを開く"
             aria-expanded={open}
-            onClick={() => setOpen(true)}
           >
             Menu
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* スマホ用：スライドメニュー */}
+      {/* ===== スマホ：全画面メニュー（openの時だけ） ===== */}
       {open && (
         <div className="md:hidden">
-          {/* 背景オーバーレイ */}
+          {/* 背景（押したら閉じる） */}
           <button
-            className="fixed inset-0 z-40 cursor-default bg-black/30"
-            aria-label="メニューを閉じる"
+            className="fixed inset-0 z-[9998] bg-white"
+            aria-label="メニュー背景"
             onClick={() => setOpen(false)}
           />
 
-          {/* パネル */}
-          <div className="fixed right-0 top-0 z-50 h-full w-[84%] max-w-sm border-l border-slate-200 bg-white p-4 shadow-xl">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-extrabold tracking-tight text-slate-900">
+          {/* パネル（中身） */}
+          <div className="fixed inset-0 z-[9999] bg-white">
+            {/* 上段：タイトル＋Close */}
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+              <span className="text-sm font-extrabold text-slate-900">
                 HitoriBIZ
-              </p>
+              </span>
+
               <button
                 type="button"
-                className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-50"
-                aria-label="メニューを閉じる"
+                className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-50"
                 onClick={() => setOpen(false)}
+                aria-label="メニューを閉じる"
               >
                 Close
               </button>
             </div>
 
-            <div className="mt-4 space-y-1">
-              {navItems.map((item) => (
+            {/* 説明 */}
+            <p className="px-4 pt-3 text-xs text-slate-500">
+              Closeで閉じます。
+            </p>
+
+            {/* ナビ：横一列（横スクロール） */}
+            <nav className="mt-3 border-b border-slate-200 px-4 py-3">
+              <div className="flex gap-5 overflow-x-auto whitespace-nowrap text-sm font-semibold text-slate-800">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="hover:text-sky-700"
+                    onClick={() => setOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </nav>
+
+            {/* CTA：中央寄せ＆横いっぱいにならない */}
+            <div className="px-4 py-5">
+              <div className="flex flex-col items-center gap-2">
                 <Link
-                  key={item.href}
-                  href={item.href}
-                  className="block rounded-xl px-3 py-3 text-base font-medium text-slate-800 hover:bg-slate-50"
+                  href="/contact"
+                  className="inline-flex w-fit items-center justify-center rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"
                   onClick={() => setOpen(false)}
                 >
-                  {item.label}
+                  相談予約
                 </Link>
-              ))}
+
+                <Link
+                  href="/blog"
+                  className="inline-flex w-fit items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-50"
+                  onClick={() => setOpen(false)}
+                >
+                  Blogを見る
+                </Link>
+              </div>
+
+              <p className="mt-4 text-center text-xs text-slate-500">
+                ※ メニューから各ページへ移動できます。
+              </p>
             </div>
-
-            <div className="mt-6 grid gap-2">
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
-                onClick={() => setOpen(false)}
-              >
-                相談予約
-              </Link>
-
-              <Link
-                href="/blog"
-                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-50"
-                onClick={() => setOpen(false)}
-              >
-                Blogを見る
-              </Link>
-            </div>
-
-            <p className="mt-6 text-xs text-slate-500">
-              ※ スマホではメニューから各ページへ移動できます。
-            </p>
           </div>
         </div>
       )}
-    </header>
+    </>
   );
 }
