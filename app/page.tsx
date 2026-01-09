@@ -34,12 +34,11 @@ export default function HomePage() {
             {/* CTA */}
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link
-                href="/contact"
-                className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"
-              >
-                相談予約
-              </Link>
-
+  href="/booking"
+  className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"
+>
+  相談予約
+</Link>
               <Link
                 href="/blog"
                 className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-50"
