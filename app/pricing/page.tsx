@@ -2,28 +2,48 @@
 import Image from "next/image";
 import Link from "next/link";
 
+const priceNotes = [
+  "※表示金額は目安です。内容・ページ数・素材の有無により変わります。",
+  "※お見積りはヒアリング後にご提示します。",
+  "※制作後の運用サポート（更新・改善）もご相談可能です。",
+];
+
 const plans = [
   {
-    name: "スタータープラン",
-    desc: "名刺代わりのシンプルなサイト",
-    price: "¥99,000〜",
-    items: ["1ページ構成", "スマホ最適化", "問い合わせ導線"],
-    badge: "最初の一歩",
+    name: "ライト",
+    desc: "まずは名刺代わりの1ページから。必要最小限で早く整えます。",
+    price: "目安：¥50,000〜",
+    items: [
+      "1ページ（LP）構成",
+      "スマホ最適化",
+      "文章の整え・簡易添削",
+      "お問い合わせ導線の設置",
+    ],
+    badge: "最短で公開",
   },
   {
-    name: "ベーシックプラン",
-    desc: "標準的な事業サイト",
-    price: "¥198,000〜",
-    items: ["5ページ構成", "文章・構成整理サポート", "導線の整備"],
+    name: "スタンダード",
+    desc: "サービス紹介・実績・プロフィールなど、基本ページを揃えて信頼感を作ります。",
+    price: "目安：¥120,000〜",
+    items: [
+      "〜5ページ構成（例：Home/Services/Works/About/Contact）",
+      "スマホ最適化",
+      "基本SEO（タイトル/ディスクリプション等）",
+      "公開後の軽微調整（1回）",
+    ],
     badge: "おすすめ",
-    highlight: true,
   },
   {
-    name: "グロースプラン",
-    desc: "集客・運用まで視野に入れた構成",
-    price: "¥298,000〜",
-    items: ["ベーシック＋Blog導線", "更新・改善の考え方共有", "育てる前提の設計"],
-    badge: "育てる",
+    name: "EC（Shopify）",
+    desc: "商品登録〜決済・配送設定まで。運用しやすい形に整えます。",
+    price: "目安：¥200,000〜",
+    items: [
+      "Shopify初期設定",
+      "商品登録サポート（目安：〜10点）",
+      "決済・配送・税設定",
+      "運用の基本レクチャー",
+    ],
+    badge: "EC向け",
   },
 ];
 
@@ -32,26 +52,31 @@ export default function PricingPage() {
     <main className="bg-white">
       {/* HERO */}
       <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-8 px-4 py-10 lg:grid-cols-2 lg:py-14">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 py-10 lg:grid-cols-2 lg:items-center lg:py-14">
           <div>
             <p className="text-xs font-semibold tracking-[0.25em] text-slate-500">
               PRICING
             </p>
+
             <h1 className="mt-4 text-3xl font-extrabold leading-tight text-slate-900 sm:text-4xl">
-              必要なものだけを選べる、
-              <span className="block text-slate-700">小さく始める料金設計。</span>
+              料金の目安
+              <span className="block text-slate-700">
+                まずは状況に合わせて、最適な進め方をご提案します
+              </span>
             </h1>
+
             <p className="mt-5 max-w-xl text-base leading-7 text-slate-700">
-              HitoriBIZは、まずは小さく始めて、状況に合わせて育てていくことを前提にしています。
-              無理に高いプランをすすめず、いま必要な範囲を一緒に整理します。
+              HitoriBIZは、<span className="font-medium">小規模事業のためのWeb制作</span>と
+              <span className="font-medium">AI・デジタル活用</span>を伴走支援します。
+              料金は一律ではなく、ゴールと作業範囲に合わせてお見積りします。
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link
-                href="/contact"
+                href="/booking"
                 className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"
               >
-                無料相談（30分）
+                無料相談（30分）を予約する
               </Link>
               <Link
                 href="/services"
@@ -62,12 +87,12 @@ export default function PricingPage() {
             </div>
           </div>
 
-          {/* 右：Kaitoくん */}
+          {/* Right: Kaitoくん */}
           <div className="relative mx-auto w-full max-w-md">
             <div className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-sm">
               <Image
                 src="/hero-kaito.png"
-                alt="HitoriBIZのアンバサダー「Kaitoくん」"
+                alt="HitoriBIZ メインアンバサダー Kaitoくん"
                 fill
                 className="object-cover"
                 priority
@@ -79,46 +104,38 @@ export default function PricingPage() {
 
       {/* PLANS */}
       <section className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="text-xl font-bold text-slate-900">目安プラン</h2>
-        <p className="mt-2 text-sm text-slate-600">
-          ※内容や規模により前後します。詳細は相談時にご案内します。
-        </p>
-
-        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {plans.map((p) => (
             <div
               key={p.name}
-              className={[
-                "rounded-3xl border bg-white p-6 shadow-sm",
-                p.highlight ? "border-slate-900" : "border-slate-200",
-              ].join(" ")}
+              className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
             >
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-slate-900">{p.name}</h3>
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-semibold text-slate-600">
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="text-lg font-extrabold text-slate-900">{p.name}</h2>
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
                   {p.badge}
                 </span>
               </div>
-              <p className="mt-2 text-sm text-slate-700">{p.desc}</p>
-              <p className="mt-4 text-2xl font-extrabold text-slate-900">
-                {p.price}
-              </p>
 
-              <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-slate-700">
-                {p.items.map((i) => (
-                  <li key={i}>{i}</li>
+              <p className="mt-3 text-sm leading-6 text-slate-700">{p.desc}</p>
+
+              <div className="mt-4 text-xl font-extrabold text-slate-900">
+                {p.price}
+              </div>
+
+              <ul className="mt-4 space-y-2 text-sm text-slate-700">
+                {p.items.map((it) => (
+                  <li key={it} className="flex gap-2">
+                    <span className="mt-[0.35rem] h-1.5 w-1.5 flex-none rounded-full bg-slate-400" />
+                    <span>{it}</span>
+                  </li>
                 ))}
               </ul>
 
               <div className="mt-6">
                 <Link
-                  href="/contact"
-                  className={[
-                    "inline-flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold shadow-sm",
-                    p.highlight
-                      ? "bg-slate-900 text-white hover:bg-slate-800"
-                      : "border border-slate-300 bg-white text-slate-900 hover:bg-slate-50",
-                  ].join(" ")}
+                  href="/booking"
+                  className="inline-flex w-fit items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"
                 >
                   相談してみる
                 </Link>
@@ -127,25 +144,26 @@ export default function PricingPage() {
           ))}
         </div>
 
-        {/* Shopify */}
+        {/* NOTES */}
         <div className="mt-10 rounded-3xl border border-slate-200 bg-slate-50 p-6">
-          <h3 className="text-base font-bold text-slate-900">EC（Shopify）</h3>
-          <p className="mt-2 text-sm text-slate-700">
-            新規構築：<span className="font-medium">¥298,000〜</span>
-            （商品登録・決済・配送設定を含む）
-          </p>
-          <p className="mt-3 text-sm text-slate-700">
-            商品点数や運用方針に合わせて、最小構成から一緒に設計します。
-          </p>
-        </div>
-
-        <div className="mt-10 rounded-3xl border border-slate-200 bg-white p-6">
-          <h3 className="text-base font-bold text-slate-900">大切にしていること</h3>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-700">
-            <li>無理に高いプランをすすめない</li>
-            <li>今の状況に合った提案をする</li>
-            <li>分からないことを分からないままにしない</li>
+          <h3 className="text-base font-bold text-slate-900">補足</h3>
+          <ul className="mt-3 space-y-2 text-sm text-slate-700">
+            {priceNotes.map((n) => (
+              <li key={n} className="flex gap-2">
+                <span className="mt-[0.35rem] h-1.5 w-1.5 flex-none rounded-full bg-slate-400" />
+                <span>{n}</span>
+              </li>
+            ))}
           </ul>
+
+          <div className="mt-5">
+            <Link
+              href="/booking"
+              className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"
+            >
+              無料相談（30分）を予約する
+            </Link>
+          </div>
         </div>
       </section>
     </main>

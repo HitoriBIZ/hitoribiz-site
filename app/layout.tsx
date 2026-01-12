@@ -21,7 +21,7 @@ export default function RootLayout({
         <SiteHeader />
 
         {/* Main */}
-        <main className="relative z-0 pt-14">
+        <main className="relative z-0 pt-16">
   {children}
 </main>
         {/* Footer */}

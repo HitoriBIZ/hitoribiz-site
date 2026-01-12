@@ -5,10 +5,9 @@ export default function BookingPage() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
       <div className="mx-auto max-w-4xl px-4 py-12">
-        <h1 className="mb-4 text-2xl font-bold">
-          初回オンライン相談のご予約（約30分・無料）
-        </h1>
-
+        <h1 className="text-2xl font-bold text-slate-900">
+  オンライン相談のご予約（約30分・無料）
+</h1>
         <p className="mb-6 text-sm leading-relaxed text-slate-600">
           ひとりビジネスや小規模ビジネスのお悩みを、
           <span className="font-semibold"> 無料のオンライン相談（約30分）</span>
