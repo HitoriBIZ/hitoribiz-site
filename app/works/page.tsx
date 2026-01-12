@@ -14,15 +14,13 @@ const works = [
     status: "運用中",
   },
   {
-    title: "本保創研（準備中）",
-    purpose: "クリスタルアクセサリー工房の世界観を伝える",
-    points: [
-      "ストーリー重視の構成",
-      "作品と想いを丁寧に紹介",
-      "EC・動画展開を見据えた設計",
-    ],
-    status: "準備中",
-  },
+  title: "Crystal VantVert .com（準備中）",
+  purpose: "クリスタルアクセサリー工房の世界観を伝える",
+  points: [
+    "ストーリー重視の構成",
+    "作品と想いを丁寧に紹介",
+  ],
+},
 ];
 
 export default function WorksPage() {
