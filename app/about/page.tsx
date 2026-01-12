@@ -47,7 +47,7 @@ export default function AboutPage() {
 
           <div className="flex justify-center">
             <Image
-              src="/profile-matsumura.JPG"
+              src="/profile-matsumura.jpg"
               alt="松村衆三 プロフィール写真"
               width={360}
               height={360}
