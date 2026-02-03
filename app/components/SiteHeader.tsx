@@ -8,7 +8,6 @@ const navItems = [
   { href: "/services", label: "Services" },
   { href: "/works", label: "Works" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
   // Contact は使わず、相談は booking に統一
 ];
@@ -24,7 +23,7 @@ export default function SiteHeader() {
           href="/"
           className="text-lg font-extrabold tracking-tight text-slate-900"
         >
-          HitoriBIZ
+           HitoriBIZ
         </Link>
 
         {/* Desktop Nav */}

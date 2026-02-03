@@ -2,6 +2,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import SiteHeader from "./components/SiteHeader";
+import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
   title: "HitoriBIZ｜スモールビジネスにAIとWebの力を",
@@ -16,20 +17,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className="bg-white text-slate-900 antialiased">
+      <body className="min-h-screen flex flex-col bg-white text-slate-900 antialiased">
         {/* Header */}
         <SiteHeader />
 
         {/* Main */}
-        <main className="relative z-0 pt-16">
-  {children}
-</main>
+        <main className="relative z-0 pt-16 flex-1">{children}</main>
+
         {/* Footer */}
-        <footer className="border-t border-slate-200 bg-slate-50">
-          <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-slate-600">
-            © {new Date().getFullYear()} HitoriBIZ
-          </div>
-        </footer>
+        <Footer />
       </body>
     </html>
   );
