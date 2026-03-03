@@ -1,9 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  reactStrictMode: true,
+
   images: {
     unoptimized: true,
   },
 };
 
-export default nextConfig;   // ← ★ ES Module の正しい書き方！
+export default nextConfig;
