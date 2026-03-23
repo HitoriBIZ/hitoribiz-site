@@ -14,19 +14,20 @@ export async function POST(req: Request) {
     }
 
     // フォームの内容をGASへ転送
-    const forwarded = {
-      email: body.email,
-      name: body.name,
-      instrument: body.instrument,
-      platform: body.platform,
-      experience: body.experience,
-      notes: body.notes,
-      userAgent: req.headers.get("user-agent") || "",
-      ip:
-        req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-        req.headers.get("x-real-ip") ||
-        "",
-    };
+const forwarded = {
+  email: body.email,
+  name: body.name,
+  instrument: body.instrument,
+  platform: body.platform,
+  experience: body.experience,
+  notes: body.notes,
+  lang: body.lang || "ja",
+  userAgent: req.headers.get("user-agent") || "",
+  ip:
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    "",
+};
 
     const r = await fetch(webhookUrl, {
       method: "POST",

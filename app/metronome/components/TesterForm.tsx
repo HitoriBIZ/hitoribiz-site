@@ -37,7 +37,7 @@ const text = {
     consentNote: "※送信するには、同意チェックが必要です。",
     submit: "無料テスター登録する",
     submitting: "送信中...",
-    success: "登録ありがとうございます。配布準備が整い次第、ご案内します。",
+    success: "登録ありがとうございます。ご案内メールをお送りします。",
     duplicate:
       "すでにご登録いただいております。\n公開開始まで今しばらくお待ちください。",
     genericError: "送信に失敗しました。時間をおいて再度お試しください。",
@@ -66,9 +66,9 @@ const text = {
     consentLabel:
       "I agree that my information will be used only for tester registration and related communication. (Required)",
     consentNote: "*Consent is required before submitting.",
-    submit: "Join Beta Testing",
+    submit: "Join Free Beta Testing",
     submitting: "Submitting...",
-    success: "Thank you for registering. We will contact you as soon as distribution is ready.",
+    success: "Thank you for registering. A confirmation email has been sent.",
     duplicate:
       "You are already registered.\nPlease wait a little longer for the release announcement.",
     genericError: "Submission failed. Please try again later.",
@@ -116,7 +116,15 @@ export default function TesterForm({ lang = "ja" }: TesterFormProps) {
       const res = await fetch("/api/testers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          email: form.email,
+          name: form.name,
+          instrument: form.instrument,
+          platform: form.platform,
+          experience: form.experience,
+          notes: form.notes,
+          lang: lang,
+        }),
       });
 
       if (!res.ok) {
