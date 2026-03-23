@@ -118,7 +118,7 @@ export default function MetronomePage() {
         </div>
 
         {/* Language Switch */}
-        <div className="absolute right-6 top-6 z-20">
+        <div className="absolute right-4 top-4 z-20 md:right-6 md:top-6">
           <div className="flex items-center gap-2 rounded-full border border-white/20 bg-black/60 px-4 py-2 text-sm backdrop-blur">
             <span className="text-gray-300">🌐</span>
 
@@ -152,7 +152,7 @@ export default function MetronomePage() {
 
         {/* Hero Content */}
         <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
-          <div className="mb-5 inline-flex rounded-full border border-yellow-400/40 bg-yellow-500/20 px-4 py-2 text-sm font-medium text-yellow-300">
+          <div className="mb-8 mt-10 inline-flex rounded-full border border-yellow-400/40 bg-yellow-500/20 px-4 py-2 text-sm font-medium text-yellow-300 md:mb-5 md:mt-0">
             {t.heroEyebrow}
           </div>
 
