@@ -8,6 +8,56 @@ export const metadata: Metadata = {
   title: "HitoriBIZ｜スモールビジネスにAIとWebの力を",
   description:
     "HitoriBIZは、個人事業主・フリーランスなど小規模事業のための、Web制作とAI・デジタル活用支援を行うプロジェクトです。",
+
+  // PWA / ホーム画面追加用
+  manifest: "/manifest.json",
+
+  // ブラウザ・スマホ用アイコン
+  icons: {
+    icon: [
+      {
+        url: "/icons/favicon-32.png",
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        url: "/icons/favicon-16.png",
+        sizes: "16x16",
+        type: "image/png",
+      },
+      {
+        url: "/icons/icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        url: "/icons/icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
+      },
+    ],
+    apple: [
+      {
+        url: "/icons/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
+    shortcut: [
+      {
+        url: "/icons/favicon-32.png",
+        sizes: "32x32",
+        type: "image/png",
+      },
+    ],
+  },
+
+  // iPhoneで「ホーム画面に追加」した時の見え方
+  appleWebApp: {
+    capable: true,
+    title: "Metronome",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export default function RootLayout({
