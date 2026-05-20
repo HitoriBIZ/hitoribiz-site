@@ -69,6 +69,13 @@ const INSTRUMENT_PRESETS = [
   { label: "F Instrument", value: 7, description: "Horn in F" },
 ];
 
+const VIOLIN_STRINGS = [
+  { label: "G", name: "G3", midi: 55 },
+  { label: "D", name: "D4", midi: 62 },
+  { label: "A", name: "A4", midi: 69 },
+  { label: "E", name: "E5", midi: 76 },
+];
+
 const REFERENCE_NOTES = [
   { label: "A4", midi: 69 },
   { label: "B♭4", midi: 70 },
@@ -79,38 +86,80 @@ const REFERENCE_NOTES = [
   { label: "G5", midi: 79 },
 ];
 
+/**
+ * Violin tuning stability settings
+ *
+ * PITCH_UPDATE_INTERVAL_MS:
+ * 表示更新間隔。大きいほどゆっくり。
+ *
+ * FREQUENCY_SMOOTHING:
+ * 0.98〜0.995 の範囲で大きくすると、針と cents がさらに安定。
+ *
+ * MINIMUM_CLARITY:
+ * 音程検出の信頼度。大きいほど誤検出を捨てる。
+ *
+ * MINIMUM_RMS:
+ * 無音・小さなノイズの除外基準。
+ *
+ * MAX_ALLOWED_CENTS_FROM_SELECTED_STRING:
+ * 選択した弦から大きく外れた音を無視する範囲。
+ */
+const PITCH_UPDATE_INTERVAL_MS = 850;
+const FREQUENCY_SMOOTHING = 0.985;
+const MINIMUM_CLARITY = 0.88;
+const MINIMUM_RMS = 0.02;
+const MAX_ALLOWED_CENTS_FROM_SELECTED_STRING = 220;
+const SILENCE_RESET_MS = 900;
+
 function midiToFrequency(midi: number, a4: number) {
   return a4 * Math.pow(2, (midi - 69) / 12);
 }
 
-function frequencyToNoteInfo(
-  frequency: number,
-  a4: number,
-  preferFlats: boolean,
-  transposeSemitones: number
-): NoteInfo {
-  const rawMidi = 69 + 12 * Math.log2(frequency / a4);
-  const concertMidi = Math.round(rawMidi);
-  const targetFrequency = midiToFrequency(concertMidi, a4);
-  const cents = 1200 * Math.log2(frequency / targetFrequency);
-
-  const displayMidi = concertMidi + transposeSemitones;
-  const noteIndex = ((displayMidi % 12) + 12) % 12;
-  const octave = Math.floor(displayMidi / 12) - 1;
-
-  return {
-    midi: concertMidi,
-    noteName: preferFlats ? NOTE_NAMES_FLAT[noteIndex] : NOTE_NAMES_SHARP[noteIndex],
-    octave,
-    targetFrequency,
-    cents,
-  };
+function getNoteName(midi: number, preferFlats: boolean) {
+  const noteIndex = ((midi % 12) + 12) % 12;
+  return preferFlats ? NOTE_NAMES_FLAT[noteIndex] : NOTE_NAMES_SHARP[noteIndex];
 }
 
-function getSolfege(midi: number, transposeSemitones: number) {
-  const displayMidi = midi + transposeSemitones;
-  const noteIndex = ((displayMidi % 12) + 12) % 12;
+function getOctave(midi: number) {
+  return Math.floor(midi / 12) - 1;
+}
+
+function getSolfege(midi: number) {
+  const noteIndex = ((midi % 12) + 12) % 12;
   return SOLFEGE[noteIndex];
+}
+
+/**
+ * 倍音対策。
+ * ヴァイオリンは基音ではなく 2倍音・3倍音・4倍音を拾うことがあります。
+ * 例：A4 = 442Hz を弾いているのに 1326Hz 前後を拾う場合がある。
+ * その場合、1326 / 3 = 442 に戻して評価します。
+ */
+function correctPossibleHarmonicFrequency(
+  rawFrequency: number,
+  targetFrequency: number
+): number | null {
+  let bestFrequency: number | null = null;
+  let bestAbsCents = Number.POSITIVE_INFINITY;
+
+  for (let harmonic = 1; harmonic <= 6; harmonic++) {
+    const candidate = rawFrequency / harmonic;
+    const cents = 1200 * Math.log2(candidate / targetFrequency);
+    const absCents = Math.abs(cents);
+
+    if (absCents < bestAbsCents) {
+      bestAbsCents = absCents;
+      bestFrequency = candidate;
+    }
+  }
+
+  if (bestFrequency === null) return null;
+
+  if (bestAbsCents > MAX_ALLOWED_CENTS_FROM_SELECTED_STRING) {
+    return null;
+  }
+
+  return bestFrequency;
 }
 
 function autoCorrelate(buffer: Float32Array, sampleRate: number): PitchResult | null {
@@ -122,7 +171,7 @@ function autoCorrelate(buffer: Float32Array, sampleRate: number): PitchResult | 
   }
   rms = Math.sqrt(rms / size);
 
-  if (rms < 0.01) return null;
+  if (rms < MINIMUM_RMS) return null;
 
   let start = 0;
   let end = size - 1;
@@ -144,7 +193,8 @@ function autoCorrelate(buffer: Float32Array, sampleRate: number): PitchResult | 
 
   const trimmed = buffer.slice(start, end);
   const trimmedSize = trimmed.length;
-  if (trimmedSize < 64) return null;
+
+  if (trimmedSize < 128) return null;
 
   const correlations = new Array<number>(trimmedSize).fill(0);
 
@@ -163,15 +213,15 @@ function autoCorrelate(buffer: Float32Array, sampleRate: number): PitchResult | 
   let bestCorrelation = 0;
   let lastCorrelation = 1;
 
-  const minFrequency = 50;
-  const maxFrequency = 1500;
+  const minFrequency = 130;
+  const maxFrequency = 1800;
   const minOffset = Math.floor(sampleRate / maxFrequency);
   const maxOffset = Math.floor(sampleRate / minFrequency);
 
   for (let offset = minOffset; offset < Math.min(maxOffset, trimmedSize); offset++) {
     const correlation = correlations[offset];
 
-    if (correlation > 0.9 && correlation > lastCorrelation) {
+    if (correlation > 0.88 && correlation > lastCorrelation) {
       foundGoodCorrelation = true;
 
       if (correlation > bestCorrelation) {
@@ -179,10 +229,11 @@ function autoCorrelate(buffer: Float32Array, sampleRate: number): PitchResult | 
         bestOffset = offset;
       }
     } else if (foundGoodCorrelation) {
-      const shift =
-        (correlations[bestOffset + 1] - correlations[bestOffset - 1]) /
-        correlations[bestOffset];
+      if (bestOffset <= 0) return null;
 
+      const previous = correlations[bestOffset - 1] ?? bestCorrelation;
+      const next = correlations[bestOffset + 1] ?? bestCorrelation;
+      const shift = (next - previous) / Math.max(bestCorrelation, 0.0001);
       const refinedOffset = bestOffset + 8 * shift;
       const frequency = sampleRate / refinedOffset;
 
@@ -223,29 +274,56 @@ export default function OrchestraTunerPage() {
   const [transposeSemitones, setTransposeSemitones] = useState(0);
   const [isDronePlaying, setIsDronePlaying] = useState(false);
   const [droneMidi, setDroneMidi] = useState(69);
+  const [selectedViolinStringMidi, setSelectedViolinStringMidi] = useState(69);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const lastPitchUpdateRef = useRef(0);
+  const lastSuccessfulPitchRef = useRef(0);
   const oscillatorRef = useRef<OscillatorNode | null>(null);
   const gainRef = useRef<GainNode | null>(null);
 
-  const noteInfo = useMemo(() => {
+  const selectedString = useMemo(() => {
+    return (
+      VIOLIN_STRINGS.find((item) => item.midi === selectedViolinStringMidi) ??
+      VIOLIN_STRINGS[2]
+    );
+  }, [selectedViolinStringMidi]);
+
+  const noteInfo = useMemo<NoteInfo | null>(() => {
     if (!frequency) return null;
-    return frequencyToNoteInfo(frequency, a4, preferFlats, transposeSemitones);
-  }, [frequency, a4, preferFlats, transposeSemitones]);
+
+    const targetFrequency = midiToFrequency(selectedViolinStringMidi, a4);
+    const cents = 1200 * Math.log2(frequency / targetFrequency);
+
+    if (Math.abs(cents) > MAX_ALLOWED_CENTS_FROM_SELECTED_STRING) {
+      return null;
+    }
+
+    const displayMidi = selectedViolinStringMidi + transposeSemitones;
+
+    return {
+      midi: selectedViolinStringMidi,
+      noteName: getNoteName(displayMidi, preferFlats),
+      octave: getOctave(displayMidi),
+      targetFrequency,
+      cents,
+    };
+  }, [frequency, a4, preferFlats, transposeSemitones, selectedViolinStringMidi]);
 
   const cents = noteInfo?.cents ?? 0;
   const meterValue = Math.max(-50, Math.min(50, cents));
   const needleRotation = meterValue * 1.2;
 
   const tuningMessage = useMemo(() => {
-    if (!noteInfo) return "音を鳴らしてください";
+    if (status === "idle") return "Start Tuning を押してください";
+    if (!noteInfo) return `${selectedString.name} の音を長めに鳴らしてください`;
     if (Math.abs(cents) <= 3) return "In Tune";
     if (cents > 3) return "少し高いです";
     return "少し低いです";
-  }, [noteInfo, cents]);
+  }, [status, noteInfo, cents, selectedString.name]);
 
   const tuningColor = useMemo(() => {
     if (!noteInfo) return "text-slate-400";
@@ -276,10 +354,18 @@ export default function OrchestraTunerPage() {
     return audioContext;
   }
 
+  function resetDisplay() {
+    setFrequency(null);
+    setClarity(0);
+    lastPitchUpdateRef.current = 0;
+    lastSuccessfulPitchRef.current = 0;
+  }
+
   async function startTuner() {
     try {
       setErrorMessage("");
       setStatus("listening");
+      resetDisplay();
 
       const audioContext = await getOrCreateAudioContext();
 
@@ -297,8 +383,8 @@ export default function OrchestraTunerPage() {
       const source = audioContext.createMediaStreamSource(stream);
       const analyser = audioContext.createAnalyser();
 
-      analyser.fftSize = 4096;
-      analyser.smoothingTimeConstant = 0.2;
+      analyser.fftSize = 8192;
+      analyser.smoothingTimeConstant = 0.75;
 
       source.connect(analyser);
       analyserRef.current = analyser;
@@ -310,14 +396,39 @@ export default function OrchestraTunerPage() {
 
         analyserRef.current.getFloatTimeDomainData(buffer);
         const result = autoCorrelate(buffer, audioContextRef.current.sampleRate);
+        const now = performance.now();
 
-        if (result) {
-          setFrequency((prev) => {
-            if (!prev) return result.frequency;
-            return prev * 0.72 + result.frequency * 0.28;
-          });
-          setClarity(result.clarity);
-        } else {
+        if (
+          result &&
+          result.clarity >= MINIMUM_CLARITY &&
+          now - lastPitchUpdateRef.current >= PITCH_UPDATE_INTERVAL_MS
+        ) {
+          const targetFrequency = midiToFrequency(selectedViolinStringMidi, a4);
+
+          const correctedFrequency = correctPossibleHarmonicFrequency(
+            result.frequency,
+            targetFrequency
+          );
+
+          if (correctedFrequency) {
+            setFrequency((prev) => {
+              if (!prev) return correctedFrequency;
+
+              return (
+                prev * FREQUENCY_SMOOTHING +
+                correctedFrequency * (1 - FREQUENCY_SMOOTHING)
+              );
+            });
+
+            setClarity(result.clarity);
+            lastPitchUpdateRef.current = now;
+            lastSuccessfulPitchRef.current = now;
+          }
+        } else if (
+          lastSuccessfulPitchRef.current > 0 &&
+          now - lastSuccessfulPitchRef.current > SILENCE_RESET_MS
+        ) {
+          setFrequency(null);
           setClarity(0);
         }
 
@@ -329,6 +440,7 @@ export default function OrchestraTunerPage() {
       console.error(error);
       setStatus("error");
       setFrequency(null);
+      setClarity(0);
       setErrorMessage(
         "マイクを開始できませんでした。ブラウザのマイク許可、HTTPS接続、または端末設定をご確認ください。"
       );
@@ -348,8 +460,7 @@ export default function OrchestraTunerPage() {
 
     analyserRef.current = null;
     setStatus("idle");
-    setFrequency(null);
-    setClarity(0);
+    resetDisplay();
   }
 
   async function toggleDrone() {
@@ -422,7 +533,7 @@ export default function OrchestraTunerPage() {
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
               iPhone / Android のブラウザで使える、オーケストラ練習向けチューナー。
-              A4基準、移調楽器、基準音再生に対応したURL版MVPです。
+              ヴァイオリンの G / D / A / E 弦を選んで、安定した調弦ができます。
             </p>
           </div>
 
@@ -435,12 +546,21 @@ export default function OrchestraTunerPage() {
         <div className="grid flex-1 gap-5 lg:grid-cols-[1.2fr_0.8fr]">
           <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-2xl shadow-cyan-950/40 sm:p-8">
             <div className="flex flex-col items-center justify-center">
+              <div className="mb-4 rounded-2xl border border-cyan-300/20 bg-cyan-300/10 px-5 py-3 text-center">
+                <div className="text-xs tracking-[0.25em] text-cyan-300">
+                  SELECTED VIOLIN STRING
+                </div>
+                <div className="mt-1 text-3xl font-bold text-cyan-100">
+                  {selectedString.label} String / {selectedString.name}
+                </div>
+              </div>
+
               <div className="relative mb-6 flex h-72 w-72 items-center justify-center rounded-full border border-white/10 bg-slate-900 shadow-inner shadow-black/60 sm:h-96 sm:w-96">
                 <div className="absolute inset-5 rounded-full border border-white/10" />
                 <div className="absolute inset-12 rounded-full border border-white/5" />
 
                 <div
-                  className="absolute bottom-1/2 left-1/2 h-32 w-1 origin-bottom rounded-full bg-cyan-300 shadow-lg shadow-cyan-300/40 transition-transform duration-150 sm:h-44"
+                  className="absolute bottom-1/2 left-1/2 h-32 w-1 origin-bottom rounded-full bg-cyan-300 shadow-lg shadow-cyan-300/40 transition-transform duration-1000 ease-out sm:h-44"
                   style={{ transform: `translateX(-50%) rotate(${needleRotation}deg)` }}
                 />
 
@@ -450,11 +570,13 @@ export default function OrchestraTunerPage() {
                   <div className={`text-8xl font-bold tracking-tight sm:text-9xl ${tuningColor}`}>
                     {noteInfo ? noteInfo.noteName : "--"}
                   </div>
+
                   <div className="mt-1 text-2xl text-slate-300">
                     {noteInfo
-                      ? `${getSolfege(noteInfo.midi, transposeSemitones)} / Oct ${noteInfo.octave}`
+                      ? `${getSolfege(noteInfo.midi)} / ${selectedString.name}`
                       : "Waiting"}
                   </div>
+
                   <div className={`mt-5 text-xl font-semibold ${tuningColor}`}>
                     {tuningMessage}
                   </div>
@@ -465,15 +587,17 @@ export default function OrchestraTunerPage() {
                 <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-4">
                   <div className="text-xs tracking-widest text-slate-400">FREQUENCY</div>
                   <div className="mt-1 text-xl font-semibold">
-                    {frequency ? `${frequency.toFixed(2)} Hz` : "--"}
+                    {frequency ? `${frequency.toFixed(1)} Hz` : "--"}
                   </div>
                 </div>
+
                 <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-4">
                   <div className="text-xs tracking-widest text-slate-400">CENTS</div>
-                  <div className={`mt-1 text-xl font-semibold ${tuningColor}`}>
-                    {noteInfo ? `${cents > 0 ? "+" : ""}${cents.toFixed(1)}` : "--"}
+                  <div className={`mt-1 text-2xl font-bold ${tuningColor}`}>
+                    {noteInfo ? `${cents > 0 ? "+" : ""}${cents.toFixed(0)}` : "--"}
                   </div>
                 </div>
+
                 <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-4">
                   <div className="text-xs tracking-widest text-slate-400">CLARITY</div>
                   <div className="mt-1 text-xl font-semibold">
@@ -517,6 +641,33 @@ export default function OrchestraTunerPage() {
 
           <aside className="space-y-5">
             <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+              <h2 className="text-lg font-semibold">Violin String</h2>
+              <p className="mt-1 text-sm text-slate-400">
+                調弦する弦を選んでください。A線は A4 = {a4}Hz 基準です。
+              </p>
+
+              <div className="mt-4 grid grid-cols-4 gap-2">
+                {VIOLIN_STRINGS.map((string) => (
+                  <button
+                    key={string.name}
+                    onClick={() => {
+                      setSelectedViolinStringMidi(string.midi);
+                      resetDisplay();
+                    }}
+                    className={`rounded-xl px-3 py-4 text-center text-sm font-semibold transition ${
+                      selectedViolinStringMidi === string.midi
+                        ? "bg-cyan-300 text-slate-950"
+                        : "bg-slate-900 text-slate-200 hover:bg-slate-800"
+                    }`}
+                  >
+                    <div className="text-2xl">{string.label}</div>
+                    <div className="text-xs opacity-80">{string.name}</div>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
               <h2 className="text-lg font-semibold">A4 Reference</h2>
               <p className="mt-1 text-sm text-slate-400">
                 オーケストラ練習では 442Hz を初期値にしています。
@@ -526,7 +677,10 @@ export default function OrchestraTunerPage() {
                 {[440, 441, 442, 443, 444].map((value) => (
                   <button
                     key={value}
-                    onClick={() => setA4(value)}
+                    onClick={() => {
+                      setA4(value);
+                      resetDisplay();
+                    }}
                     className={`rounded-xl px-3 py-3 text-sm font-semibold transition ${
                       a4 === value
                         ? "bg-cyan-300 text-slate-950"
@@ -542,14 +696,17 @@ export default function OrchestraTunerPage() {
             <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
               <h2 className="text-lg font-semibold">Instrument Mode</h2>
               <p className="mt-1 text-sm text-slate-400">
-                移調楽器では、実音に対する記譜上の音名を表示できます。
+                ヴァイオリンは通常 Concert Pitch のままで使用します。
               </p>
 
               <div className="mt-4 space-y-2">
                 {INSTRUMENT_PRESETS.map((preset) => (
                   <button
                     key={preset.label}
-                    onClick={() => setTransposeSemitones(preset.value)}
+                    onClick={() => {
+                      setTransposeSemitones(preset.value);
+                      resetDisplay();
+                    }}
                     className={`w-full rounded-2xl border px-4 py-3 text-left transition ${
                       transposeSemitones === preset.value
                         ? "border-cyan-300 bg-cyan-300/15"
@@ -616,10 +773,11 @@ export default function OrchestraTunerPage() {
             <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-5">
               <h2 className="text-lg font-semibold">How to Use</h2>
               <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-slate-300">
+                <li>Violin String で G / D / A / E の弦を選びます。</li>
                 <li>Start Tuning を押します。</li>
                 <li>ブラウザのマイク使用を許可します。</li>
-                <li>楽器で長めに音を出します。</li>
-                <li>針が中央、CENTS が 0 に近づけば調音完了です。</li>
+                <li>選んだ弦を、静かに長めに鳴らします。</li>
+                <li>CENTS が 0 に近づけば調弦完了です。</li>
               </ol>
             </section>
           </aside>
