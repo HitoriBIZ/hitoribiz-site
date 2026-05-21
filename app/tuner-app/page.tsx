@@ -49,13 +49,16 @@ const REFERENCE_NOTES = [
 ];
 
 /**
- * 実用調弦向け設定
+ * iPhoneマイク感度改善版
+ *
+ * PCでは反応するが、iPhoneで反応しない問題に対応するため、
+ * RMS・clarityのしきい値を下げ、検出範囲も広げています。
  */
-const PITCH_UPDATE_INTERVAL_MS = 420;
+const PITCH_UPDATE_INTERVAL_MS = 300;
 const HISTORY_SIZE = 7;
-const SILENCE_RESET_MS = 1200;
-const MINIMUM_RMS = 0.01;
-const MINIMUM_CLARITY = 0.28;
+const SILENCE_RESET_MS = 1500;
+const MINIMUM_RMS = 0.003;
+const MINIMUM_CLARITY = 0.18;
 const MAX_HARMONIC_FREQUENCY = 2600;
 
 function midiToFrequency(midi: number, a4: number) {
@@ -77,17 +80,19 @@ function getSolfege(midi: number) {
 }
 
 function getTargetRangeCents(midi: number) {
-  if (midi === 69) return 180; // A線
-  if (midi === 76) return 260; // E線
-  if (midi === 62) return 360; // D線
-  if (midi === 55) return 440; // G線
-  return 260;
+  if (midi === 69) return 220; // A線：iPhone向けに少し広め
+  if (midi === 76) return 320; // E線
+  if (midi === 62) return 430; // D線
+  if (midi === 55) return 520; // G線
+  return 320;
 }
 
 function median(values: number[]) {
   if (values.length === 0) return null;
+
   const sorted = [...values].sort((a, b) => a - b);
   const middle = Math.floor(sorted.length / 2);
+
   return sorted.length % 2 === 1
     ? sorted[middle]
     : (sorted[middle - 1] + sorted[middle]) / 2;
@@ -95,9 +100,11 @@ function median(values: number[]) {
 
 function calculateRms(buffer: Float32Array) {
   let sum = 0;
+
   for (let i = 0; i < buffer.length; i++) {
     sum += buffer[i] * buffer[i];
   }
+
   return Math.sqrt(sum / buffer.length);
 }
 
@@ -105,6 +112,7 @@ function getCorrelationAtOffset(buffer: Float32Array, offset: number) {
   let sum = 0;
   let sumA = 0;
   let sumB = 0;
+
   const limit = buffer.length - offset;
 
   for (let i = 0; i < limit; i++) {
@@ -117,6 +125,7 @@ function getCorrelationAtOffset(buffer: Float32Array, offset: number) {
   }
 
   const denominator = Math.sqrt(sumA * sumB);
+
   return denominator === 0 ? 0 : sum / denominator;
 }
 
@@ -175,7 +184,7 @@ function detectNearFrequency(
 }
 
 /**
- * 選択した弦の基音だけでなく、2倍音・3倍音・4倍音も見て、
+ * 選択した弦の基音だけでなく、2倍音・3倍音・4倍音・5倍音も見て、
  * 最終的に基音へ換算する。
  */
 function detectViolinStringPitch(
@@ -196,7 +205,7 @@ function detectViolinStringPitch(
 
     if (harmonicFrequency > MAX_HARMONIC_FREQUENCY) continue;
 
-    const harmonicRange = harmonic === 1 ? targetRangeCents : targetRangeCents + 80;
+    const harmonicRange = harmonic === 1 ? targetRangeCents : targetRangeCents + 100;
 
     const detected = detectNearFrequency(
       buffer,
@@ -210,13 +219,12 @@ function detectViolinStringPitch(
     const fundamentalFrequency = detected.frequency / harmonic;
     const centsFromTarget = 1200 * Math.log2(fundamentalFrequency / targetFrequency);
 
-    if (Math.abs(centsFromTarget) > targetRangeCents + 60) continue;
+    if (Math.abs(centsFromTarget) > targetRangeCents + 80) continue;
 
     const harmonicWeight =
-      harmonic === 1 ? 1.0 : harmonic === 2 ? 0.92 : harmonic === 3 ? 0.86 : 0.8;
+      harmonic === 1 ? 1.0 : harmonic === 2 ? 0.94 : harmonic === 3 ? 0.88 : harmonic === 4 ? 0.82 : 0.78;
 
-    const score =
-      detected.clarity * harmonicWeight - Math.abs(centsFromTarget) / 900;
+    const score = detected.clarity * harmonicWeight - Math.abs(centsFromTarget) / 1000;
 
     if (score > bestScore) {
       bestScore = score;
@@ -527,7 +535,7 @@ export default function OrchestraTunerPage() {
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
               iPhone / Android のブラウザで使える、オーケストラ練習向けチューナー。
-              基音だけでなく倍音も検出し、G / D / A / E の各弦を安定して調弦します。
+              iPhoneマイクでも反応しやすいように感度を調整しています。
             </p>
           </div>
 
@@ -788,8 +796,9 @@ export default function OrchestraTunerPage() {
                 <li>選んだ弦に合わせて Reference Tone も自動で変わります。</li>
                 <li>Start Tuning を押します。</li>
                 <li>ブラウザのマイク使用を許可します。</li>
-                <li>スマホを楽器から30〜50cmほど離します。</li>
-                <li>選んだ弦を、弓で静かに長めに鳴らします。</li>
+                <li>iPhoneでは、下部マイクを楽器側へ向けます。</li>
+                <li>スマホを楽器から20〜30cmほど離します。</li>
+                <li>選んだ弦を、弓で静かに2〜3秒長めに鳴らします。</li>
                 <li>CENTS が 0 に近づけば調弦完了です。</li>
               </ol>
             </section>
