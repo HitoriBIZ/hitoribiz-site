@@ -7,6 +7,7 @@ type TunerStatus = "idle" | "listening" | "error";
 type PitchResult = {
   frequency: number;
   clarity: number;
+  rms: number;
 };
 
 type NoteInfo = {
@@ -78,38 +79,33 @@ const VIOLIN_STRINGS = [
 
 const REFERENCE_NOTES = [
   { label: "A4", midi: 69 },
+  { label: "D4", midi: 62 },
+  { label: "G3", midi: 55 },
+  { label: "E5", midi: 76 },
   { label: "B♭4", midi: 70 },
   { label: "C5", midi: 72 },
-  { label: "D5", midi: 74 },
-  { label: "E5", midi: 76 },
   { label: "F5", midi: 77 },
   { label: "G5", midi: 79 },
 ];
 
 /**
- * Violin tuning stability settings
+ * A線調弦を優先した安定化設定
  *
- * PITCH_UPDATE_INTERVAL_MS:
- * 表示更新間隔。大きいほどゆっくり。
+ * TARGET_RANGE_CENTS:
+ * 選択した弦の基準音から、どの範囲まで検出対象にするか。
+ * A4=442Hzの場合、±130 cents 程度に絞ることで、
+ * 400Hzや460Hz台の大きな飛びをかなり捨てます。
  *
- * FREQUENCY_SMOOTHING:
- * 0.98〜0.995 の範囲で大きくすると、針と cents がさらに安定。
- *
- * MINIMUM_CLARITY:
- * 音程検出の信頼度。大きいほど誤検出を捨てる。
- *
- * MINIMUM_RMS:
- * 無音・小さなノイズの除外基準。
- *
- * MAX_ALLOWED_CENTS_FROM_SELECTED_STRING:
- * 選択した弦から大きく外れた音を無視する範囲。
+ * HISTORY_SIZE:
+ * 直近の検出値をためて中央値を表示します。
+ * 1回の検出値をそのまま出さないため、表示が安定します。
  */
-const PITCH_UPDATE_INTERVAL_MS = 850;
-const FREQUENCY_SMOOTHING = 0.985;
-const MINIMUM_CLARITY = 0.88;
-const MINIMUM_RMS = 0.02;
-const MAX_ALLOWED_CENTS_FROM_SELECTED_STRING = 220;
-const SILENCE_RESET_MS = 900;
+const PITCH_UPDATE_INTERVAL_MS = 650;
+const TARGET_RANGE_CENTS = 130;
+const MINIMUM_RMS = 0.018;
+const MINIMUM_CLARITY = 0.62;
+const HISTORY_SIZE = 9;
+const SILENCE_RESET_MS = 1000;
 
 function midiToFrequency(midi: number, a4: number) {
   return a4 * Math.pow(2, (midi - 69) / 12);
@@ -129,139 +125,123 @@ function getSolfege(midi: number) {
   return SOLFEGE[noteIndex];
 }
 
+function median(values: number[]) {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+
+  if (sorted.length % 2 === 1) {
+    return sorted[middle];
+  }
+
+  return (sorted[middle - 1] + sorted[middle]) / 2;
+}
+
+function calculateRms(buffer: Float32Array) {
+  let sum = 0;
+  for (let i = 0; i < buffer.length; i++) {
+    sum += buffer[i] * buffer[i];
+  }
+  return Math.sqrt(sum / buffer.length);
+}
+
 /**
- * 倍音対策。
- * ヴァイオリンは基音ではなく 2倍音・3倍音・4倍音を拾うことがあります。
- * 例：A4 = 442Hz を弾いているのに 1326Hz 前後を拾う場合がある。
- * その場合、1326 / 3 = 442 に戻して評価します。
+ * 選択された弦の周波数帯だけを見るピッチ検出。
+ *
+ * 例：
+ * A線 / A4=442Hz の場合、442Hz周辺だけを自己相関で探索。
+ * これにより、F6 / 1380Hz のような倍音誤検出を避けます。
  */
-function correctPossibleHarmonicFrequency(
-  rawFrequency: number,
+function detectPitchNearTarget(
+  buffer: Float32Array,
+  sampleRate: number,
   targetFrequency: number
-): number | null {
-  let bestFrequency: number | null = null;
-  let bestAbsCents = Number.POSITIVE_INFINITY;
+): PitchResult | null {
+  const rms = calculateRms(buffer);
+  if (rms < MINIMUM_RMS) return null;
 
-  for (let harmonic = 1; harmonic <= 6; harmonic++) {
-    const candidate = rawFrequency / harmonic;
-    const cents = 1200 * Math.log2(candidate / targetFrequency);
-    const absCents = Math.abs(cents);
+  const lowFrequency = targetFrequency * Math.pow(2, -TARGET_RANGE_CENTS / 1200);
+  const highFrequency = targetFrequency * Math.pow(2, TARGET_RANGE_CENTS / 1200);
 
-    if (absCents < bestAbsCents) {
-      bestAbsCents = absCents;
-      bestFrequency = candidate;
+  const minOffset = Math.floor(sampleRate / highFrequency);
+  const maxOffset = Math.ceil(sampleRate / lowFrequency);
+
+  let bestOffset = -1;
+  let bestCorrelation = -1;
+
+  for (let offset = minOffset; offset <= maxOffset; offset++) {
+    let sum = 0;
+    let sumA = 0;
+    let sumB = 0;
+
+    const limit = buffer.length - offset;
+
+    for (let i = 0; i < limit; i++) {
+      const a = buffer[i];
+      const b = buffer[i + offset];
+
+      sum += a * b;
+      sumA += a * a;
+      sumB += b * b;
+    }
+
+    const denominator = Math.sqrt(sumA * sumB);
+    if (denominator === 0) continue;
+
+    const correlation = sum / denominator;
+
+    if (correlation > bestCorrelation) {
+      bestCorrelation = correlation;
+      bestOffset = offset;
     }
   }
 
-  if (bestFrequency === null) return null;
-
-  if (bestAbsCents > MAX_ALLOWED_CENTS_FROM_SELECTED_STRING) {
+  if (bestOffset <= 0 || bestCorrelation < MINIMUM_CLARITY) {
     return null;
   }
 
-  return bestFrequency;
-}
+  const previousOffset = Math.max(minOffset, bestOffset - 1);
+  const nextOffset = Math.min(maxOffset, bestOffset + 1);
 
-function autoCorrelate(buffer: Float32Array, sampleRate: number): PitchResult | null {
-  const size = buffer.length;
+  const getCorrelation = (offset: number) => {
+    let sum = 0;
+    let sumA = 0;
+    let sumB = 0;
 
-  let rms = 0;
-  for (let i = 0; i < size; i++) {
-    rms += buffer[i] * buffer[i];
-  }
-  rms = Math.sqrt(rms / size);
+    const limit = buffer.length - offset;
 
-  if (rms < MINIMUM_RMS) return null;
+    for (let i = 0; i < limit; i++) {
+      const a = buffer[i];
+      const b = buffer[i + offset];
 
-  let start = 0;
-  let end = size - 1;
-  const threshold = 0.2;
-
-  for (let i = 0; i < size / 2; i++) {
-    if (Math.abs(buffer[i]) < threshold) {
-      start = i;
-      break;
-    }
-  }
-
-  for (let i = 1; i < size / 2; i++) {
-    if (Math.abs(buffer[size - i]) < threshold) {
-      end = size - i;
-      break;
-    }
-  }
-
-  const trimmed = buffer.slice(start, end);
-  const trimmedSize = trimmed.length;
-
-  if (trimmedSize < 128) return null;
-
-  const correlations = new Array<number>(trimmedSize).fill(0);
-
-  for (let offset = 0; offset < trimmedSize; offset++) {
-    let correlation = 0;
-
-    for (let i = 0; i < trimmedSize - offset; i++) {
-      correlation += Math.abs(trimmed[i] - trimmed[i + offset]);
+      sum += a * b;
+      sumA += a * a;
+      sumB += b * b;
     }
 
-    correlations[offset] = 1 - correlation / (trimmedSize - offset);
+    const denominator = Math.sqrt(sumA * sumB);
+    return denominator === 0 ? 0 : sum / denominator;
+  };
+
+  const previous = getCorrelation(previousOffset);
+  const current = getCorrelation(bestOffset);
+  const next = getCorrelation(nextOffset);
+
+  const divisor = previous - 2 * current + next;
+  const shift = divisor === 0 ? 0 : 0.5 * (previous - next) / divisor;
+  const refinedOffset = bestOffset + Math.max(-0.5, Math.min(0.5, shift));
+
+  const frequency = sampleRate / refinedOffset;
+
+  if (frequency < lowFrequency || frequency > highFrequency) {
+    return null;
   }
 
-  let foundGoodCorrelation = false;
-  let bestOffset = -1;
-  let bestCorrelation = 0;
-  let lastCorrelation = 1;
-
-  const minFrequency = 130;
-  const maxFrequency = 1800;
-  const minOffset = Math.floor(sampleRate / maxFrequency);
-  const maxOffset = Math.floor(sampleRate / minFrequency);
-
-  for (let offset = minOffset; offset < Math.min(maxOffset, trimmedSize); offset++) {
-    const correlation = correlations[offset];
-
-    if (correlation > 0.88 && correlation > lastCorrelation) {
-      foundGoodCorrelation = true;
-
-      if (correlation > bestCorrelation) {
-        bestCorrelation = correlation;
-        bestOffset = offset;
-      }
-    } else if (foundGoodCorrelation) {
-      if (bestOffset <= 0) return null;
-
-      const previous = correlations[bestOffset - 1] ?? bestCorrelation;
-      const next = correlations[bestOffset + 1] ?? bestCorrelation;
-      const shift = (next - previous) / Math.max(bestCorrelation, 0.0001);
-      const refinedOffset = bestOffset + 8 * shift;
-      const frequency = sampleRate / refinedOffset;
-
-      if (frequency >= minFrequency && frequency <= maxFrequency) {
-        return {
-          frequency,
-          clarity: bestCorrelation,
-        };
-      }
-
-      return null;
-    }
-
-    lastCorrelation = correlation;
-  }
-
-  if (bestOffset > 0) {
-    const frequency = sampleRate / bestOffset;
-
-    if (frequency >= minFrequency && frequency <= maxFrequency) {
-      return {
-        frequency,
-        clarity: bestCorrelation,
-      };
-    }
-  }
-
-  return null;
+  return {
+    frequency,
+    clarity: bestCorrelation,
+    rms,
+  };
 }
 
 export default function OrchestraTunerPage() {
@@ -282,6 +262,7 @@ export default function OrchestraTunerPage() {
   const animationFrameRef = useRef<number | null>(null);
   const lastPitchUpdateRef = useRef(0);
   const lastSuccessfulPitchRef = useRef(0);
+  const frequencyHistoryRef = useRef<number[]>([]);
   const oscillatorRef = useRef<OscillatorNode | null>(null);
   const gainRef = useRef<GainNode | null>(null);
 
@@ -292,15 +273,14 @@ export default function OrchestraTunerPage() {
     );
   }, [selectedViolinStringMidi]);
 
+  const targetFrequency = useMemo(() => {
+    return midiToFrequency(selectedViolinStringMidi, a4);
+  }, [selectedViolinStringMidi, a4]);
+
   const noteInfo = useMemo<NoteInfo | null>(() => {
     if (!frequency) return null;
 
-    const targetFrequency = midiToFrequency(selectedViolinStringMidi, a4);
     const cents = 1200 * Math.log2(frequency / targetFrequency);
-
-    if (Math.abs(cents) > MAX_ALLOWED_CENTS_FROM_SELECTED_STRING) {
-      return null;
-    }
 
     const displayMidi = selectedViolinStringMidi + transposeSemitones;
 
@@ -311,7 +291,13 @@ export default function OrchestraTunerPage() {
       targetFrequency,
       cents,
     };
-  }, [frequency, a4, preferFlats, transposeSemitones, selectedViolinStringMidi]);
+  }, [
+    frequency,
+    targetFrequency,
+    selectedViolinStringMidi,
+    transposeSemitones,
+    preferFlats,
+  ]);
 
   const cents = noteInfo?.cents ?? 0;
   const meterValue = Math.max(-50, Math.min(50, cents));
@@ -330,6 +316,12 @@ export default function OrchestraTunerPage() {
     if (Math.abs(cents) <= 3) return "text-emerald-500";
     if (Math.abs(cents) <= 10) return "text-amber-500";
     return "text-rose-500";
+  }, [noteInfo, cents]);
+
+  const centsDisplay = useMemo(() => {
+    if (!noteInfo) return "--";
+    const rounded = Math.round(cents);
+    return `${rounded > 0 ? "+" : ""}${rounded}`;
   }, [noteInfo, cents]);
 
   async function getOrCreateAudioContext() {
@@ -357,6 +349,7 @@ export default function OrchestraTunerPage() {
   function resetDisplay() {
     setFrequency(null);
     setClarity(0);
+    frequencyHistoryRef.current = [];
     lastPitchUpdateRef.current = 0;
     lastSuccessfulPitchRef.current = 0;
   }
@@ -384,7 +377,7 @@ export default function OrchestraTunerPage() {
       const analyser = audioContext.createAnalyser();
 
       analyser.fftSize = 8192;
-      analyser.smoothingTimeConstant = 0.75;
+      analyser.smoothingTimeConstant = 0.85;
 
       source.connect(analyser);
       analyserRef.current = analyser;
@@ -395,41 +388,37 @@ export default function OrchestraTunerPage() {
         if (!analyserRef.current || !audioContextRef.current) return;
 
         analyserRef.current.getFloatTimeDomainData(buffer);
-        const result = autoCorrelate(buffer, audioContextRef.current.sampleRate);
+
         const now = performance.now();
+        const result = detectPitchNearTarget(
+          buffer,
+          audioContextRef.current.sampleRate,
+          targetFrequency
+        );
 
         if (
           result &&
-          result.clarity >= MINIMUM_CLARITY &&
           now - lastPitchUpdateRef.current >= PITCH_UPDATE_INTERVAL_MS
         ) {
-          const targetFrequency = midiToFrequency(selectedViolinStringMidi, a4);
+          frequencyHistoryRef.current.push(result.frequency);
 
-          const correctedFrequency = correctPossibleHarmonicFrequency(
-            result.frequency,
-            targetFrequency
-          );
+          if (frequencyHistoryRef.current.length > HISTORY_SIZE) {
+            frequencyHistoryRef.current.shift();
+          }
 
-          if (correctedFrequency) {
-            setFrequency((prev) => {
-              if (!prev) return correctedFrequency;
+          const stableFrequency = median(frequencyHistoryRef.current);
 
-              return (
-                prev * FREQUENCY_SMOOTHING +
-                correctedFrequency * (1 - FREQUENCY_SMOOTHING)
-              );
-            });
-
+          if (stableFrequency) {
+            setFrequency(stableFrequency);
             setClarity(result.clarity);
-            lastPitchUpdateRef.current = now;
             lastSuccessfulPitchRef.current = now;
+            lastPitchUpdateRef.current = now;
           }
         } else if (
           lastSuccessfulPitchRef.current > 0 &&
           now - lastSuccessfulPitchRef.current > SILENCE_RESET_MS
         ) {
-          setFrequency(null);
-          setClarity(0);
+          resetDisplay();
         }
 
         animationFrameRef.current = requestAnimationFrame(detectPitch);
@@ -439,8 +428,7 @@ export default function OrchestraTunerPage() {
     } catch (error) {
       console.error(error);
       setStatus("error");
-      setFrequency(null);
-      setClarity(0);
+      resetDisplay();
       setErrorMessage(
         "マイクを開始できませんでした。ブラウザのマイク許可、HTTPS接続、または端末設定をご確認ください。"
       );
@@ -533,12 +521,14 @@ export default function OrchestraTunerPage() {
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
               iPhone / Android のブラウザで使える、オーケストラ練習向けチューナー。
-              ヴァイオリンの G / D / A / E 弦を選んで、安定した調弦ができます。
+              A線調弦を優先し、選択した弦の周波数帯だけを検出します。
             </p>
           </div>
 
           <div className="rounded-2xl border border-cyan-300/30 bg-cyan-300/10 px-4 py-3 text-sm text-cyan-100">
-            <div className="text-xs uppercase tracking-widest text-cyan-300">Reference</div>
+            <div className="text-xs uppercase tracking-widest text-cyan-300">
+              Reference
+            </div>
             <div className="mt-1 text-2xl font-semibold">A4 = {a4}Hz</div>
           </div>
         </header>
@@ -553,6 +543,9 @@ export default function OrchestraTunerPage() {
                 <div className="mt-1 text-3xl font-bold text-cyan-100">
                   {selectedString.label} String / {selectedString.name}
                 </div>
+                <div className="mt-1 text-xs text-slate-300">
+                  Target: {targetFrequency.toFixed(1)} Hz
+                </div>
               </div>
 
               <div className="relative mb-6 flex h-72 w-72 items-center justify-center rounded-full border border-white/10 bg-slate-900 shadow-inner shadow-black/60 sm:h-96 sm:w-96">
@@ -561,7 +554,9 @@ export default function OrchestraTunerPage() {
 
                 <div
                   className="absolute bottom-1/2 left-1/2 h-32 w-1 origin-bottom rounded-full bg-cyan-300 shadow-lg shadow-cyan-300/40 transition-transform duration-1000 ease-out sm:h-44"
-                  style={{ transform: `translateX(-50%) rotate(${needleRotation}deg)` }}
+                  style={{
+                    transform: `translateX(-50%) rotate(${needleRotation}deg)`,
+                  }}
                 />
 
                 <div className="absolute bottom-1/2 left-1/2 h-5 w-5 -translate-x-1/2 translate-y-1/2 rounded-full bg-white shadow-lg" />
@@ -585,21 +580,27 @@ export default function OrchestraTunerPage() {
 
               <div className="mb-5 grid w-full grid-cols-3 gap-3 text-center">
                 <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-4">
-                  <div className="text-xs tracking-widest text-slate-400">FREQUENCY</div>
+                  <div className="text-xs tracking-widest text-slate-400">
+                    FREQUENCY
+                  </div>
                   <div className="mt-1 text-xl font-semibold">
                     {frequency ? `${frequency.toFixed(1)} Hz` : "--"}
                   </div>
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-4">
-                  <div className="text-xs tracking-widest text-slate-400">CENTS</div>
+                  <div className="text-xs tracking-widest text-slate-400">
+                    CENTS
+                  </div>
                   <div className={`mt-1 text-2xl font-bold ${tuningColor}`}>
-                    {noteInfo ? `${cents > 0 ? "+" : ""}${cents.toFixed(0)}` : "--"}
+                    {centsDisplay}
                   </div>
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-4">
-                  <div className="text-xs tracking-widest text-slate-400">CLARITY</div>
+                  <div className="text-xs tracking-widest text-slate-400">
+                    STABILITY
+                  </div>
                   <div className="mt-1 text-xl font-semibold">
                     {clarity ? `${Math.round(clarity * 100)}%` : "--"}
                   </div>
@@ -714,7 +715,9 @@ export default function OrchestraTunerPage() {
                     }`}
                   >
                     <div className="font-semibold">{preset.label}</div>
-                    <div className="text-xs text-slate-400">{preset.description}</div>
+                    <div className="text-xs text-slate-400">
+                      {preset.description}
+                    </div>
                   </button>
                 ))}
               </div>
@@ -774,9 +777,11 @@ export default function OrchestraTunerPage() {
               <h2 className="text-lg font-semibold">How to Use</h2>
               <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-slate-300">
                 <li>Violin String で G / D / A / E の弦を選びます。</li>
+                <li>A線調弦では A / A4 を選びます。</li>
                 <li>Start Tuning を押します。</li>
                 <li>ブラウザのマイク使用を許可します。</li>
-                <li>選んだ弦を、静かに長めに鳴らします。</li>
+                <li>スマホを楽器から30〜50cmほど離します。</li>
+                <li>選んだ弦を、弓で静かに長めに鳴らします。</li>
                 <li>CENTS が 0 に近づけば調弦完了です。</li>
               </ol>
             </section>
