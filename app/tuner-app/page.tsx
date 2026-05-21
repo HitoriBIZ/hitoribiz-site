@@ -8,6 +8,7 @@ type PitchResult = {
   frequency: number;
   clarity: number;
   rms: number;
+  harmonic: number;
 };
 
 type NoteInfo = {
@@ -18,50 +19,9 @@ type NoteInfo = {
   cents: number;
 };
 
-const NOTE_NAMES_SHARP = [
-  "C",
-  "C#",
-  "D",
-  "D#",
-  "E",
-  "F",
-  "F#",
-  "G",
-  "G#",
-  "A",
-  "A#",
-  "B",
-];
-
-const NOTE_NAMES_FLAT = [
-  "C",
-  "D♭",
-  "D",
-  "E♭",
-  "E",
-  "F",
-  "G♭",
-  "G",
-  "A♭",
-  "A",
-  "B♭",
-  "B",
-];
-
-const SOLFEGE = [
-  "Do",
-  "Di",
-  "Re",
-  "Ri",
-  "Mi",
-  "Fa",
-  "Fi",
-  "Sol",
-  "Si",
-  "La",
-  "Li",
-  "Ti",
-];
+const NOTE_NAMES_SHARP = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const NOTE_NAMES_FLAT = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
+const SOLFEGE = ["Do", "Di", "Re", "Ri", "Mi", "Fa", "Fi", "Sol", "Si", "La", "Li", "Ti"];
 
 const INSTRUMENT_PRESETS = [
   { label: "Concert Pitch", value: 0, description: "C instruments / Strings" },
@@ -78,9 +38,9 @@ const VIOLIN_STRINGS = [
 ];
 
 const REFERENCE_NOTES = [
-  { label: "A4", midi: 69 },
-  { label: "D4", midi: 62 },
   { label: "G3", midi: 55 },
+  { label: "D4", midi: 62 },
+  { label: "A4", midi: 69 },
   { label: "E5", midi: 76 },
   { label: "B♭4", midi: 70 },
   { label: "C5", midi: 72 },
@@ -89,23 +49,14 @@ const REFERENCE_NOTES = [
 ];
 
 /**
- * A線調弦を優先した安定化設定
- *
- * TARGET_RANGE_CENTS:
- * 選択した弦の基準音から、どの範囲まで検出対象にするか。
- * A4=442Hzの場合、±130 cents 程度に絞ることで、
- * 400Hzや460Hz台の大きな飛びをかなり捨てます。
- *
- * HISTORY_SIZE:
- * 直近の検出値をためて中央値を表示します。
- * 1回の検出値をそのまま出さないため、表示が安定します。
+ * 実用調弦向け設定
  */
-const PITCH_UPDATE_INTERVAL_MS = 650;
-const TARGET_RANGE_CENTS = 130;
-const MINIMUM_RMS = 0.018;
-const MINIMUM_CLARITY = 0.62;
-const HISTORY_SIZE = 9;
-const SILENCE_RESET_MS = 1000;
+const PITCH_UPDATE_INTERVAL_MS = 420;
+const HISTORY_SIZE = 7;
+const SILENCE_RESET_MS = 1200;
+const MINIMUM_RMS = 0.01;
+const MINIMUM_CLARITY = 0.28;
+const MAX_HARMONIC_FREQUENCY = 2600;
 
 function midiToFrequency(midi: number, a4: number) {
   return a4 * Math.pow(2, (midi - 69) / 12);
@@ -125,16 +76,21 @@ function getSolfege(midi: number) {
   return SOLFEGE[noteIndex];
 }
 
+function getTargetRangeCents(midi: number) {
+  if (midi === 69) return 180; // A線
+  if (midi === 76) return 260; // E線
+  if (midi === 62) return 360; // D線
+  if (midi === 55) return 440; // G線
+  return 260;
+}
+
 function median(values: number[]) {
   if (values.length === 0) return null;
   const sorted = [...values].sort((a, b) => a - b);
   const middle = Math.floor(sorted.length / 2);
-
-  if (sorted.length % 2 === 1) {
-    return sorted[middle];
-  }
-
-  return (sorted[middle - 1] + sorted[middle]) / 2;
+  return sorted.length % 2 === 1
+    ? sorted[middle]
+    : (sorted[middle - 1] + sorted[middle]) / 2;
 }
 
 function calculateRms(buffer: Float32Array) {
@@ -145,50 +101,45 @@ function calculateRms(buffer: Float32Array) {
   return Math.sqrt(sum / buffer.length);
 }
 
+function getCorrelationAtOffset(buffer: Float32Array, offset: number) {
+  let sum = 0;
+  let sumA = 0;
+  let sumB = 0;
+  const limit = buffer.length - offset;
+
+  for (let i = 0; i < limit; i++) {
+    const a = buffer[i];
+    const b = buffer[i + offset];
+
+    sum += a * b;
+    sumA += a * a;
+    sumB += b * b;
+  }
+
+  const denominator = Math.sqrt(sumA * sumB);
+  return denominator === 0 ? 0 : sum / denominator;
+}
+
 /**
- * 選択された弦の周波数帯だけを見るピッチ検出。
- *
- * 例：
- * A線 / A4=442Hz の場合、442Hz周辺だけを自己相関で探索。
- * これにより、F6 / 1380Hz のような倍音誤検出を避けます。
+ * 特定周波数付近だけを探す自己相関。
  */
-function detectPitchNearTarget(
+function detectNearFrequency(
   buffer: Float32Array,
   sampleRate: number,
-  targetFrequency: number
-): PitchResult | null {
-  const rms = calculateRms(buffer);
-  if (rms < MINIMUM_RMS) return null;
+  centerFrequency: number,
+  rangeCents: number
+) {
+  const lowFrequency = centerFrequency * Math.pow(2, -rangeCents / 1200);
+  const highFrequency = centerFrequency * Math.pow(2, rangeCents / 1200);
 
-  const lowFrequency = targetFrequency * Math.pow(2, -TARGET_RANGE_CENTS / 1200);
-  const highFrequency = targetFrequency * Math.pow(2, TARGET_RANGE_CENTS / 1200);
-
-  const minOffset = Math.floor(sampleRate / highFrequency);
+  const minOffset = Math.max(2, Math.floor(sampleRate / highFrequency));
   const maxOffset = Math.ceil(sampleRate / lowFrequency);
 
   let bestOffset = -1;
   let bestCorrelation = -1;
 
   for (let offset = minOffset; offset <= maxOffset; offset++) {
-    let sum = 0;
-    let sumA = 0;
-    let sumB = 0;
-
-    const limit = buffer.length - offset;
-
-    for (let i = 0; i < limit; i++) {
-      const a = buffer[i];
-      const b = buffer[i + offset];
-
-      sum += a * b;
-      sumA += a * a;
-      sumB += b * b;
-    }
-
-    const denominator = Math.sqrt(sumA * sumB);
-    if (denominator === 0) continue;
-
-    const correlation = sum / denominator;
+    const correlation = getCorrelationAtOffset(buffer, offset);
 
     if (correlation > bestCorrelation) {
       bestCorrelation = correlation;
@@ -203,29 +154,9 @@ function detectPitchNearTarget(
   const previousOffset = Math.max(minOffset, bestOffset - 1);
   const nextOffset = Math.min(maxOffset, bestOffset + 1);
 
-  const getCorrelation = (offset: number) => {
-    let sum = 0;
-    let sumA = 0;
-    let sumB = 0;
-
-    const limit = buffer.length - offset;
-
-    for (let i = 0; i < limit; i++) {
-      const a = buffer[i];
-      const b = buffer[i + offset];
-
-      sum += a * b;
-      sumA += a * a;
-      sumB += b * b;
-    }
-
-    const denominator = Math.sqrt(sumA * sumB);
-    return denominator === 0 ? 0 : sum / denominator;
-  };
-
-  const previous = getCorrelation(previousOffset);
-  const current = getCorrelation(bestOffset);
-  const next = getCorrelation(nextOffset);
+  const previous = getCorrelationAtOffset(buffer, previousOffset);
+  const current = getCorrelationAtOffset(buffer, bestOffset);
+  const next = getCorrelationAtOffset(buffer, nextOffset);
 
   const divisor = previous - 2 * current + next;
   const shift = divisor === 0 ? 0 : 0.5 * (previous - next) / divisor;
@@ -240,8 +171,65 @@ function detectPitchNearTarget(
   return {
     frequency,
     clarity: bestCorrelation,
-    rms,
   };
+}
+
+/**
+ * 選択した弦の基音だけでなく、2倍音・3倍音・4倍音も見て、
+ * 最終的に基音へ換算する。
+ */
+function detectViolinStringPitch(
+  buffer: Float32Array,
+  sampleRate: number,
+  targetFrequency: number,
+  targetRangeCents: number
+): PitchResult | null {
+  const rms = calculateRms(buffer);
+
+  if (rms < MINIMUM_RMS) return null;
+
+  let best: PitchResult | null = null;
+  let bestScore = Number.NEGATIVE_INFINITY;
+
+  for (let harmonic = 1; harmonic <= 5; harmonic++) {
+    const harmonicFrequency = targetFrequency * harmonic;
+
+    if (harmonicFrequency > MAX_HARMONIC_FREQUENCY) continue;
+
+    const harmonicRange = harmonic === 1 ? targetRangeCents : targetRangeCents + 80;
+
+    const detected = detectNearFrequency(
+      buffer,
+      sampleRate,
+      harmonicFrequency,
+      harmonicRange
+    );
+
+    if (!detected) continue;
+
+    const fundamentalFrequency = detected.frequency / harmonic;
+    const centsFromTarget = 1200 * Math.log2(fundamentalFrequency / targetFrequency);
+
+    if (Math.abs(centsFromTarget) > targetRangeCents + 60) continue;
+
+    const harmonicWeight =
+      harmonic === 1 ? 1.0 : harmonic === 2 ? 0.92 : harmonic === 3 ? 0.86 : 0.8;
+
+    const score =
+      detected.clarity * harmonicWeight - Math.abs(centsFromTarget) / 900;
+
+    if (score > bestScore) {
+      bestScore = score;
+      best = {
+        frequency: fundamentalFrequency,
+        clarity: detected.clarity,
+        rms,
+        harmonic,
+      };
+    }
+  }
+
+  return best;
 }
 
 export default function OrchestraTunerPage() {
@@ -249,6 +237,7 @@ export default function OrchestraTunerPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [frequency, setFrequency] = useState<number | null>(null);
   const [clarity, setClarity] = useState(0);
+  const [detectedHarmonic, setDetectedHarmonic] = useState<number | null>(null);
   const [a4, setA4] = useState(442);
   const [preferFlats, setPreferFlats] = useState(true);
   const [transposeSemitones, setTransposeSemitones] = useState(0);
@@ -266,6 +255,17 @@ export default function OrchestraTunerPage() {
   const oscillatorRef = useRef<OscillatorNode | null>(null);
   const gainRef = useRef<GainNode | null>(null);
 
+  const selectedViolinStringMidiRef = useRef(selectedViolinStringMidi);
+  const a4Ref = useRef(a4);
+
+  useEffect(() => {
+    selectedViolinStringMidiRef.current = selectedViolinStringMidi;
+  }, [selectedViolinStringMidi]);
+
+  useEffect(() => {
+    a4Ref.current = a4;
+  }, [a4]);
+
   const selectedString = useMemo(() => {
     return (
       VIOLIN_STRINGS.find((item) => item.midi === selectedViolinStringMidi) ??
@@ -281,7 +281,6 @@ export default function OrchestraTunerPage() {
     if (!frequency) return null;
 
     const cents = 1200 * Math.log2(frequency / targetFrequency);
-
     const displayMidi = selectedViolinStringMidi + transposeSemitones;
 
     return {
@@ -329,6 +328,7 @@ export default function OrchestraTunerPage() {
       if (audioContextRef.current.state === "suspended") {
         await audioContextRef.current.resume();
       }
+
       return audioContextRef.current;
     }
 
@@ -343,12 +343,14 @@ export default function OrchestraTunerPage() {
 
     const audioContext = new AudioContextClass();
     audioContextRef.current = audioContext;
+
     return audioContext;
   }
 
   function resetDisplay() {
     setFrequency(null);
     setClarity(0);
+    setDetectedHarmonic(null);
     frequencyHistoryRef.current = [];
     lastPitchUpdateRef.current = 0;
     lastSuccessfulPitchRef.current = 0;
@@ -376,8 +378,8 @@ export default function OrchestraTunerPage() {
       const source = audioContext.createMediaStreamSource(stream);
       const analyser = audioContext.createAnalyser();
 
-      analyser.fftSize = 8192;
-      analyser.smoothingTimeConstant = 0.85;
+      analyser.fftSize = 16384;
+      analyser.smoothingTimeConstant = 0.65;
 
       source.connect(analyser);
       analyserRef.current = analyser;
@@ -390,16 +392,19 @@ export default function OrchestraTunerPage() {
         analyserRef.current.getFloatTimeDomainData(buffer);
 
         const now = performance.now();
-        const result = detectPitchNearTarget(
+        const currentMidi = selectedViolinStringMidiRef.current;
+        const currentA4 = a4Ref.current;
+        const currentTargetFrequency = midiToFrequency(currentMidi, currentA4);
+        const currentTargetRangeCents = getTargetRangeCents(currentMidi);
+
+        const result = detectViolinStringPitch(
           buffer,
           audioContextRef.current.sampleRate,
-          targetFrequency
+          currentTargetFrequency,
+          currentTargetRangeCents
         );
 
-        if (
-          result &&
-          now - lastPitchUpdateRef.current >= PITCH_UPDATE_INTERVAL_MS
-        ) {
+        if (result && now - lastPitchUpdateRef.current >= PITCH_UPDATE_INTERVAL_MS) {
           frequencyHistoryRef.current.push(result.frequency);
 
           if (frequencyHistoryRef.current.length > HISTORY_SIZE) {
@@ -411,6 +416,7 @@ export default function OrchestraTunerPage() {
           if (stableFrequency) {
             setFrequency(stableFrequency);
             setClarity(result.clarity);
+            setDetectedHarmonic(result.harmonic);
             lastSuccessfulPitchRef.current = now;
             lastPitchUpdateRef.current = now;
           }
@@ -521,7 +527,7 @@ export default function OrchestraTunerPage() {
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
               iPhone / Android のブラウザで使える、オーケストラ練習向けチューナー。
-              A線調弦を優先し、選択した弦の周波数帯だけを検出します。
+              基音だけでなく倍音も検出し、G / D / A / E の各弦を安定して調弦します。
             </p>
           </div>
 
@@ -545,6 +551,7 @@ export default function OrchestraTunerPage() {
                 </div>
                 <div className="mt-1 text-xs text-slate-300">
                   Target: {targetFrequency.toFixed(1)} Hz
+                  {detectedHarmonic ? ` / detected harmonic: x${detectedHarmonic}` : ""}
                 </div>
               </div>
 
@@ -644,7 +651,7 @@ export default function OrchestraTunerPage() {
             <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
               <h2 className="text-lg font-semibold">Violin String</h2>
               <p className="mt-1 text-sm text-slate-400">
-                調弦する弦を選んでください。A線は A4 = {a4}Hz 基準です。
+                調弦する弦を選んでください。選択した弦の基準音も自動で切り替わります。
               </p>
 
               <div className="mt-4 grid grid-cols-4 gap-2">
@@ -653,6 +660,7 @@ export default function OrchestraTunerPage() {
                     key={string.name}
                     onClick={() => {
                       setSelectedViolinStringMidi(string.midi);
+                      setDroneMidi(string.midi);
                       resetDisplay();
                     }}
                     className={`rounded-xl px-3 py-4 text-center text-sm font-semibold transition ${
@@ -753,7 +761,7 @@ export default function OrchestraTunerPage() {
             <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
               <h2 className="text-lg font-semibold">Reference Tone</h2>
               <p className="mt-1 text-sm text-slate-400">
-                合奏前の調音用に、基準音を鳴らせます。
+                選択中の弦、または下のボタンで選んだ基準音を鳴らせます。
               </p>
 
               <div className="mt-4 grid grid-cols-4 gap-2">
@@ -777,7 +785,7 @@ export default function OrchestraTunerPage() {
               <h2 className="text-lg font-semibold">How to Use</h2>
               <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-slate-300">
                 <li>Violin String で G / D / A / E の弦を選びます。</li>
-                <li>A線調弦では A / A4 を選びます。</li>
+                <li>選んだ弦に合わせて Reference Tone も自動で変わります。</li>
                 <li>Start Tuning を押します。</li>
                 <li>ブラウザのマイク使用を許可します。</li>
                 <li>スマホを楽器から30〜50cmほど離します。</li>
