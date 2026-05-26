@@ -1,0 +1,22 @@
+{
+  "name": "HitoriBIZ Orchestra Tools",
+  "short_name": "Orchestra Tools",
+  "description": "Free practice tools for orchestral musicians: Metronome, Tuner, Drone Tone and Tempo Practice.",
+  "start_url": "/orchestra-tools",
+  "scope": "/orchestra-tools",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/icons/orchestra-tools/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/orchestra-tools/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
