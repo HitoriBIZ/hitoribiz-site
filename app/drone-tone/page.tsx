@@ -24,6 +24,7 @@ type DroneNote = {
   frequency: number;
   description?: string;
   lowBoost?: boolean;
+  boostLevel?: "soft" | "medium" | "strong" | "extra";
 };
 
 type InstrumentConfig = {
@@ -53,7 +54,14 @@ const INSTRUMENTS: InstrumentConfig[] = [
     shortName: "Va",
     subtitle: "C / G / D / A",
     notes: [
-      { stringName: "C", label: "C3", frequency: 130.81 },
+      {
+        stringName: "C",
+        label: "C3",
+        frequency: 130.81,
+        description: "Boost",
+        lowBoost: true,
+        boostLevel: "soft",
+      },
       { stringName: "G", label: "G3", frequency: 196.0 },
       { stringName: "D", label: "D4", frequency: 293.66 },
       { stringName: "A", label: "A4", frequency: 440.0 },
@@ -69,17 +77,26 @@ const INSTRUMENTS: InstrumentConfig[] = [
         stringName: "C",
         label: "C2",
         frequency: 65.41,
-        description: "Low boost",
+        description: "Strong boost",
         lowBoost: true,
+        boostLevel: "strong",
       },
       {
         stringName: "G",
         label: "G2",
         frequency: 98.0,
-        description: "Low boost",
+        description: "Strong boost",
         lowBoost: true,
+        boostLevel: "medium",
       },
-      { stringName: "D", label: "D3", frequency: 146.83, lowBoost: true },
+      {
+        stringName: "D",
+        label: "D3",
+        frequency: 146.83,
+        description: "Boost",
+        lowBoost: true,
+        boostLevel: "soft",
+      },
       { stringName: "A", label: "A3", frequency: 220.0 },
     ],
   },
@@ -93,29 +110,33 @@ const INSTRUMENTS: InstrumentConfig[] = [
         stringName: "E",
         label: "E1",
         frequency: 41.2,
-        description: "Low boost",
+        description: "Extra boost",
         lowBoost: true,
+        boostLevel: "extra",
       },
       {
         stringName: "A",
         label: "A1",
         frequency: 55.0,
-        description: "Low boost",
+        description: "Extra boost",
         lowBoost: true,
+        boostLevel: "extra",
       },
       {
         stringName: "D",
         label: "D2",
         frequency: 73.42,
-        description: "Low boost",
+        description: "Strong boost",
         lowBoost: true,
+        boostLevel: "strong",
       },
       {
         stringName: "G",
         label: "G2",
         frequency: 98.0,
-        description: "Low boost",
+        description: "Strong boost",
         lowBoost: true,
+        boostLevel: "medium",
       },
     ],
   },
@@ -137,6 +158,56 @@ function formatFrequency(frequency: number) {
   return frequency.toFixed(2);
 }
 
+function getBoostProfile(note: DroneNote) {
+  switch (note.boostLevel) {
+    case "extra":
+      return {
+        masterMultiplier: 1.9,
+        sine: 0.42,
+        triangle: 0.18,
+        octave1: 0.48,
+        octave2: 0.34,
+        octave3: 0.16,
+      };
+    case "strong":
+      return {
+        masterMultiplier: 1.75,
+        sine: 0.46,
+        triangle: 0.18,
+        octave1: 0.42,
+        octave2: 0.26,
+        octave3: 0.0,
+      };
+    case "medium":
+      return {
+        masterMultiplier: 1.55,
+        sine: 0.52,
+        triangle: 0.18,
+        octave1: 0.34,
+        octave2: 0.18,
+        octave3: 0.0,
+      };
+    case "soft":
+      return {
+        masterMultiplier: 1.35,
+        sine: 0.62,
+        triangle: 0.18,
+        octave1: 0.26,
+        octave2: 0.0,
+        octave3: 0.0,
+      };
+    default:
+      return {
+        masterMultiplier: 1.0,
+        sine: 0.78,
+        triangle: 0.18,
+        octave1: 0.0,
+        octave2: 0.0,
+        octave3: 0.0,
+      };
+  }
+}
+
 export default function DroneTonePage() {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
@@ -147,7 +218,7 @@ export default function DroneTonePage() {
   const [selectedInstrument, setSelectedInstrument] =
     useState<InstrumentKey>("violin");
   const [selectedA4, setSelectedA4] = useState(440);
-  const [volume, setVolume] = useState(0.22);
+  const [volume, setVolume] = useState(0.34);
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeNote, setActiveNote] = useState<DroneNote | null>(null);
   const [audioReadyMessage, setAudioReadyMessage] = useState(
@@ -243,10 +314,16 @@ export default function DroneTonePage() {
       await audioCtx.resume();
 
       const adjustedFrequency = frequencyFromA4(note.frequency, selectedA4);
+      const boostProfile = getBoostProfile(note);
+      const masterTargetGain = Math.min(
+        Math.max(volume * boostProfile.masterMultiplier, 0.01),
+        0.95
+      );
+
       const masterGain = audioCtx.createGain();
       masterGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
       masterGain.gain.exponentialRampToValueAtTime(
-        Math.max(volume, 0.01),
+        masterTargetGain,
         audioCtx.currentTime + 0.28
       );
 
@@ -258,7 +335,7 @@ export default function DroneTonePage() {
       const sineGain = audioCtx.createGain();
       sineOsc.type = "sine";
       sineOsc.frequency.setValueAtTime(adjustedFrequency, audioCtx.currentTime);
-      sineGain.gain.setValueAtTime(0.78, audioCtx.currentTime);
+      sineGain.gain.setValueAtTime(boostProfile.sine, audioCtx.currentTime);
       sineOsc.connect(sineGain);
       sineGain.connect(masterGain);
       oscillators.push(sineOsc);
@@ -272,27 +349,35 @@ export default function DroneTonePage() {
         adjustedFrequency,
         audioCtx.currentTime
       );
-      triangleGain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+      triangleGain.gain.setValueAtTime(boostProfile.triangle, audioCtx.currentTime);
       triangleOsc.connect(triangleGain);
       triangleGain.connect(masterGain);
       oscillators.push(triangleOsc);
       oscillatorGains.push(triangleGain);
 
-      // Low boost: Cello / Double Bass の低音はスマホで聞こえにくいため、
-      // 1オクターブ上の成分を少しだけ足します。
-      if (note.lowBoost) {
+      // Low boost: Viola C / Cello / Double Bass の低音はPC・スマホで聞こえにくいため、
+      // 実音に加えて1〜3オクターブ上の成分を混ぜ、基音感を保ちながら聞こえやすくします。
+      const addOctaveComponent = (octaveMultiplier: number, gainValue: number) => {
+        if (gainValue <= 0) return;
+
         const octaveOsc = audioCtx.createOscillator();
         const octaveGain = audioCtx.createGain();
         octaveOsc.type = "sine";
         octaveOsc.frequency.setValueAtTime(
-          adjustedFrequency * 2,
+          adjustedFrequency * octaveMultiplier,
           audioCtx.currentTime
         );
-        octaveGain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        octaveGain.gain.setValueAtTime(gainValue, audioCtx.currentTime);
         octaveOsc.connect(octaveGain);
         octaveGain.connect(masterGain);
         oscillators.push(octaveOsc);
         oscillatorGains.push(octaveGain);
+      };
+
+      if (note.lowBoost) {
+        addOctaveComponent(2, boostProfile.octave1);
+        addOctaveComponent(4, boostProfile.octave2);
+        addOctaveComponent(8, boostProfile.octave3);
       }
 
       masterGain.connect(audioCtx.destination);
@@ -351,12 +436,12 @@ export default function DroneTonePage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,#1e293b_0,#020617_42%,#020617_100%)] px-4 py-5 text-slate-100 sm:px-6">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,#7c2d12_0,#431407_38%,#020617_100%)] px-4 py-5 text-orange-50 sm:px-6">
       <div className="mx-auto flex min-h-[calc(100vh-40px)] w-full max-w-md flex-col">
         <header className="mb-5 rounded-[2rem] border border-white/10 bg-white/[0.06] p-5 shadow-2xl shadow-black/30 backdrop-blur">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-200/80">
+              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.28em] text-orange-200/90">
                 Orchestra Practice Tool
               </p>
               <h1 className="text-3xl font-black tracking-tight text-white">
@@ -367,7 +452,7 @@ export default function DroneTonePage() {
               </p>
             </div>
 
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-cyan-300 text-2xl font-black text-slate-950 shadow-lg shadow-cyan-500/20">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-orange-400 text-2xl font-black text-slate-950 shadow-lg shadow-orange-500/30">
               D
             </div>
           </div>
@@ -394,7 +479,7 @@ export default function DroneTonePage() {
                   }}
                   className={`rounded-2xl border px-2 py-3 text-center transition active:scale-[0.98] ${
                     selected
-                      ? "border-cyan-300 bg-cyan-300 text-slate-950 shadow-lg shadow-cyan-500/20"
+                      ? "border-orange-300 bg-orange-400 text-slate-950 shadow-lg shadow-orange-500/30"
                       : "border-white/10 bg-white/[0.05] text-slate-200 hover:bg-white/[0.09]"
                   }`}
                 >
@@ -430,7 +515,7 @@ export default function DroneTonePage() {
             )}
           </div>
 
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-2">
             {currentInstrument.notes.map((note) => {
               const selected = isPlaying && activeNote?.label === note.label;
               const adjustedFrequency = frequencyFromA4(
@@ -443,24 +528,24 @@ export default function DroneTonePage() {
                   key={`${currentInstrument.key}-${note.label}`}
                   type="button"
                   onClick={() => handleToggleNote(note)}
-                  className={`min-h-28 rounded-3xl border px-2 py-4 text-center transition active:scale-[0.98] ${
+                  className={`flex h-32 flex-col items-center justify-center rounded-3xl border px-2 py-4 text-center transition active:scale-[0.98] sm:h-28 ${
                     selected
-                      ? "border-emerald-300 bg-emerald-300 text-slate-950 shadow-xl shadow-emerald-500/20"
+                      ? "border-amber-300 bg-amber-300 text-slate-950 shadow-xl shadow-amber-500/25"
                       : "border-white/10 bg-white/[0.05] text-slate-100 hover:bg-white/[0.09]"
                   }`}
                 >
                   <div className="text-3xl font-black leading-none">
                     {note.stringName}
                   </div>
-                  <div className="mt-2 text-sm font-extrabold">{note.label}</div>
-                  <div className="mt-1 text-[10px] font-semibold opacity-70">
+                  <div className="mt-2 text-sm font-extrabold leading-none">
+                    {note.label}
+                  </div>
+                  <div className="mt-2 text-[10px] font-semibold leading-none opacity-70">
                     {formatFrequency(adjustedFrequency)} Hz
                   </div>
-                  {note.description && (
-                    <div className="mt-1 text-[9px] font-bold uppercase tracking-wide opacity-60">
-                      {note.description}
-                    </div>
-                  )}
+                  <div className="mt-2 h-3 text-[9px] font-bold uppercase leading-none tracking-wide opacity-60">
+                    {note.description ?? ""}
+                  </div>
                 </button>
               );
             })}
@@ -476,7 +561,7 @@ export default function DroneTonePage() {
               <select
                 value={selectedA4}
                 onChange={(event) => setSelectedA4(Number(event.target.value))}
-                className="w-full rounded-2xl border border-white/10 bg-slate-900 px-3 py-3 text-sm font-bold text-white outline-none focus:border-cyan-300"
+                className="w-full rounded-2xl border border-white/10 bg-slate-900 px-3 py-3 text-sm font-bold text-white outline-none focus:border-orange-300"
               >
                 {A_REFERENCE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -493,7 +578,7 @@ export default function DroneTonePage() {
               <div
                 className={`flex h-[46px] items-center justify-center rounded-2xl border px-3 text-center text-xs font-black ${
                   isPlaying
-                    ? "border-emerald-300/50 bg-emerald-300/15 text-emerald-200"
+                    ? "border-amber-300/50 bg-amber-300/15 text-amber-200"
                     : "border-white/10 bg-white/[0.04] text-slate-400"
                 }`}
               >
@@ -512,11 +597,11 @@ export default function DroneTonePage() {
             <input
               type="range"
               min="0.02"
-              max="0.6"
+              max="1.0"
               step="0.01"
               value={volume}
               onChange={(event) => setVolume(Number(event.target.value))}
-              className="h-2 w-full cursor-pointer accent-cyan-300"
+              className="h-2 w-full cursor-pointer accent-orange-400"
             />
           </div>
         </section>
@@ -526,7 +611,7 @@ export default function DroneTonePage() {
             <div
               className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-lg font-black ${
                 isPlaying
-                  ? "bg-emerald-300 text-slate-950"
+                  ? "bg-amber-300 text-slate-950"
                   : "bg-slate-800 text-slate-300"
               }`}
             >
@@ -545,11 +630,12 @@ export default function DroneTonePage() {
           </div>
         </section>
 
-        <section className="mt-auto rounded-[1.75rem] border border-cyan-300/15 bg-cyan-300/[0.08] p-4">
-          <h2 className="text-sm font-black text-cyan-100">Practice Note</h2>
-          <p className="mt-2 text-xs leading-6 text-cyan-50/80">
-            Drone Tone使用時は、スマホのスピーカー音をマイクが拾う場合があります。
-            チューナーと併用する場合や細かい音程確認では、イヤホンの使用をおすすめします。
+        <section className="mt-auto rounded-[1.75rem] border border-orange-300/20 bg-orange-400/[0.10] p-4">
+          <h2 className="text-sm font-black text-orange-100">Practice Note</h2>
+          <p className="mt-2 text-xs leading-6 text-orange-50/85">
+            低音DroneはPC・スマホのスピーカーでは小さく聞こえる場合があります。
+            Viola C / Cello C・G / Double Bass E・A には、聞き取りやすくするための倍音補強を加えています。
+            細かい音程確認では、イヤホンまたは外部スピーカーの使用をおすすめします。
           </p>
           <p className="mt-3 text-[11px] leading-5 text-slate-400">
             HitoriBIZ by Olive Co., Ltd. / Orchestra Practice Tools
