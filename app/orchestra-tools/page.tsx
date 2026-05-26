@@ -14,6 +14,7 @@ const tools = [
     points: ["テンポ確認", "基礎練習", "合奏前の準備"],
     iconType: "metronome" as ToolIconType,
     iconBg: "from-cyan-300 to-sky-400",
+    manualUrl: "/manuals/metronome.pdf",
   },
   {
     name: "Tuner",
@@ -23,6 +24,7 @@ const tools = [
     points: ["音程確認", "楽器調整", "練習前チェック"],
     iconType: "tuner" as ToolIconType,
     iconBg: "from-emerald-300 to-teal-400",
+    manualUrl: "/manuals/tuner.pdf",
   },
   {
     name: "Drone Tone",
@@ -32,6 +34,7 @@ const tools = [
     points: ["ロングトーン", "純正律感覚", "ハーモニー練習"],
     iconType: "drone" as ToolIconType,
     iconBg: "from-violet-300 to-fuchsia-400",
+    manualUrl: "/manuals/drone-tone.pdf",
   },
   {
     name: "Tempo Practice",
@@ -41,6 +44,7 @@ const tools = [
     points: ["反復練習", "段階的テンポアップ", "苦手箇所の克服"],
     iconType: "tempo" as ToolIconType,
     iconBg: "from-amber-300 to-orange-400",
+    manualUrl: "/manuals/tempo-practice.pdf",
   },
 ];
 
@@ -648,6 +652,60 @@ export default function OrchestraToolsPage() {
               不要になった場合は、配信メール内の案内に従っていつでも解除できます。
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* User Guides */}
+      <section className="bg-white py-20 text-slate-950">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-cyan-700">
+              User Guides
+            </p>
+            <h2 className="mt-4 text-3xl font-bold sm:text-4xl">
+              使い方説明書
+            </h2>
+            <p className="mt-5 text-lg leading-8 text-slate-600">
+              各ツールの基本操作、スマホのホーム画面への追加方法、練習での活用例を、
+              日本語・英語併記のPDFでご覧いただけます。
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {tools.map((tool) => (
+              <article
+                key={`${tool.name}-manual`}
+                className="rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+              >
+                <div
+                  className={`mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${tool.iconBg}`}
+                >
+                  <ToolIcon
+                    type={tool.iconType}
+                    className="h-6 w-6 text-slate-950"
+                  />
+                </div>
+
+                <h3 className="text-xl font-bold">{tool.name}</h3>
+                <p className="mt-2 text-sm leading-7 text-slate-600">
+                  日本語・英語併記の使い方説明書をPDFで開きます。
+                </p>
+
+                <a
+                  href={tool.manualUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-800"
+                >
+                  PDFを開く
+                </a>
+              </article>
+            ))}
+          </div>
+
+          <p className="mt-8 text-center text-sm leading-7 text-slate-500">
+            ※PDFはブラウザで閲覧できます。必要に応じて保存・印刷してご利用ください。
+          </p>
         </div>
       </section>
 
