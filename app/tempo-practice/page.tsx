@@ -133,6 +133,7 @@ export default function TempoPracticePage() {
 
   const progressPercent = useMemo(() => {
     if (targetBpm <= startBpm) return 100;
+
     return clampNumber(
       ((currentBpm - startBpm) / (targetBpm - startBpm)) * 100,
       0,
@@ -144,6 +145,7 @@ export default function TempoPracticePage() {
     if (!audioContextRef.current) {
       audioContextRef.current = new window.AudioContext();
     }
+
     return audioContextRef.current;
   }
 
@@ -243,6 +245,7 @@ export default function TempoPracticePage() {
     barCountRef.current = 0;
 
     const audioContext = getAudioContext();
+
     if (audioContext.state === "suspended") {
       await audioContext.resume();
     }
@@ -278,36 +281,45 @@ export default function TempoPracticePage() {
 
   function resetPractice() {
     stopPractice();
+
     setCurrentBpm(startBpm);
     currentBpmRef.current = startBpm;
+
     setBeatCount(0);
     setBarCount(0);
     setElapsedSeconds(0);
+
     beatCountRef.current = 0;
     barCountRef.current = 0;
+
     setStatusMessage("Ready");
   }
 
   function applyPreset(preset: TempoPreset) {
     stopPractice();
+
     setStartBpm(preset.startBpm);
     setTargetBpm(preset.targetBpm);
     setCurrentBpm(preset.startBpm);
     setStepBpm(preset.stepBpm);
     setBarsPerStep(preset.barsPerStep);
     setBeatsPerBar(preset.beatsPerBar);
+
     setBeatCount(0);
     setBarCount(0);
     setElapsedSeconds(0);
+
     beatCountRef.current = 0;
     barCountRef.current = 0;
     currentBpmRef.current = preset.startBpm;
+
     setStatusMessage(`Preset: ${preset.label}`);
   }
 
   function handleTapTempo() {
     const now = Date.now();
     const recentTaps = [...tapTimes.filter((time) => now - time < 3000), now];
+
     setTapTimes(recentTaps);
 
     if (recentTaps.length >= 2) {
@@ -334,20 +346,23 @@ export default function TempoPracticePage() {
     }
   }
 
-  const currentBeatInBar = beatCount === 0 ? 1 : ((beatCount - 1) % beatsPerBar) + 1;
+  const currentBeatInBar =
+    beatCount === 0 ? 1 : ((beatCount - 1) % beatsPerBar) + 1;
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
+    <main className="min-h-screen bg-emerald-950 text-white">
       <section className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 py-8 sm:px-8">
-        <header className="rounded-3xl border border-cyan-400/20 bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/40 p-6 shadow-2xl shadow-cyan-950/40">
-          <p className="mb-2 text-sm font-semibold tracking-[0.3em] text-cyan-300">
+        <header className="rounded-3xl border border-emerald-400/20 bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900/50 p-6 shadow-2xl shadow-emerald-950/40">
+          <p className="mb-2 text-sm font-semibold tracking-[0.3em] text-emerald-300">
             ORCHESTRA TOOLS
           </p>
+
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
                 Tempo Practice
               </h1>
+
               <p className="mt-3 max-w-2xl text-base leading-7 text-slate-300">
                 難しいパッセージを、ゆっくりから始めて少しずつテンポアップ。
                 オーケストラ練習・パート練習・個人練習に使えるテンポ育成ツールです。
@@ -356,7 +371,9 @@ export default function TempoPracticePage() {
 
             <div className="rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-right">
               <p className="text-sm text-slate-400">Current Tempo</p>
-              <p className="text-5xl font-bold text-cyan-300">{currentBpm}</p>
+              <p className="text-5xl font-bold text-emerald-300">
+                {currentBpm}
+              </p>
               <p className="text-sm text-slate-400">BPM</p>
             </div>
           </div>
@@ -372,7 +389,7 @@ export default function TempoPracticePage() {
                 </p>
               </div>
 
-              <div className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-200">
+              <div className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-200">
                 {statusMessage}
               </div>
             </div>
@@ -394,7 +411,7 @@ export default function TempoPracticePage() {
                     setCurrentBpm(value);
                     currentBpmRef.current = value;
                   }}
-                  className="w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-lg outline-none ring-cyan-400/30 focus:ring-4 disabled:opacity-60"
+                  className="w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-lg outline-none ring-emerald-400/30 focus:ring-4 disabled:opacity-60"
                 />
               </label>
 
@@ -409,7 +426,7 @@ export default function TempoPracticePage() {
                   value={targetBpm}
                   disabled={isPlaying}
                   onChange={(e) => setTargetBpm(Number(e.target.value))}
-                  className="w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-lg outline-none ring-cyan-400/30 focus:ring-4 disabled:opacity-60"
+                  className="w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-lg outline-none ring-emerald-400/30 focus:ring-4 disabled:opacity-60"
                 />
               </label>
 
@@ -421,7 +438,7 @@ export default function TempoPracticePage() {
                   value={stepBpm}
                   disabled={isPlaying}
                   onChange={(e) => setStepBpm(Number(e.target.value))}
-                  className="w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-lg outline-none ring-cyan-400/30 focus:ring-4 disabled:opacity-60"
+                  className="w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-lg outline-none ring-emerald-400/30 focus:ring-4 disabled:opacity-60"
                 >
                   <option value={1}>+1 BPM</option>
                   <option value={2}>+2 BPM</option>
@@ -441,7 +458,7 @@ export default function TempoPracticePage() {
                   value={barsPerStep}
                   disabled={isPlaying}
                   onChange={(e) => setBarsPerStep(Number(e.target.value))}
-                  className="w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-lg outline-none ring-cyan-400/30 focus:ring-4 disabled:opacity-60"
+                  className="w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-lg outline-none ring-emerald-400/30 focus:ring-4 disabled:opacity-60"
                 >
                   <option value={1}>1 bar</option>
                   <option value={2}>2 bars</option>
@@ -459,7 +476,7 @@ export default function TempoPracticePage() {
                   value={beatsPerBar}
                   disabled={isPlaying}
                   onChange={(e) => setBeatsPerBar(Number(e.target.value))}
-                  className="w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-lg outline-none ring-cyan-400/30 focus:ring-4 disabled:opacity-60"
+                  className="w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-lg outline-none ring-emerald-400/30 focus:ring-4 disabled:opacity-60"
                 >
                   <option value={2}>2 / 4</option>
                   <option value={3}>3 / 4</option>
@@ -479,7 +496,7 @@ export default function TempoPracticePage() {
                   onChange={(e) =>
                     setSubdivision(Number(e.target.value) as 1 | 2 | 3 | 4)
                   }
-                  className="w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-lg outline-none ring-cyan-400/30 focus:ring-4 disabled:opacity-60"
+                  className="w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-lg outline-none ring-emerald-400/30 focus:ring-4 disabled:opacity-60"
                 >
                   <option value={1}>Quarter note only</option>
                   <option value={2}>8th notes</option>
@@ -507,7 +524,7 @@ export default function TempoPracticePage() {
               <button
                 onClick={startPractice}
                 disabled={isPlaying}
-                className="rounded-2xl bg-cyan-400 px-5 py-4 text-lg font-bold text-slate-950 shadow-lg shadow-cyan-950/40 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-2xl bg-emerald-400 px-5 py-4 text-lg font-bold text-slate-950 shadow-lg shadow-emerald-950/40 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Start Practice
               </button>
@@ -531,7 +548,7 @@ export default function TempoPracticePage() {
             <button
               onClick={handleTapTempo}
               disabled={isPlaying}
-              className="mt-4 w-full rounded-2xl border border-cyan-400/30 bg-cyan-400/10 px-5 py-4 text-lg font-bold text-cyan-200 transition hover:bg-cyan-400/20 disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-4 w-full rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-5 py-4 text-lg font-bold text-emerald-200 transition hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Tap Tempo
             </button>
@@ -543,11 +560,11 @@ export default function TempoPracticePage() {
               現在の拍・小節・進行状況を確認できます。
             </p>
 
-            <div className="mt-6 rounded-3xl border border-cyan-400/20 bg-slate-950 p-6 text-center">
+            <div className="mt-6 rounded-3xl border border-emerald-400/20 bg-slate-950 p-6 text-center">
               <p className="text-sm uppercase tracking-[0.25em] text-slate-500">
                 Beat
               </p>
-              <p className="mt-2 text-7xl font-black text-cyan-300">
+              <p className="mt-2 text-7xl font-black text-emerald-300">
                 {currentBeatInBar}
               </p>
               <p className="mt-2 text-slate-400">/ {beatsPerBar}</p>
@@ -555,11 +572,12 @@ export default function TempoPracticePage() {
               <div className="mt-6 flex justify-center gap-2">
                 {Array.from({ length: beatsPerBar }).map((_, index) => {
                   const active = index + 1 === currentBeatInBar;
+
                   return (
                     <div
                       key={index}
                       className={`h-4 w-4 rounded-full ${
-                        active ? "bg-cyan-300" : "bg-slate-700"
+                        active ? "bg-emerald-300" : "bg-slate-700"
                       }`}
                     />
                   );
@@ -586,12 +604,14 @@ export default function TempoPracticePage() {
                 <span>Progress</span>
                 <span>{Math.round(progressPercent)}%</span>
               </div>
+
               <div className="h-4 overflow-hidden rounded-full bg-slate-800">
                 <div
-                  className="h-full rounded-full bg-cyan-300 transition-all"
+                  className="h-full rounded-full bg-emerald-300 transition-all"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
+
               <p className="mt-3 text-sm text-slate-400">
                 Estimated practice time: about {estimatedMinutes} min
               </p>
@@ -612,9 +632,9 @@ export default function TempoPracticePage() {
                   key={preset.label}
                   onClick={() => applyPreset(preset)}
                   disabled={isPlaying}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition hover:border-cyan-400/40 hover:bg-cyan-400/10 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition hover:border-emerald-400/40 hover:bg-emerald-400/10 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <p className="text-lg font-bold text-cyan-200">
+                  <p className="text-lg font-bold text-emerald-200">
                     {preset.label}
                   </p>
                   <p className="mt-1 text-sm leading-6 text-slate-400">
@@ -644,7 +664,7 @@ export default function TempoPracticePage() {
                   <span className="font-semibold text-slate-100">
                     {mark.name}
                   </span>
-                  <span className="text-sm text-cyan-200">
+                  <span className="text-sm text-emerald-200">
                     {mark.range} BPM
                   </span>
                 </div>
@@ -655,23 +675,28 @@ export default function TempoPracticePage() {
 
         <section className="rounded-3xl border border-white/10 bg-slate-900/90 p-6 shadow-xl">
           <h2 className="text-2xl font-bold">How to Use</h2>
+
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <p className="text-lg font-bold text-cyan-200">1. Start slow</p>
+              <p className="text-lg font-bold text-emerald-200">
+                1. Start slow
+              </p>
               <p className="mt-2 text-sm leading-6 text-slate-400">
                 まずは弾けるテンポから開始します。音程・弓・指の動きを確認します。
               </p>
             </div>
+
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <p className="text-lg font-bold text-cyan-200">
+              <p className="text-lg font-bold text-emerald-200">
                 2. Build gradually
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-400">
                 指定小節ごとに自動でテンポアップします。無理なく目標に近づけます。
               </p>
             </div>
+
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <p className="text-lg font-bold text-cyan-200">
+              <p className="text-lg font-bold text-emerald-200">
                 3. Reach target
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-400">
@@ -681,7 +706,7 @@ export default function TempoPracticePage() {
           </div>
         </section>
 
-        <footer className="pb-8 text-center text-sm text-slate-500">
+        <footer className="pb-8 text-center text-sm text-slate-400">
           Tempo Practice | Orchestra Tools | HitoriBIZ by Olive Co., Ltd.
         </footer>
       </section>
