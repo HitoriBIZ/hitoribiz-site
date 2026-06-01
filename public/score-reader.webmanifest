@@ -1,0 +1,25 @@
+{
+  "name": "Orchestra Score Reader",
+  "short_name": "Score Reader",
+  "description": "Orchestra Score Reader for iPad and tablet performance use.",
+  "start_url": "/score-reader-app",
+  "scope": "/score-reader-app",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "icons": [
+    {
+      "src": "/icons/score-reader/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/score-reader/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
