@@ -38,6 +38,19 @@ type ScoreItem = {
   currentPage: number;
   movements: MovementBookmark[];
   symbols: PlacedSymbol[];
+  // PDF本体はバックアップ書き出し・復元・記号付きPDF出力に使います。
+  // localStorageには保存せず、必要なときだけ .score-reader.json に含めます。
+  pdfDataUrl?: string;
+};
+
+type ScoreReaderBackup = {
+  app: "Orchestra Score Reader";
+  version: 1;
+  exportedAt: string;
+  activeScoreId: string | null;
+  symbolSize: number;
+  symbolColor: string;
+  scores: ScoreItem[];
 };
 
 type PdfDocumentLike = {
@@ -126,12 +139,75 @@ function cloneDefaultMovements(): MovementBookmark[] {
   return DEFAULT_MOVEMENTS.map((movement) => ({ ...movement }));
 }
 
+function stripPdfData(scores: ScoreItem[]) {
+  return scores.map(({ pdfDataUrl, ...score }) => score);
+}
+
+function createDownloadFileName(baseName: string, extension: string) {
+  const safeBaseName = (baseName || "score-reader")
+    .replace(/\.[^/.]+$/, "")
+    .replace(/[\\/:*?"<>|]+/g, "-")
+    .replace(/\s+/g, "-")
+    .slice(0, 80);
+
+  const date = new Date().toISOString().slice(0, 10);
+  return `${safeBaseName}-${date}.${extension}`;
+}
+
+function downloadBlob(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function arrayBufferToDataUrl(buffer: ArrayBuffer, mimeType = "application/pdf") {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  const chunkSize = 0x8000;
+
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    const chunk = bytes.subarray(index, index + chunkSize);
+    binary += String.fromCharCode(...Array.from(chunk));
+  }
+
+  return `data:${mimeType};base64,${window.btoa(binary)}`;
+}
+
+async function dataUrlToUint8Array(dataUrl: string) {
+  const response = await fetch(dataUrl);
+  const buffer = await response.arrayBuffer();
+  return new Uint8Array(buffer);
+}
+
+function toRgb01(hexColor: string) {
+  const fallback = { r: 0, g: 0, b: 0 };
+  const match = /^#?([0-9a-f]{6})$/i.exec(hexColor || "");
+  if (!match) return fallback;
+
+  const value = match[1];
+  return {
+    r: parseInt(value.slice(0, 2), 16) / 255,
+    g: parseInt(value.slice(2, 4), 16) / 255,
+    b: parseInt(value.slice(4, 6), 16) / 255,
+  };
+}
+
+function makePdfSafeText(text: string) {
+  return text.replace(/[^\x20-\x7E]/g, "?");
+}
+
 export default function ScoreReaderAppPage() {
   const pdfDocsRef = useRef<Record<string, PdfDocumentLike>>({});
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const scorePageRef = useRef<HTMLDivElement | null>(null);
   const scoreViewportRef = useRef<HTMLDivElement | null>(null);
   const renderTaskRef = useRef<any>(null);
+  const backupInputRef = useRef<HTMLInputElement | null>(null);
 
   const dragMovedRef = useRef(false);
   const performancePointerStartRef = useRef<{
@@ -165,6 +241,7 @@ export default function ScoreReaderAppPage() {
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [isPageRendering, setIsPageRendering] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [isBackupWorking, setIsBackupWorking] = useState(false);
 
   const activeScore = useMemo(() => {
     return scores.find((score) => score.id === activeScoreId) ?? null;
@@ -246,7 +323,10 @@ export default function ScoreReaderAppPage() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.scoresMeta, JSON.stringify(scores));
+    localStorage.setItem(
+      STORAGE_KEYS.scoresMeta,
+      JSON.stringify(stripPdfData(scores))
+    );
   }, [scores]);
 
   useEffect(() => {
@@ -471,6 +551,7 @@ export default function ScoreReaderAppPage() {
         if (file.type !== "application/pdf") continue;
 
         const arrayBuffer = await file.arrayBuffer();
+        const pdfDataUrl = arrayBufferToDataUrl(arrayBuffer, file.type);
 
         const loadingTask = pdfjsLib.getDocument({
           data: new Uint8Array(arrayBuffer),
@@ -491,6 +572,7 @@ export default function ScoreReaderAppPage() {
           currentPage: 1,
           movements: cloneDefaultMovements(),
           symbols: [],
+          pdfDataUrl,
         });
       }
 
@@ -1016,6 +1098,171 @@ export default function ScoreReaderAppPage() {
     setDraggingSymbolId(null);
   }
 
+
+  function exportScoreReaderBackup() {
+    if (scores.length === 0) {
+      setPdfError("保存する演奏会セットがありません。");
+      return;
+    }
+
+    const missingPdf = scores.some((score) => !score.pdfDataUrl);
+    if (missingPdf) {
+      setPdfError(
+        "PDF本体が残っていない曲があります。ブラウザ再読み込み後の場合は、PDFを再度追加してから保存してください。"
+      );
+      return;
+    }
+
+    const backup: ScoreReaderBackup = {
+      app: "Orchestra Score Reader",
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      activeScoreId,
+      symbolSize,
+      symbolColor,
+      scores,
+    };
+
+    const blob = new Blob([JSON.stringify(backup, null, 2)], {
+      type: "application/json;charset=utf-8",
+    });
+
+    downloadBlob(blob, createDownloadFileName("concert-set", "score-reader.json"));
+    setPdfError(null);
+  }
+
+  async function handleBackupImport(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsBackupWorking(true);
+    setPdfError(null);
+
+    try {
+      const text = await file.text();
+      const backup = JSON.parse(text) as ScoreReaderBackup;
+
+      if (backup.app !== "Orchestra Score Reader" || !Array.isArray(backup.scores)) {
+        throw new Error("Invalid Score Reader backup file.");
+      }
+
+      const pdfjsLib = await import("pdfjs-dist");
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+
+      Object.values(pdfDocsRef.current).forEach((doc) => {
+        if (doc.destroy) {
+          doc.destroy().catch(() => {
+            // ignore
+          });
+        }
+      });
+
+      const restoredScores: ScoreItem[] = [];
+      const restoredPdfDocs: Record<string, PdfDocumentLike> = {};
+
+      for (const score of backup.scores) {
+        if (!score.pdfDataUrl) {
+          throw new Error("Backup does not include PDF data.");
+        }
+
+        const bytes = await dataUrlToUint8Array(score.pdfDataUrl);
+        const loadingTask = pdfjsLib.getDocument({ data: bytes });
+        const pdfDocument = await loadingTask.promise;
+
+        restoredPdfDocs[score.id] = pdfDocument;
+        restoredScores.push({
+          ...score,
+          totalPages: pdfDocument.numPages,
+          currentPage: clampPage(score.currentPage, pdfDocument.numPages),
+          movements: score.movements?.length ? score.movements : cloneDefaultMovements(),
+          symbols: score.symbols ?? [],
+        });
+      }
+
+      pdfDocsRef.current = restoredPdfDocs;
+      setScores(restoredScores);
+      setActiveScoreId(
+        backup.activeScoreId && restoredScores.some((score) => score.id === backup.activeScoreId)
+          ? backup.activeScoreId
+          : restoredScores[0]?.id ?? null
+      );
+      setSymbolSize(backup.symbolSize || DEFAULT_SYMBOL_SIZE);
+      setSymbolColor(backup.symbolColor || "#000000");
+      setMode("edit");
+      setShowNavigator(true);
+      setSelectedPlacedSymbolId(null);
+      setDraggingSymbolId(null);
+    } catch (error) {
+      console.error(error);
+      setPdfError(
+        "演奏会セットの読み込みに失敗しました。.score-reader.json ファイルを確認してください。"
+      );
+    } finally {
+      setIsBackupWorking(false);
+      event.target.value = "";
+    }
+  }
+
+  async function exportAnnotatedPdf() {
+    if (!activeScore) {
+      setPdfError("記号付きPDFを書き出す楽譜を選択してください。");
+      return;
+    }
+
+    if (!activeScore.pdfDataUrl) {
+      setPdfError(
+        "PDF本体が残っていません。ブラウザ再読み込み後の場合は、PDFを再度追加するか、.score-reader.json から復元してください。"
+      );
+      return;
+    }
+
+    setIsBackupWorking(true);
+    setPdfError(null);
+
+    try {
+      const [{ PDFDocument, StandardFonts, rgb }] = await Promise.all([
+        import("pdf-lib"),
+      ]);
+
+      const pdfBytes = await dataUrlToUint8Array(activeScore.pdfDataUrl);
+      const pdfDoc = await PDFDocument.load(pdfBytes);
+      const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      const pages = pdfDoc.getPages();
+
+      activeScore.symbols.forEach((symbol) => {
+        const page = pages[symbol.page - 1];
+        if (!page) return;
+
+        const { width, height } = page.getSize();
+        const x = (symbol.x / 100) * width;
+        const y = height - (symbol.y / 100) * height;
+        const color = toRgb01(symbol.color ?? "#000000");
+        const text = makePdfSafeText(symbol.symbol);
+        const size = Math.max(6, Math.min(symbol.size ?? DEFAULT_SYMBOL_SIZE, 96));
+
+        page.drawText(text, {
+          x,
+          y,
+          size,
+          font,
+          color: rgb(color.r, color.g, color.b),
+        });
+      });
+
+      const annotatedBytes = await pdfDoc.save();
+      const blob = new Blob([annotatedBytes], { type: "application/pdf" });
+      downloadBlob(blob, createDownloadFileName(`${activeScore.title}-annotated`, "pdf"));
+    } catch (error) {
+      console.error(error);
+      setPdfError(
+        "記号付きPDFの書き出しに失敗しました。pdf-lib が未インストールの場合は npm install pdf-lib を実行してください。"
+      );
+    } finally {
+      setIsBackupWorking(false);
+    }
+  }
+
   function resetReader() {
     if (renderTaskRef.current) {
       try {
@@ -1049,6 +1296,7 @@ export default function ScoreReaderAppPage() {
     setIsPdfLoading(false);
     setIsPageRendering(false);
     setPdfError(null);
+    setIsBackupWorking(false);
 
     localStorage.removeItem(STORAGE_KEYS.scoresMeta);
     localStorage.removeItem(STORAGE_KEYS.activeScoreId);
@@ -1413,6 +1661,49 @@ export default function ScoreReaderAppPage() {
                   className="hidden"
                 />
               </label>
+
+              <input
+                ref={backupInputRef}
+                type="file"
+                accept=".score-reader.json,application/json"
+                onChange={handleBackupImport}
+                className="hidden"
+              />
+
+              <div className="mt-2 grid grid-cols-1 gap-2">
+                <button
+                  type="button"
+                  onClick={exportScoreReaderBackup}
+                  disabled={scores.length === 0 || isBackupWorking}
+                  className="rounded-xl bg-blue-500 px-3 py-2 text-xs font-black text-white shadow hover:bg-blue-400 disabled:opacity-40"
+                >
+                  演奏会セットを保存
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => backupInputRef.current?.click()}
+                  disabled={isBackupWorking}
+                  className="rounded-xl border border-blue-400/60 bg-blue-400/10 px-3 py-2 text-xs font-black text-blue-100 hover:bg-blue-400/20 disabled:opacity-40"
+                >
+                  演奏会セットを復元
+                </button>
+
+                <button
+                  type="button"
+                  onClick={exportAnnotatedPdf}
+                  disabled={!activeScore || isBackupWorking}
+                  className="rounded-xl border border-amber-400/70 bg-amber-400 px-3 py-2 text-xs font-black text-slate-950 shadow hover:bg-amber-300 disabled:opacity-40"
+                >
+                  記号付きPDFを書き出し
+                </button>
+              </div>
+
+              {isBackupWorking && (
+                <div className="mt-2 rounded-lg bg-slate-950 p-2 text-[10px] font-bold text-blue-200">
+                  保存・復元・書き出しを処理中です...
+                </div>
+              )}
 
               {isPdfLoading && (
                 <div className="mt-2 rounded-lg bg-slate-950 p-2 text-[10px] font-bold text-emerald-300">
