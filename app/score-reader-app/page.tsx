@@ -386,7 +386,7 @@ export default function ScoreReaderAppPage() {
       const pdfjsLib = await import("pdfjs-dist");
 
       pdfjsLib.GlobalWorkerOptions.workerSrc =
-  "https://unpkg.com/pdfjs-dist@5.7.284/build/pdf.worker.min.mjs";
+        "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
 
       const newScores: ScoreItem[] = [];
 
