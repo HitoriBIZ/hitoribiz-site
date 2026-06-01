@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const navItems = [
@@ -12,8 +13,26 @@ const navItems = [
   // Contact は使わず、相談は booking に統一
 ];
 
+const hideHeaderPaths = [
+  "/metronome-app",
+  "/tuner-app",
+  "/drone-tone",
+  "/tempo-practice",
+  "/orchestra-tools",
+  "/score-reader-app",
+];
+
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+
+  const shouldHideHeader = hideHeaderPaths.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`)
+  );
+
+  if (shouldHideHeader) {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/90 backdrop-blur">
@@ -23,7 +42,7 @@ export default function SiteHeader() {
           href="/"
           className="text-lg font-extrabold tracking-tight text-slate-900"
         >
-           HitoriBIZ
+          HitoriBIZ
         </Link>
 
         {/* Desktop Nav */}
@@ -52,6 +71,7 @@ export default function SiteHeader() {
           onClick={() => setOpen(!open)}
           className="inline-flex items-center justify-center rounded-lg border border-slate-300 p-2 text-slate-700 md:hidden"
           aria-label="Open menu"
+          type="button"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
