@@ -242,6 +242,7 @@ export default function ScoreReaderAppPage() {
   const [isPageRendering, setIsPageRendering] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [isBackupWorking, setIsBackupWorking] = useState(false);
+  const [renderRevision, setRenderRevision] = useState(0);
 
   const activeScore = useMemo(() => {
     return scores.find((score) => score.id === activeScoreId) ?? null;
@@ -589,6 +590,7 @@ export default function ScoreReaderAppPage() {
 
       setSelectedPlacedSymbolId(null);
       setDraggingSymbolId(null);
+      setRenderRevision((value) => value + 1);
     } catch (error) {
       console.error(error);
       setPdfError(
@@ -679,7 +681,7 @@ export default function ScoreReaderAppPage() {
     }
 
     renderCurrentPage();
-  }, [activeScoreId, currentPage, totalPages, mode]);
+  }, [activeScoreId, currentPage, totalPages, mode, renderRevision]);
 
   useEffect(() => {
     async function preloadNeighborPages() {
@@ -1193,6 +1195,7 @@ export default function ScoreReaderAppPage() {
       setShowNavigator(true);
       setSelectedPlacedSymbolId(null);
       setDraggingSymbolId(null);
+      setRenderRevision((value) => value + 1);
     } catch (error) {
       console.error(error);
       setPdfError(
@@ -1297,6 +1300,7 @@ export default function ScoreReaderAppPage() {
     setIsPageRendering(false);
     setPdfError(null);
     setIsBackupWorking(false);
+    setRenderRevision((value) => value + 1);
 
     localStorage.removeItem(STORAGE_KEYS.scoresMeta);
     localStorage.removeItem(STORAGE_KEYS.activeScoreId);
