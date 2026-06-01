@@ -270,33 +270,110 @@ export default function ScoreReaderAppPage() {
   }, [currentPage]);
 
   useEffect(() => {
+    function clampPosition(value: number) {
+      return Math.max(0, Math.min(100, value));
+    }
+
+    function isTextInputTarget(target: EventTarget | null) {
+      if (!(target instanceof HTMLElement)) return false;
+
+      const tagName = target.tagName.toLowerCase();
+
+      return (
+        tagName === "input" ||
+        tagName === "textarea" ||
+        tagName === "select" ||
+        target.isContentEditable
+      );
+    }
+
     function handleKeyDown(event: KeyboardEvent) {
+      if (isTextInputTarget(event.target)) {
+        return;
+      }
+
       if (event.key === "Enter" || event.key === "Escape") {
         setSelectedPlacedSymbolId(null);
         setDraggingSymbolId(null);
         dragMovedRef.current = false;
+        return;
       }
 
       if (event.key === "Delete" || event.key === "Backspace") {
         if (selectedPlacedSymbolId) {
+          event.preventDefault();
+
           updateActiveScore((score) => ({
             ...score,
             symbols: score.symbols.filter(
               (item) => item.id !== selectedPlacedSymbolId
             ),
           }));
+
           setSelectedPlacedSymbolId(null);
           setDraggingSymbolId(null);
         }
+
+        return;
       }
 
+      const isArrowKey =
+        event.key === "ArrowUp" ||
+        event.key === "ArrowDown" ||
+        event.key === "ArrowLeft" ||
+        event.key === "ArrowRight";
+
+      // 編集モード：選択中の記号を矢印キーで微調整
+      if (mode === "edit" && selectedPlacedSymbolId && isArrowKey) {
+        event.preventDefault();
+
+        // 通常：細かく移動
+        // Shift + 矢印：大きく移動
+        // Alt + 矢印：さらに細かく移動
+        const step = event.shiftKey ? 1 : event.altKey ? 0.1 : 0.25;
+
+        const deltaX =
+          event.key === "ArrowLeft"
+            ? -step
+            : event.key === "ArrowRight"
+              ? step
+              : 0;
+
+        const deltaY =
+          event.key === "ArrowUp"
+            ? -step
+            : event.key === "ArrowDown"
+              ? step
+              : 0;
+
+        updateActiveScore((score) => ({
+          ...score,
+          symbols: score.symbols.map((item) =>
+            item.id === selectedPlacedSymbolId
+              ? {
+                  ...item,
+                  x: clampPosition(item.x + deltaX),
+                  y: clampPosition(item.y + deltaY),
+                }
+              : item
+          ),
+        }));
+
+        return;
+      }
+
+      // 本番モード：左右キーでページ送り
       if (mode === "performance") {
         if (event.key === "ArrowRight") {
+          event.preventDefault();
           goToNextPage();
+          return;
         }
 
         if (event.key === "ArrowLeft") {
+          event.preventDefault();
           goToPreviousPage();
+          return;
         }
       }
     }
