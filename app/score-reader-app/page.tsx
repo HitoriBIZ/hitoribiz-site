@@ -30,6 +30,22 @@ type PlacedSymbol = {
   color: string;
 };
 
+type DrawingTool = "symbol" | "pen" | "marker";
+
+type DrawingPoint = {
+  x: number;
+  y: number;
+};
+
+type DrawingStroke = {
+  id: string;
+  page: number;
+  tool: "pen" | "marker";
+  points: DrawingPoint[];
+  size: number;
+  color: string;
+};
+
 type ScoreItem = {
   id: string;
   title: string;
@@ -38,6 +54,7 @@ type ScoreItem = {
   currentPage: number;
   movements: MovementBookmark[];
   symbols: PlacedSymbol[];
+  drawings: DrawingStroke[];
   // PDF本体はバックアップ書き出し・復元・記号付きPDF出力に使います。
   // localStorageには保存せず、必要なときだけ .score-reader.json に含めます。
   pdfDataUrl?: string;
@@ -61,6 +78,10 @@ type PdfDocumentLike = {
 
 const DEFAULT_SYMBOL_SIZE = 12;
 const DEFAULT_TOTAL_PAGES = 1;
+const DEFAULT_PEN_SIZE = 2.5;
+const DEFAULT_MARKER_SIZE = 8;
+const DEFAULT_PEN_COLOR = "#dc2626";
+const DEFAULT_MARKER_COLOR = "#facc15";
 
 const DEFAULT_MOVEMENTS: MovementBookmark[] = [
   { id: "movement-1", label: "I", title: "第1楽章", pageNumber: 1 },
@@ -201,6 +222,16 @@ function makePdfSafeText(text: string) {
   return text.replace(/[^\x20-\x7E]/g, "?");
 }
 
+function pointsToSvgPath(points: DrawingPoint[]) {
+  if (points.length === 0) return "";
+
+  const [first, ...rest] = points;
+  return [
+    `M ${first.x.toFixed(3)} ${first.y.toFixed(3)}`,
+    ...rest.map((point) => `L ${point.x.toFixed(3)} ${point.y.toFixed(3)}`),
+  ].join(" ");
+}
+
 export default function ScoreReaderAppPage() {
   const pdfDocsRef = useRef<Record<string, PdfDocumentLike>>({});
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -208,6 +239,9 @@ export default function ScoreReaderAppPage() {
   const scoreViewportRef = useRef<HTMLDivElement | null>(null);
   const renderTaskRef = useRef<any>(null);
   const backupInputRef = useRef<HTMLInputElement | null>(null);
+
+  const drawingMovedRef = useRef(false);
+  const currentDrawingStrokeIdRef = useRef<string | null>(null);
 
   const dragMovedRef = useRef(false);
   const performancePointerStartRef = useRef<{
@@ -232,6 +266,12 @@ export default function ScoreReaderAppPage() {
   const [symbolSize, setSymbolSize] = useState(DEFAULT_SYMBOL_SIZE);
   const [symbolColor, setSymbolColor] = useState("#000000");
 
+  const [activeTool, setActiveTool] = useState<DrawingTool>("symbol");
+  const [penSize, setPenSize] = useState(DEFAULT_PEN_SIZE);
+  const [markerSize, setMarkerSize] = useState(DEFAULT_MARKER_SIZE);
+  const [penColor, setPenColor] = useState(DEFAULT_PEN_COLOR);
+  const [markerColor, setMarkerColor] = useState(DEFAULT_MARKER_COLOR);
+
   const [showNavigator, setShowNavigator] = useState(true);
   const [selectedPlacedSymbolId, setSelectedPlacedSymbolId] = useState<
     string | null
@@ -255,6 +295,7 @@ export default function ScoreReaderAppPage() {
   const currentPage = activeScore?.currentPage ?? 1;
   const totalPages = activeScore?.totalPages ?? DEFAULT_TOTAL_PAGES;
   const currentSymbols = activeScore?.symbols ?? [];
+  const currentDrawings = activeScore?.drawings ?? [];
   const currentMovements = activeScore?.movements ?? cloneDefaultMovements();
 
   const selectedPlacedSymbol = useMemo(() => {
@@ -292,6 +333,10 @@ export default function ScoreReaderAppPage() {
     return currentSymbols.filter((item) => item.page === currentPage);
   }, [currentSymbols, currentPage]);
 
+  const currentPageDrawings = useMemo(() => {
+    return currentDrawings.filter((item) => item.page === currentPage);
+  }, [currentDrawings, currentPage]);
+
   useEffect(() => {
     const savedScoresMeta = localStorage.getItem(STORAGE_KEYS.scoresMeta);
     const savedActiveScoreId = localStorage.getItem(STORAGE_KEYS.activeScoreId);
@@ -301,7 +346,7 @@ export default function ScoreReaderAppPage() {
     if (savedScoresMeta) {
       try {
         const parsed = JSON.parse(savedScoresMeta) as ScoreItem[];
-        setScores(parsed);
+        setScores(parsed.map((score) => ({ ...score, drawings: score.drawings ?? [] })));
       } catch {
         setScores([]);
       }
@@ -506,6 +551,8 @@ export default function ScoreReaderAppPage() {
     setSelectedPlacedSymbolId(null);
     setDraggingSymbolId(null);
     dragMovedRef.current = false;
+    drawingMovedRef.current = false;
+    currentDrawingStrokeIdRef.current = null;
   }
 
   function exitPerformanceMode() {
@@ -514,6 +561,8 @@ export default function ScoreReaderAppPage() {
     setSelectedPlacedSymbolId(null);
     setDraggingSymbolId(null);
     dragMovedRef.current = false;
+    drawingMovedRef.current = false;
+    currentDrawingStrokeIdRef.current = null;
   }
 
   function getPointerPositionOnScorePage(event: {
@@ -573,6 +622,7 @@ export default function ScoreReaderAppPage() {
           currentPage: 1,
           movements: cloneDefaultMovements(),
           symbols: [],
+          drawings: [],
           pdfDataUrl,
         });
       }
@@ -885,6 +935,7 @@ export default function ScoreReaderAppPage() {
     if (mode === "performance") return;
     if (!activeScore) return;
     if (draggingSymbolId) return;
+    if (activeTool !== "symbol") return;
     if (!selectedSymbol) return;
 
     const { x, y } = getPointerPositionOnScorePage(event);
@@ -905,6 +956,37 @@ export default function ScoreReaderAppPage() {
     }));
 
     setSelectedPlacedSymbolId(null);
+  }
+
+  function handleScorePagePointerDown(event: PointerEvent<HTMLDivElement>) {
+    if (mode === "performance") return;
+    if (!activeScore) return;
+    if (activeTool !== "pen" && activeTool !== "marker") return;
+
+    event.preventDefault();
+
+    const target = event.currentTarget;
+    target.setPointerCapture(event.pointerId);
+
+    const { x, y } = getPointerPositionOnScorePage(event);
+    const stroke: DrawingStroke = {
+      id: createId("stroke"),
+      page: activeScore.currentPage,
+      tool: activeTool,
+      points: [{ x, y }],
+      size: activeTool === "pen" ? penSize : markerSize,
+      color: activeTool === "pen" ? penColor : markerColor,
+    };
+
+    drawingMovedRef.current = false;
+    currentDrawingStrokeIdRef.current = stroke.id;
+    setSelectedPlacedSymbolId(null);
+    setDraggingSymbolId(null);
+
+    updateActiveScore((score) => ({
+      ...score,
+      drawings: [...(score.drawings ?? []), stroke],
+    }));
   }
 
   function handleSymbolPointerDown(
@@ -931,11 +1013,29 @@ export default function ScoreReaderAppPage() {
   }
 
   function handleScorePagePointerMove(event: PointerEvent<HTMLDivElement>) {
-    if (!draggingSymbolId || !activeScore) return;
-
-    dragMovedRef.current = true;
+    if (!activeScore) return;
 
     const { x, y } = getPointerPositionOnScorePage(event);
+
+    if (currentDrawingStrokeIdRef.current) {
+      drawingMovedRef.current = true;
+      const strokeId = currentDrawingStrokeIdRef.current;
+
+      updateActiveScore((score) => ({
+        ...score,
+        drawings: (score.drawings ?? []).map((item) =>
+          item.id === strokeId
+            ? { ...item, points: [...item.points, { x, y }] }
+            : item
+        ),
+      }));
+
+      return;
+    }
+
+    if (!draggingSymbolId) return;
+
+    dragMovedRef.current = true;
 
     updateActiveScore((score) => ({
       ...score,
@@ -946,6 +1046,21 @@ export default function ScoreReaderAppPage() {
   }
 
   function handleScorePagePointerUp() {
+    if (currentDrawingStrokeIdRef.current) {
+      const strokeId = currentDrawingStrokeIdRef.current;
+
+      if (!drawingMovedRef.current) {
+        updateActiveScore((score) => ({
+          ...score,
+          drawings: (score.drawings ?? []).filter((item) => item.id !== strokeId),
+        }));
+      }
+
+      currentDrawingStrokeIdRef.current = null;
+      drawingMovedRef.current = false;
+      return;
+    }
+
     if (draggingSymbolId && dragMovedRef.current) {
       setSelectedPlacedSymbolId(null);
     }
@@ -1068,6 +1183,31 @@ export default function ScoreReaderAppPage() {
     }));
   }
 
+  function undoLastDrawing() {
+    if (!activeScore) return;
+
+    const samePageDrawings = (activeScore.drawings ?? []).filter(
+      (item) => item.page === activeScore.currentPage
+    );
+    const last = samePageDrawings[samePageDrawings.length - 1];
+
+    if (!last) return;
+
+    updateActiveScore((score) => ({
+      ...score,
+      drawings: (score.drawings ?? []).filter((item) => item.id !== last.id),
+    }));
+  }
+
+  function clearCurrentPageDrawings() {
+    if (!activeScore) return;
+
+    updateActiveScore((score) => ({
+      ...score,
+      drawings: (score.drawings ?? []).filter((item) => item.page !== score.currentPage),
+    }));
+  }
+
   function undoLastSymbol() {
     if (!activeScore) return;
 
@@ -1179,6 +1319,7 @@ export default function ScoreReaderAppPage() {
           currentPage: clampPage(score.currentPage, pdfDocument.numPages),
           movements: score.movements?.length ? score.movements : cloneDefaultMovements(),
           symbols: score.symbols ?? [],
+          drawings: score.drawings ?? [],
         });
       }
 
@@ -1232,6 +1373,35 @@ export default function ScoreReaderAppPage() {
       const pdfDoc = await PDFDocument.load(pdfBytes);
       const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
       const pages = pdfDoc.getPages();
+
+      (activeScore.drawings ?? []).forEach((stroke) => {
+        const page = pages[stroke.page - 1];
+        if (!page || stroke.points.length < 2) return;
+
+        const { width, height } = page.getSize();
+        const color = toRgb01(stroke.color ?? "#000000");
+        const opacity = stroke.tool === "marker" ? 0.35 : 1;
+        const thickness = Math.max(0.5, Math.min(stroke.size ?? DEFAULT_PEN_SIZE, 24));
+
+        for (let index = 1; index < stroke.points.length; index += 1) {
+          const previous = stroke.points[index - 1];
+          const current = stroke.points[index];
+
+          page.drawLine({
+            start: {
+              x: (previous.x / 100) * width,
+              y: height - (previous.y / 100) * height,
+            },
+            end: {
+              x: (current.x / 100) * width,
+              y: height - (current.y / 100) * height,
+            },
+            thickness,
+            color: rgb(color.r, color.g, color.b),
+            opacity,
+          });
+        }
+      });
 
       activeScore.symbols.forEach((symbol) => {
         const page = pages[symbol.page - 1];
@@ -1293,6 +1463,11 @@ export default function ScoreReaderAppPage() {
     setSelectedSymbol("1");
     setSymbolSize(DEFAULT_SYMBOL_SIZE);
     setSymbolColor("#000000");
+    setActiveTool("symbol");
+    setPenSize(DEFAULT_PEN_SIZE);
+    setMarkerSize(DEFAULT_MARKER_SIZE);
+    setPenColor(DEFAULT_PEN_COLOR);
+    setMarkerColor(DEFAULT_MARKER_COLOR);
     setShowNavigator(true);
     setSelectedPlacedSymbolId(null);
     setDraggingSymbolId(null);
@@ -1300,6 +1475,8 @@ export default function ScoreReaderAppPage() {
     setIsPageRendering(false);
     setPdfError(null);
     setIsBackupWorking(false);
+    currentDrawingStrokeIdRef.current = null;
+    drawingMovedRef.current = false;
     setRenderRevision((value) => value + 1);
 
     localStorage.removeItem(STORAGE_KEYS.scoresMeta);
@@ -1343,13 +1520,16 @@ export default function ScoreReaderAppPage() {
       <div
         ref={scorePageRef}
         onClick={handleScorePageClick}
+        onPointerDown={handleScorePagePointerDown}
         onPointerMove={handleScorePagePointerMove}
         onPointerUp={handleScorePagePointerUp}
         onPointerCancel={handleScorePagePointerUp}
         className={
           isPerformance
             ? "relative inline-block w-full max-w-full select-none"
-            : "relative inline-block max-h-full max-w-full cursor-crosshair select-none"
+            : activeTool === "symbol"
+              ? "relative inline-block max-h-full max-w-full cursor-crosshair select-none"
+              : "relative inline-block max-h-full max-w-full cursor-crosshair touch-none select-none"
         }
       >
         <canvas
@@ -1360,6 +1540,27 @@ export default function ScoreReaderAppPage() {
               : "block max-h-full max-w-full rounded-xl bg-white shadow-2xl"
           }
         />
+
+        <svg
+          className="pointer-events-none absolute inset-0 h-full w-full"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          style={{ zIndex: 10 }}
+        >
+          {currentPageDrawings.map((stroke) => (
+            <path
+              key={stroke.id}
+              d={pointsToSvgPath(stroke.points)}
+              fill="none"
+              stroke={stroke.color}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={stroke.size}
+              opacity={stroke.tool === "marker" ? 0.35 : 1}
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+        </svg>
 
         {currentPageSymbols.map((item) => {
           const isSelected = selectedPlacedSymbolId === item.id;
@@ -1803,6 +2004,94 @@ export default function ScoreReaderAppPage() {
               </p>
             </div>
 
+            <div className="mb-4 rounded-xl border border-slate-800 bg-slate-950 p-2">
+              <h3 className="text-[11px] font-black text-amber-300">
+                ペン・マーカー
+              </h3>
+              <p className="mt-1 text-[10px] leading-relaxed text-slate-400">
+                ペンまたはマーカーを選び、楽譜上をなぞると手書きできます。
+              </p>
+
+              <div className="mt-2 grid grid-cols-3 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setActiveTool("symbol")}
+                  className={
+                    activeTool === "symbol"
+                      ? "rounded-md bg-emerald-400 px-2 py-1.5 text-[11px] font-black text-slate-950"
+                      : "rounded-md border border-slate-700 px-2 py-1.5 text-[11px] font-bold text-white hover:bg-slate-800"
+                  }
+                >
+                  記号
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTool("pen")}
+                  className={
+                    activeTool === "pen"
+                      ? "rounded-md bg-red-400 px-2 py-1.5 text-[11px] font-black text-slate-950"
+                      : "rounded-md border border-slate-700 px-2 py-1.5 text-[11px] font-bold text-white hover:bg-slate-800"
+                  }
+                >
+                  ペン
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTool("marker")}
+                  className={
+                    activeTool === "marker"
+                      ? "rounded-md bg-amber-300 px-2 py-1.5 text-[11px] font-black text-slate-950"
+                      : "rounded-md border border-slate-700 px-2 py-1.5 text-[11px] font-bold text-white hover:bg-slate-800"
+                  }
+                >
+                  マーカー
+                </button>
+              </div>
+
+              <label className="mt-3 block text-[10px] font-bold text-slate-400">
+                ペン太さ：{penSize}px
+              </label>
+              <input
+                type="range"
+                min="1.5"
+                max="4"
+                step="0.5"
+                value={penSize}
+                onChange={(event) => setPenSize(Number(event.target.value))}
+                className="mt-1 w-full"
+              />
+
+              <label className="mt-2 block text-[10px] font-bold text-slate-400">
+                マーカー太さ：{markerSize}px
+              </label>
+              <input
+                type="range"
+                min="5"
+                max="12"
+                step="1"
+                value={markerSize}
+                onChange={(event) => setMarkerSize(Number(event.target.value))}
+                className="mt-1 w-full"
+              />
+
+              <div className="mt-3 grid grid-cols-2 gap-1.5">
+                <button
+                  type="button"
+                  onClick={undoLastDrawing}
+                  className="rounded-md border border-slate-700 px-2 py-1.5 text-[11px] font-bold text-slate-200 hover:bg-slate-800"
+                >
+                  最後の線を戻す
+                </button>
+                <button
+                  type="button"
+                  onClick={clearCurrentPageDrawings}
+                  className="rounded-md border border-red-400/40 px-2 py-1.5 text-[11px] font-bold text-red-200 hover:bg-red-500/20"
+                >
+                  このページの線消去
+                </button>
+              </div>
+            </div>
+
             <div className="space-y-3">
               {PALETTE_GROUPS.map((group) => (
                 <div key={group.title}>
@@ -1816,7 +2105,10 @@ export default function ScoreReaderAppPage() {
                       return (
                         <button
                           key={item}
-                          onClick={() => replaceSelectedSymbol(item)}
+                          onClick={() => {
+                            setActiveTool("symbol");
+                            replaceSelectedSymbol(item);
+                          }}
                           className={
                             active
                               ? "rounded-md bg-emerald-400 px-1.5 py-1.5 text-center text-[11px] font-black text-slate-950 shadow"
