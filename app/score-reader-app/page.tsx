@@ -79,6 +79,8 @@ type ScoreReaderPdfMetadata = {
   totalPages: number;
   currentPage: number;
   movements: MovementBookmark[];
+  symbols?: PlacedSymbol[];
+  drawings?: DrawingStroke[];
 };
 
 type PdfDocumentLike = {
@@ -733,6 +735,8 @@ export default function ScoreReaderAppPage() {
         "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
 
       const newScores: ScoreItem[] = [];
+      const hydratedScores = new Map<string, ScoreItem>();
+      let firstAvailableScoreId = "";
 
       for (const file of files) {
         if (file.type !== "application/pdf") continue;
@@ -746,11 +750,59 @@ export default function ScoreReaderAppPage() {
 
         const pdfDocument = await loadingTask.promise;
         const embeddedMetadata = await readScoreReaderPdfMetadata(pdfDocument);
-        const scoreId = createId("score");
+        const title = file.name.replace(/\.pdf$/i, "");
 
+        // ブラウザ再読み込み後は、曲順・記号・楽章ページだけがlocalStorageに残り、
+        // PDF本体はブラウザの安全制限で復元できません。
+        // その状態で同じPDFを再アップロードした場合は、新規追加ではなく、
+        // 既存の楽譜データへPDF本体を再接続します。
+        const staleActiveScore =
+          activeScoreId && !pdfDocsRef.current[activeScoreId]
+            ? scores.find((score) => score.id === activeScoreId)
+            : undefined;
+
+        const existingScore =
+          scores.find((score) => score.fileName === file.name) ??
+          scores.find(
+            (score) =>
+              score.title.replace(/\s+/g, "").toLowerCase() ===
+              title.replace(/\s+/g, "").toLowerCase()
+          ) ??
+          staleActiveScore;
+
+        if (existingScore && !hydratedScores.has(existingScore.id)) {
+          pdfDocsRef.current[existingScore.id] = pdfDocument;
+
+          const restoredMovements = embeddedMetadata?.movements
+            ? normalizeMovements(embeddedMetadata.movements, pdfDocument.numPages)
+            : normalizeMovements(existingScore.movements, pdfDocument.numPages);
+
+          const restoredCurrentPage = embeddedMetadata
+            ? clampPage(embeddedMetadata.currentPage, pdfDocument.numPages)
+            : clampPage(existingScore.currentPage ?? 1, pdfDocument.numPages);
+
+          hydratedScores.set(existingScore.id, {
+            ...existingScore,
+            title: existingScore.title || title,
+            fileName: file.name,
+            totalPages: pdfDocument.numPages,
+            currentPage: restoredCurrentPage,
+            movements: restoredMovements,
+            symbols: embeddedMetadata?.symbols ?? existingScore.symbols ?? [],
+            drawings: embeddedMetadata?.drawings ?? existingScore.drawings ?? [],
+            pdfDataUrl,
+          });
+
+          if (!firstAvailableScoreId) {
+            firstAvailableScoreId = existingScore.id;
+          }
+
+          continue;
+        }
+
+        const scoreId = createId("score");
         pdfDocsRef.current[scoreId] = pdfDocument;
 
-        const title = file.name.replace(/\.pdf$/i, "");
         const restoredMovements = normalizeMovements(
           embeddedMetadata?.movements,
           pdfDocument.numPages
@@ -766,21 +818,31 @@ export default function ScoreReaderAppPage() {
           totalPages: pdfDocument.numPages,
           currentPage: restoredCurrentPage,
           movements: restoredMovements,
-          symbols: [],
-          drawings: [],
+          symbols: embeddedMetadata?.symbols ?? [],
+          drawings: embeddedMetadata?.drawings ?? [],
           pdfDataUrl,
         });
+
+        if (!firstAvailableScoreId) {
+          firstAvailableScoreId = scoreId;
+        }
       }
 
-      if (newScores.length === 0) {
+      if (newScores.length === 0 && hydratedScores.size === 0) {
         setPdfError("PDFファイルを選択してください。");
         return;
       }
 
-      setScores((prev) => [...prev, ...newScores]);
+      setScores((prev) => {
+        const updated = prev.map((score) => hydratedScores.get(score.id) ?? score);
+        return [...updated, ...newScores];
+      });
 
-      if (!activeScoreId) {
-        setActiveScoreId(newScores[0].id);
+      if (
+        firstAvailableScoreId &&
+        (!activeScoreId || !pdfDocsRef.current[activeScoreId])
+      ) {
+        setActiveScoreId(firstAvailableScoreId);
       }
 
       setSelectedPlacedSymbolId(null);
