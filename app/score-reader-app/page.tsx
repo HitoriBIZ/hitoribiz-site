@@ -70,6 +70,17 @@ type ScoreReaderBackup = {
   scores: ScoreItem[];
 };
 
+type ScoreReaderPdfMetadata = {
+  app: "Orchestra Score Reader Annotated PDF";
+  version: 1;
+  exportedAt: string;
+  title: string;
+  fileName: string;
+  totalPages: number;
+  currentPage: number;
+  movements: MovementBookmark[];
+};
+
 type PdfDocumentLike = {
   numPages: number;
   getPage: (pageNumber: number) => Promise<any>;
@@ -152,12 +163,125 @@ const STORAGE_KEYS = {
   symbolColor: "orchestra-score-reader-app-symbol-color",
 };
 
+const SCORE_READER_PDF_METADATA_MARKER = "OSR_METADATA:";
+
 function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
 function cloneDefaultMovements(): MovementBookmark[] {
   return DEFAULT_MOVEMENTS.map((movement) => ({ ...movement }));
+}
+
+function clampPage(pageNumber: number, totalPages: number) {
+  if (!Number.isFinite(pageNumber)) return 1;
+  return Math.max(1, Math.min(totalPages, Math.round(pageNumber)));
+}
+
+function encodeScoreReaderPdfMetadata(metadata: ScoreReaderPdfMetadata) {
+  const json = JSON.stringify(metadata);
+  const bytes = new TextEncoder().encode(json);
+  let binary = "";
+  const chunkSize = 0x8000;
+
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    const chunk = bytes.subarray(index, index + chunkSize);
+    binary += String.fromCharCode(...Array.from(chunk));
+  }
+
+  return `${SCORE_READER_PDF_METADATA_MARKER}${window.btoa(binary)}`;
+}
+
+function decodeScoreReaderPdfMetadata(value: unknown): ScoreReaderPdfMetadata | null {
+  if (typeof value !== "string") return null;
+
+  const match = new RegExp(`${SCORE_READER_PDF_METADATA_MARKER}([A-Za-z0-9+/=]+)`).exec(value);
+  if (!match) return null;
+
+  try {
+    const binary = window.atob(match[1]);
+    const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+    const json = new TextDecoder().decode(bytes);
+    const parsed = JSON.parse(json) as ScoreReaderPdfMetadata;
+
+    if (
+      parsed.app !== "Orchestra Score Reader Annotated PDF" ||
+      !Array.isArray(parsed.movements)
+    ) {
+      return null;
+    }
+
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+async function readScoreReaderPdfMetadata(
+  pdfDocument: PdfDocumentLike
+): Promise<ScoreReaderPdfMetadata | null> {
+  const metadataReader = (pdfDocument as PdfDocumentLike & {
+    getMetadata?: () => Promise<{
+      info?: Record<string, unknown>;
+      metadata?: { get?: (name: string) => unknown };
+    }>;
+  }).getMetadata;
+
+  if (!metadataReader) return null;
+
+  try {
+    const result = await metadataReader();
+    const info = result.info ?? {};
+    const pdfMetadata = result.metadata;
+
+    const candidates: unknown[] = [
+      info.Subject,
+      info.Keywords,
+      info.Title,
+      info.Creator,
+      info.Producer,
+      pdfMetadata?.get?.("dc:title"),
+      pdfMetadata?.get?.("dc:description"),
+      pdfMetadata?.get?.("pdf:Keywords"),
+    ];
+
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate)) {
+        for (const item of candidate) {
+          const decoded = decodeScoreReaderPdfMetadata(item);
+          if (decoded) return decoded;
+        }
+      } else {
+        const decoded = decodeScoreReaderPdfMetadata(candidate);
+        if (decoded) return decoded;
+      }
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
+function normalizeMovements(
+  movements: MovementBookmark[] | undefined,
+  totalPages: number
+): MovementBookmark[] {
+  const defaults = cloneDefaultMovements();
+
+  return defaults.map((defaultMovement) => {
+    const savedMovement = movements?.find(
+      (movement) => movement.label === defaultMovement.label
+    );
+
+    if (!savedMovement) return defaultMovement;
+
+    return {
+      ...defaultMovement,
+      ...savedMovement,
+      pageNumber: clampPage(savedMovement.pageNumber, totalPages),
+    };
+  });
 }
 
 function stripPdfData(scores: ScoreItem[]) {
@@ -608,19 +732,27 @@ export default function ScoreReaderAppPage() {
         });
 
         const pdfDocument = await loadingTask.promise;
+        const embeddedMetadata = await readScoreReaderPdfMetadata(pdfDocument);
         const scoreId = createId("score");
 
         pdfDocsRef.current[scoreId] = pdfDocument;
 
         const title = file.name.replace(/\.pdf$/i, "");
+        const restoredMovements = normalizeMovements(
+          embeddedMetadata?.movements,
+          pdfDocument.numPages
+        );
+        const restoredCurrentPage = embeddedMetadata
+          ? clampPage(embeddedMetadata.currentPage, pdfDocument.numPages)
+          : 1;
 
         newScores.push({
           id: scoreId,
           title,
           fileName: file.name,
           totalPages: pdfDocument.numPages,
-          currentPage: 1,
-          movements: cloneDefaultMovements(),
+          currentPage: restoredCurrentPage,
+          movements: restoredMovements,
           symbols: [],
           drawings: [],
           pdfDataUrl,
@@ -1317,7 +1449,7 @@ export default function ScoreReaderAppPage() {
           ...score,
           totalPages: pdfDocument.numPages,
           currentPage: clampPage(score.currentPage, pdfDocument.numPages),
-          movements: score.movements?.length ? score.movements : cloneDefaultMovements(),
+          movements: normalizeMovements(score.movements, pdfDocument.numPages),
           symbols: score.symbols ?? [],
           drawings: score.drawings ?? [],
         });
@@ -1422,6 +1554,23 @@ export default function ScoreReaderAppPage() {
           color: rgb(color.r, color.g, color.b),
         });
       });
+
+      const embeddedMetadata = encodeScoreReaderPdfMetadata({
+        app: "Orchestra Score Reader Annotated PDF",
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        title: activeScore.title,
+        fileName: activeScore.fileName,
+        totalPages: activeScore.totalPages,
+        currentPage: activeScore.currentPage,
+        movements: normalizeMovements(activeScore.movements, activeScore.totalPages),
+      });
+
+      pdfDoc.setTitle(activeScore.title);
+      pdfDoc.setSubject(embeddedMetadata);
+      pdfDoc.setKeywords(["Orchestra Score Reader", embeddedMetadata]);
+      pdfDoc.setCreator("Orchestra Score Reader");
+      pdfDoc.setProducer("Orchestra Score Reader");
 
       const annotatedBytes = await pdfDoc.save();
       const blob = new Blob([annotatedBytes], { type: "application/pdf" });
