@@ -227,37 +227,50 @@ async function readScoreReaderPdfMetadata(
     }>;
   }).getMetadata;
 
-  if (!metadataReader) return null;
-
   try {
-    const result = await metadataReader();
-    const info = result.info ?? {};
-    const pdfMetadata = result.metadata;
+    if (metadataReader) {
+      const result = await metadataReader();
+      const info = result.info ?? {};
+      const pdfMetadata = result.metadata;
 
-    const candidates: unknown[] = [
-      info.Subject,
-      info.Keywords,
-      info.Title,
-      info.Creator,
-      info.Producer,
-      pdfMetadata?.get?.("dc:title"),
-      pdfMetadata?.get?.("dc:description"),
-      pdfMetadata?.get?.("pdf:Keywords"),
-    ];
+      const candidates: unknown[] = [
+        info.Subject,
+        info.Keywords,
+        info.Title,
+        info.Creator,
+        info.Producer,
+        pdfMetadata?.get?.("dc:title"),
+        pdfMetadata?.get?.("dc:description"),
+        pdfMetadata?.get?.("pdf:Keywords"),
+      ];
 
-    for (const candidate of candidates) {
-      if (Array.isArray(candidate)) {
-        for (const item of candidate) {
-          const decoded = decodeScoreReaderPdfMetadata(item);
+      for (const candidate of candidates) {
+        if (Array.isArray(candidate)) {
+          for (const item of candidate) {
+            const decoded = decodeScoreReaderPdfMetadata(item);
+            if (decoded) return decoded;
+          }
+        } else {
+          const decoded = decodeScoreReaderPdfMetadata(candidate);
           if (decoded) return decoded;
         }
-      } else {
-        const decoded = decodeScoreReaderPdfMetadata(candidate);
-        if (decoded) return decoded;
       }
     }
   } catch {
-    return null;
+    // PDFの標準メタデータが読めない場合でも、下の不可視テキストを試します。
+  }
+
+  try {
+    const firstPage = await pdfDocument.getPage(1);
+    const textContent = await firstPage.getTextContent();
+    const combinedText = (textContent.items ?? [])
+      .map((item: { str?: string }) => item.str ?? "")
+      .join("");
+
+    const decoded = decodeScoreReaderPdfMetadata(combinedText);
+    if (decoded) return decoded;
+  } catch {
+    // 古いPDFや特殊なPDFではテキスト抽出に失敗することがあります。
   }
 
   return null;
@@ -1571,6 +1584,21 @@ export default function ScoreReaderAppPage() {
       pdfDoc.setKeywords(["Orchestra Score Reader", embeddedMetadata]);
       pdfDoc.setCreator("Orchestra Score Reader");
       pdfDoc.setProducer("Orchestra Score Reader");
+
+      // iPad / Chrome / PDF保存経路によっては標準メタデータだけでは
+      // 再アップロード時に読めないことがあるため、1ページ目に
+      // Score Reader専用データを極小・白文字で埋め込みます。
+      // 通常表示・印刷では見えませんが、PDF.jsのテキスト抽出で復元できます。
+      const firstPage = pdfDoc.getPage(0);
+      firstPage.drawText(embeddedMetadata, {
+        x: 1,
+        y: 1,
+        size: 1,
+        font,
+        color: rgb(1, 1, 1),
+        maxWidth: 500,
+        lineHeight: 1,
+      });
 
       const annotatedBytes = await pdfDoc.save();
       const blob = new Blob([annotatedBytes], { type: "application/pdf" });
