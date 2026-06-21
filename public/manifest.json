@@ -1,22 +1,21 @@
 {
-  "name": "Orchestra Metronome",
-  "short_name": "Metronome",
-  "description": "Stage-ready orchestra metronome by HitoriBIZ",
-  "start_url": "/metronome-app",
+  "name": "HitoriBIZ",
+  "short_name": "HitoriBIZ",
+  "description": "スモールなビジネスのためのWeb制作とAI・デジタル活用支援",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#05030a",
-  "theme_color": "#d4a64a",
+  "background_color": "#ffffff",
+  "theme_color": "#061b49",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "/icons/hitoribiz/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "/icons/hitoribiz/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
