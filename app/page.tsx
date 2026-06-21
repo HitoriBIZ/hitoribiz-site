@@ -21,9 +21,7 @@ export default function HomePage() {
           <p className="mt-6 text-base leading-relaxed text-slate-600">
             個人事業主・フリーランスなど、小規模事業のための
             ホームページ・ECサイト制作とデジタル活用をサポートしています。
-            <br />
             大きな制作会社に頼むほどではないけれど、きちんと形にしたい。
-            <br />
             そんな方に向けて、無理のない予算で、必要なところから丁寧にお手伝いします。
           </p>
 
