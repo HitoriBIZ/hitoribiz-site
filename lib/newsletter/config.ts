@@ -1,4 +1,4 @@
-export const newsletterConfig = {
+﻿export const newsletterConfig = {
   serviceName: "HitoriBIZ Newsletter",
   companyName: "HitoriBIZ",
   senderName: "HitoriBIZ",
@@ -11,7 +11,12 @@ export const newsletterConfig = {
 } as const;
 
 export const newsletterInterests = [
-  "AI活用", "ホームページ制作", "ECサイト", "SNS広告",
-  "Orchestra Tools", "Score Reader", "音楽関連サービス",
+  "AI活用",
+  "ホームページ制作",
+  "ECサイト",
+  "SNS広告",
+  "Orchestra Tools",
+  "Score Reader",
+  "音楽関連サービス",
   "HitoriBIZからのお知らせ",
 ] as const;
