@@ -1,5 +1,6 @@
-"use client";
+﻿"use client";
 
+import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { SupabaseCampaignRow } from "../../../../../lib/newsletter/supabase";
@@ -214,8 +215,17 @@ export default function CampaignEditForm({
           </div>
         </div>
 
-        <div className="rounded-xl border border-blue-100 bg-blue-50 p-5 text-sm leading-7 text-blue-900">
-          本配信ボタンはまだ追加していません。次の段階で、active読者のみ・配信停止者除外・最終確認画面を入れてから実装します。
+        <div className="rounded-xl border border-blue-100 bg-blue-50 p-5 shadow-sm">
+          <h2 className="text-sm font-bold text-blue-950">本配信前の確認</h2>
+          <p className="mt-2 text-xs leading-6 text-blue-900">
+            対象読者数、除外される配信停止者、送信元、件名、本文を確認してから本配信へ進みます。
+          </p>
+          <Link
+            href={`/admin/newsletter/campaigns/${campaign.id}/confirm`}
+            className="mt-4 inline-flex w-full justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+          >
+            本配信前の確認へ
+          </Link>
         </div>
       </aside>
     </div>

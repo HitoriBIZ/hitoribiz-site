@@ -173,6 +173,55 @@ export async function listNewsletterSubscribers() {
   };
 }
 
+export async function getNewsletterDeliveryPreviewStats() {
+  const config = getSupabaseConfig();
+
+  if (!config) {
+    return {
+      configured: false as const,
+      totalSubscribers: 0,
+      activeSubscribers: 0,
+      unsubscribedSubscribers: 0,
+      excludedSubscribers: 0,
+    };
+  }
+
+  const response = await fetch(
+    `${config.url}/rest/v1/subscribers?select=id,status`,
+    {
+      headers: {
+        apikey: config.key,
+        Authorization: `Bearer ${config.key}`,
+      },
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`配信対象者数の取得に失敗しました。${errorText}`);
+  }
+
+  const subscribers = (await response.json()) as Array<{
+    id: string;
+    status: string;
+  }>;
+  const activeSubscribers = subscribers.filter(
+    (subscriber) => subscriber.status === "active"
+  ).length;
+  const unsubscribedSubscribers = subscribers.filter(
+    (subscriber) => subscriber.status === "unsubscribed"
+  ).length;
+
+  return {
+    configured: true as const,
+    totalSubscribers: subscribers.length,
+    activeSubscribers,
+    unsubscribedSubscribers,
+    excludedSubscribers: subscribers.length - activeSubscribers,
+  };
+}
+
 export async function listNewsletterCampaigns() {
   const config = getSupabaseConfig();
 
