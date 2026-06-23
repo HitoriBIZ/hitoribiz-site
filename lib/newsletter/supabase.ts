@@ -1,4 +1,4 @@
-import { newsletterConfig } from "./config";
+﻿import { newsletterConfig } from "./config";
 
 type SubscribeInput = {
   email: string;
@@ -18,11 +18,12 @@ type SupabaseSubscriberRow = {
   status: string;
   consent_source: string;
   consent_at: string;
+  unsubscribed_at: string | null;
   created_at: string;
   updated_at: string;
 };
 
-function getSupabaseConfig() {
+export function getSupabaseConfig() {
   const url =
     process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
   const key =
@@ -86,4 +87,38 @@ export async function upsertNewsletterSubscriber(input: SubscribeInput) {
 
   const rows = (await response.json()) as SupabaseSubscriberRow[];
   return rows[0] ?? null;
+}
+
+export async function listNewsletterSubscribers() {
+  const config = getSupabaseConfig();
+
+  if (!config) {
+    return {
+      configured: false as const,
+      subscribers: [],
+    };
+  }
+
+  const response = await fetch(
+    `${config.url}/rest/v1/subscribers?select=id,email,name,company_name,interests,status,consent_source,consent_at,unsubscribed_at,created_at,updated_at&order=created_at.desc`,
+    {
+      headers: {
+        apikey: config.key,
+        Authorization: `Bearer ${config.key}`,
+      },
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`読者一覧の取得に失敗しました。${errorText}`);
+  }
+
+  const subscribers = (await response.json()) as SupabaseSubscriberRow[];
+
+  return {
+    configured: true as const,
+    subscribers,
+  };
 }
