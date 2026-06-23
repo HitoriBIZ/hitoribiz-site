@@ -1,4 +1,5 @@
 ﻿import { newsletterConfig } from "./config";
+import type { CampaignStatus } from "./types";
 
 type SubscribeInput = {
   email: string;
@@ -28,6 +29,29 @@ type SupabaseUnsubscribeTokenRow = {
   subscriber_id: string;
   expires_at: string | null;
   used_at: string | null;
+};
+
+export type SupabaseCampaignRow = {
+  id: string;
+  name: string;
+  subject: string;
+  preview_text: string;
+  body: string;
+  status: CampaignStatus;
+  scheduled_at: string | null;
+  sent_at: string | null;
+  sender_name: string;
+  reply_to: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type CreateCampaignDraftInput = {
+  name: string;
+  subject: string;
+  previewText: string;
+  body: string;
+  scheduledAt: string | null;
 };
 
 async function hashUnsubscribeToken(token: string) {
@@ -143,6 +167,82 @@ export async function listNewsletterSubscribers() {
     configured: true as const,
     subscribers,
   };
+}
+
+export async function listNewsletterCampaigns() {
+  const config = getSupabaseConfig();
+
+  if (!config) {
+    return {
+      configured: false as const,
+      campaigns: [],
+    };
+  }
+
+  const response = await fetch(
+    `${config.url}/rest/v1/campaigns?select=id,name,subject,preview_text,body,status,scheduled_at,sent_at,sender_name,reply_to,created_at,updated_at&order=created_at.desc`,
+    {
+      headers: {
+        apikey: config.key,
+        Authorization: `Bearer ${config.key}`,
+      },
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`キャンペーン一覧の取得に失敗しました。${errorText}`);
+  }
+
+  const campaigns = (await response.json()) as SupabaseCampaignRow[];
+
+  return {
+    configured: true as const,
+    campaigns,
+  };
+}
+
+export async function createNewsletterCampaignDraft(
+  input: CreateCampaignDraftInput
+) {
+  const config = getSupabaseConfig();
+
+  if (!config) {
+    throw new Error(
+      "Supabaseの環境変数が未設定です。SUPABASE_URL と SUPABASE_SERVICE_ROLE_KEY を設定してください。"
+    );
+  }
+
+  const response = await fetch(`${config.url}/rest/v1/campaigns`, {
+    method: "POST",
+    headers: {
+      apikey: config.key,
+      Authorization: `Bearer ${config.key}`,
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify({
+      name: input.name,
+      subject: input.subject,
+      preview_text: input.previewText,
+      body: input.body,
+      status: "draft",
+      scheduled_at: input.scheduledAt,
+      sent_at: null,
+      sender_name: newsletterConfig.senderName,
+      reply_to: newsletterConfig.replyTo,
+    }),
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`キャンペーン下書き保存に失敗しました。${errorText}`);
+  }
+
+  const rows = (await response.json()) as SupabaseCampaignRow[];
+  return rows[0] ?? null;
 }
 
 export async function createNewsletterUnsubscribeToken(subscriberId: string) {
