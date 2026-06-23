@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { notFound } from "next/navigation";
 import { newsletterConfig } from "../../../../../../lib/newsletter/config";
 import {
@@ -12,6 +12,7 @@ import {
   PageHeader,
   StatusBadge,
 } from "../../../../../components/newsletter/AdminUi";
+import SendCampaignForm from "./SendCampaignForm";
 
 export const dynamic = "force-dynamic";
 
@@ -101,7 +102,7 @@ export default async function CampaignConfirmPage({
     <div className="mx-auto max-w-7xl">
       <PageHeader
         title="本配信前の最終確認"
-        description="本配信の前に、対象読者数・除外者・送信元・件名・本文を確認します。まだ送信は実行しません。"
+        description="対象読者数・除外者・送信元・件名・本文を確認してから、最大5件まで安全制限付きで本配信します。"
       />
 
       <div className="mt-5 flex flex-wrap items-center gap-3 text-sm">
@@ -117,22 +118,15 @@ export default async function CampaignConfirmPage({
         </span>
       </div>
 
+      <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm leading-7 text-amber-950">
+        初回の安全措置として、この本配信ボタンは active 読者のうち最大5件までに制限しています。
+        配信停止者、エラー、停止中の読者には送信しません。
+      </div>
+
       <div className="mt-6 grid gap-4 sm:grid-cols-4">
-        <StatBox
-          label="配信予定読者"
-          value={stats.activeSubscribers}
-          tone="emerald"
-        />
-        <StatBox
-          label="配信停止者"
-          value={stats.unsubscribedSubscribers}
-          tone="rose"
-        />
-        <StatBox
-          label="除外合計"
-          value={stats.excludedSubscribers}
-          tone="blue"
-        />
+        <StatBox label="配信予定読者" value={stats.activeSubscribers} tone="emerald" />
+        <StatBox label="配信停止者" value={stats.unsubscribedSubscribers} tone="rose" />
+        <StatBox label="除外合計" value={stats.excludedSubscribers} tone="blue" />
         <StatBox label="読者総数" value={stats.totalSubscribers} />
       </div>
 
@@ -188,15 +182,11 @@ export default async function CampaignConfirmPage({
               </div>
               <div>
                 <dt className="font-semibold text-slate-600">対象条件</dt>
-                <dd className="mt-1 text-slate-950">
-                  status が active の読者のみ
-                </dd>
+                <dd className="mt-1 text-slate-950">status が active の読者のみ</dd>
               </div>
               <div>
                 <dt className="font-semibold text-slate-600">除外条件</dt>
-                <dd className="mt-1 text-slate-950">
-                  配信停止・エラー・停止中の読者
-                </dd>
+                <dd className="mt-1 text-slate-950">配信停止・エラー・停止中の読者</dd>
               </div>
             </dl>
           </section>
@@ -231,17 +221,12 @@ export default async function CampaignConfirmPage({
           </section>
 
           <section className="rounded-xl border border-rose-200 bg-rose-50 p-5 text-sm leading-7 text-rose-950 shadow-sm">
-            <h2 className="font-bold">安全のため、まだ送信しません</h2>
+            <h2 className="font-bold">本配信を実行</h2>
             <p className="mt-2">
-              この画面は最終確認用です。次のステップで、本配信ボタン、二重確認、配信履歴保存、失敗時の記録を追加します。
+              実行すると、active読者のうち最大5件に送信し、送信結果をSupabaseに保存します。
+              送信後、このキャンペーンは配信済みになります。
             </p>
-            <button
-              type="button"
-              disabled
-              className="mt-4 w-full rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white opacity-50"
-            >
-              本配信する（次ステップで実装）
-            </button>
+            <SendCampaignForm campaignId={campaign.id} disabled={!canProceed} />
           </section>
         </aside>
       </div>

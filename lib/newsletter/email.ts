@@ -1,9 +1,15 @@
 ﻿import { newsletterConfig } from "./config";
-import type { SupabaseCampaignRow } from "./supabase";
+import type { NewsletterRecipientRow, SupabaseCampaignRow } from "./supabase";
 
 type SendNewsletterTestEmailInput = {
   campaign: SupabaseCampaignRow;
   to: string;
+};
+
+type SendNewsletterCampaignEmailInput = {
+  campaign: SupabaseCampaignRow;
+  recipient: NewsletterRecipientRow;
+  unsubscribeToken: string;
 };
 
 const defaultResendFromEmail = "HitoriBIZ <onboarding@resend.dev>";
@@ -32,6 +38,20 @@ function escapeHtml(value: string) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function getSiteUrl() {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    process.env.SITE_URL ??
+    "https://hitori-biz.com"
+  ).replace(/\/$/, "");
+}
+
+function buildUnsubscribeUrl(token: string) {
+  return `${getSiteUrl()}/newsletter/unsubscribe?token=${encodeURIComponent(
+    token
+  )}`;
 }
 
 function buildTestEmailHtml(campaign: SupabaseCampaignRow) {
@@ -80,6 +100,64 @@ function buildTestEmailText(campaign: SupabaseCampaignRow) {
     .join("\n");
 }
 
+function buildCampaignEmailHtml(
+  campaign: SupabaseCampaignRow,
+  recipient: NewsletterRecipientRow,
+  unsubscribeToken: string
+) {
+  const body = escapeHtml(campaign.body).replace(/\n/g, "<br />");
+  const unsubscribeUrl = buildUnsubscribeUrl(unsubscribeToken);
+  const recipientName = recipient.name ? `${escapeHtml(recipient.name)} 様` : "";
+
+  return `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.8; color: #0f172a;">
+      ${recipientName ? `<p>${recipientName}</p>` : ""}
+      <h1 style="font-size: 22px; margin: 0 0 8px;">${escapeHtml(
+        campaign.subject
+      )}</h1>
+      ${
+        campaign.preview_text
+          ? `<p style="margin: 0 0 24px; color: #64748b;">${escapeHtml(
+              campaign.preview_text
+            )}</p>`
+          : ""
+      }
+      <div style="white-space: normal; font-size: 15px;">${body}</div>
+      <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0 16px;" />
+      <p style="font-size: 12px; color: #64748b;">
+        ${escapeHtml(newsletterConfig.footerName)}<br />
+        返信先: ${escapeHtml(newsletterConfig.replyTo)}<br />
+        <a href="${escapeHtml(unsubscribeUrl)}" style="color: #2563eb;">${escapeHtml(
+          newsletterConfig.unsubscribeText
+        )}</a>
+      </p>
+    </div>
+  `;
+}
+
+function buildCampaignEmailText(
+  campaign: SupabaseCampaignRow,
+  recipient: NewsletterRecipientRow,
+  unsubscribeToken: string
+) {
+  const unsubscribeUrl = buildUnsubscribeUrl(unsubscribeToken);
+
+  return [
+    recipient.name ? `${recipient.name} 様` : "",
+    campaign.subject,
+    campaign.preview_text,
+    "",
+    campaign.body,
+    "",
+    "---",
+    newsletterConfig.footerName,
+    `返信先: ${newsletterConfig.replyTo}`,
+    `${newsletterConfig.unsubscribeText}: ${unsubscribeUrl}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 export async function sendNewsletterTestEmail({
   campaign,
   to,
@@ -118,6 +196,52 @@ export async function sendNewsletterTestEmail({
   if (!response.ok) {
     throw new Error(
       `Resendテスト送信に失敗しました。${result.message ?? response.statusText}`
+    );
+  }
+
+  return result.id ?? null;
+}
+
+export async function sendNewsletterCampaignEmail({
+  campaign,
+  recipient,
+  unsubscribeToken,
+}: SendNewsletterCampaignEmailInput) {
+  const config = getResendConfig();
+
+  if (!config) {
+    throw new Error(
+      "Resendの環境変数が未設定です。RESEND_API_KEY を .env.local に設定してください。"
+    );
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${config.apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: config.from,
+      to: [recipient.email],
+      subject: campaign.subject,
+      html: buildCampaignEmailHtml(campaign, recipient, unsubscribeToken),
+      text: buildCampaignEmailText(campaign, recipient, unsubscribeToken),
+      reply_to: config.replyTo,
+      tags: [
+        { name: "source", value: "hitoribiz_newsletter" },
+        { name: "mode", value: "production_limited" },
+        { name: "campaign_id", value: campaign.id },
+      ],
+    }),
+    cache: "no-store",
+  });
+
+  const result = (await response.json()) as { id?: string; message?: string };
+
+  if (!response.ok) {
+    throw new Error(
+      `Resend本配信に失敗しました。${result.message ?? response.statusText}`
     );
   }
 

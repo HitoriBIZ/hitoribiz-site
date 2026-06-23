@@ -24,6 +24,11 @@ type SupabaseSubscriberRow = {
   updated_at: string;
 };
 
+export type NewsletterRecipientRow = Pick<
+  SupabaseSubscriberRow,
+  "id" | "email" | "name" | "company_name" | "status"
+>;
+
 type SupabaseUnsubscribeTokenRow = {
   id: string;
   subscriber_id: string;
@@ -222,6 +227,35 @@ export async function getNewsletterDeliveryPreviewStats() {
   };
 }
 
+export async function listActiveNewsletterRecipients(limit = 5) {
+  const config = getSupabaseConfig();
+
+  if (!config) {
+    throw new Error(
+      "Supabaseの環境変数が未設定です。SUPABASE_URL と SUPABASE_SERVICE_ROLE_KEY を設定してください。"
+    );
+  }
+
+  const safeLimit = Math.max(1, Math.min(limit, 5));
+  const response = await fetch(
+    `${config.url}/rest/v1/subscribers?select=id,email,name,company_name,status&status=eq.active&order=created_at.asc&limit=${safeLimit}`,
+    {
+      headers: {
+        apikey: config.key,
+        Authorization: `Bearer ${config.key}`,
+      },
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`配信対象読者の取得に失敗しました。${errorText}`);
+  }
+
+  return (await response.json()) as NewsletterRecipientRow[];
+}
+
 export async function listNewsletterCampaigns() {
   const config = getSupabaseConfig();
 
@@ -369,6 +403,128 @@ export async function updateNewsletterCampaignDraft(
 
   const rows = (await response.json()) as SupabaseCampaignRow[];
   return rows[0] ?? null;
+}
+
+export async function updateNewsletterCampaignStatus(
+  campaignId: string,
+  status: CampaignStatus,
+  sentAt: string | null = null
+) {
+  const config = getSupabaseConfig();
+
+  if (!config) {
+    throw new Error(
+      "Supabaseの環境変数が未設定です。SUPABASE_URL と SUPABASE_SERVICE_ROLE_KEY を設定してください。"
+    );
+  }
+
+  const response = await fetch(
+    `${config.url}/rest/v1/campaigns?id=eq.${encodeURIComponent(campaignId)}`,
+    {
+      method: "PATCH",
+      headers: {
+        apikey: config.key,
+        Authorization: `Bearer ${config.key}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify({
+        status,
+        sent_at: sentAt,
+        updated_at: new Date().toISOString(),
+      }),
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`キャンペーンステータス更新に失敗しました。${errorText}`);
+  }
+
+  const rows = (await response.json()) as SupabaseCampaignRow[];
+  return rows[0] ?? null;
+}
+
+export async function recordNewsletterCampaignRecipient(input: {
+  campaignId: string;
+  subscriberId: string;
+  email: string;
+  status: "sent" | "failed" | "skipped";
+  sentAt: string | null;
+  errorMessage: string | null;
+}) {
+  const config = getSupabaseConfig();
+
+  if (!config) {
+    throw new Error(
+      "Supabaseの環境変数が未設定です。SUPABASE_URL と SUPABASE_SERVICE_ROLE_KEY を設定してください。"
+    );
+  }
+
+  const response = await fetch(
+    `${config.url}/rest/v1/campaign_recipients?on_conflict=campaign_id,subscriber_id`,
+    {
+      method: "POST",
+      headers: {
+        apikey: config.key,
+        Authorization: `Bearer ${config.key}`,
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=minimal",
+      },
+      body: JSON.stringify({
+        campaign_id: input.campaignId,
+        subscriber_id: input.subscriberId,
+        email: input.email,
+        status: input.status,
+        sent_at: input.sentAt,
+        error_message: input.errorMessage,
+      }),
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`配信結果保存に失敗しました。${errorText}`);
+  }
+}
+
+export async function recordNewsletterEmailEvent(input: {
+  campaignId: string;
+  subscriberId: string;
+  eventType: string;
+  metadata?: Record<string, unknown>;
+}) {
+  const config = getSupabaseConfig();
+
+  if (!config) {
+    throw new Error(
+      "Supabaseの環境変数が未設定です。SUPABASE_URL と SUPABASE_SERVICE_ROLE_KEY を設定してください。"
+    );
+  }
+
+  const response = await fetch(`${config.url}/rest/v1/email_events`, {
+    method: "POST",
+    headers: {
+      apikey: config.key,
+      Authorization: `Bearer ${config.key}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify({
+      campaign_id: input.campaignId,
+      subscriber_id: input.subscriberId,
+      event_type: input.eventType,
+      metadata: input.metadata ?? {},
+    }),
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`メールイベント保存に失敗しました。${errorText}`);
+  }
 }
 
 export async function createNewsletterUnsubscribeToken(subscriberId: string) {
