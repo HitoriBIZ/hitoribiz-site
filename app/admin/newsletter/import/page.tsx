@@ -1,0 +1,11 @@
+import { PageHeader } from "../../../components/newsletter/AdminUi";
+
+const columns = [
+  ["email", "必須。重複しないメールアドレス"], ["name", "氏名"], ["company_name", "会社名または屋号"],
+  ["interests", "関心テーマ。複数は | で区切る"], ["tags", "タグslug。複数は | で区切る"],
+  ["consent_at", "同意取得日時（ISO 8601）"], ["consent_source", "同意取得経路"],
+];
+
+export default function ImportPage() {
+  return <div className="mx-auto max-w-5xl"><PageHeader title="CSVインポート" description="同意取得済みの読者リストを一括登録するための準備画面です。" /><div className="mt-6 grid gap-6 lg:grid-cols-5"><section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-3"><h2 className="font-bold">CSVファイルを選択</h2><div className="mt-4 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center"><p className="text-sm font-semibold text-slate-700">CSVファイルをここにドロップ</p><p className="mt-2 text-xs text-slate-500">または</p><label className="mt-4 inline-flex cursor-not-allowed rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-white opacity-60"><input type="file" accept=".csv,text/csv" disabled className="sr-only" />ファイルを選択（Phase 2）</label></div><button type="button" disabled className="mt-4 w-full rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white opacity-60">インポート内容を確認（Phase 2）</button></section><aside className="rounded-xl border border-amber-200 bg-amber-50 p-6 lg:col-span-2"><h2 className="font-bold text-amber-950">取り込み前の確認</h2><ul className="mt-4 list-disc space-y-3 pl-5 text-sm leading-6 text-amber-900"><li>本人からメール配信への明確な同意を得たリストだけを使用してください。</li><li>同意日時と取得経路を必ず記録してください。</li><li>配信停止済みの読者をactiveに戻さないでください。</li><li>処理前に重複・形式・同意情報を検証します。</li></ul></aside></div><section className="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"><div className="border-b border-slate-200 px-5 py-4"><h2 className="font-bold">想定CSVカラム</h2><p className="mt-1 text-xs text-slate-500">文字コードはUTF-8、1行目はヘッダーを想定しています。</p></div><div className="divide-y divide-slate-100">{columns.map(([name, note]) => <div key={name} className="grid gap-1 px-5 py-3 sm:grid-cols-[180px_1fr]"><code className="text-sm font-semibold text-blue-700">{name}</code><p className="text-sm text-slate-600">{note}</p></div>)}</div></section></div>;
+}
