@@ -1,10 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
   title: "Drone Tone | Orchestra Practice Tool",
   description: "A continuous reference tone tool for orchestra practice.",
   manifest: "/drone-tone.webmanifest",
-  themeColor: "#f97316",
   appleWebApp: {
     capable: true,
     title: "Drone Tone",
@@ -31,6 +30,10 @@ export const metadata: Metadata = {
       },
     ],
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f97316",
 };
 
 export default function DroneToneLayout({

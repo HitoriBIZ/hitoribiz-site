@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
@@ -6,7 +6,6 @@ export const metadata: Metadata = {
   description:
     "Browser-based orchestra tuner for iPhone and Android. Tune with microphone input, reference tones, and orchestral pitch settings.",
   manifest: "/tuner.webmanifest",
-  themeColor: "#0f172a",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -23,6 +22,10 @@ export const metadata: Metadata = {
     ],
     shortcut: ["/icons/tuner/favicon-32.png"],
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0f172a",
 };
 
 export default function TunerLayout({ children }: { children: ReactNode }) {
