@@ -1,4 +1,5 @@
-﻿import { listNewsletterCampaigns } from "../../../../lib/newsletter/supabase";
+﻿import Link from "next/link";
+import { listNewsletterCampaigns } from "../../../../lib/newsletter/supabase";
 import type { CampaignStatus } from "../../../../lib/newsletter/types";
 import {
   formatDate,
@@ -122,9 +123,12 @@ export default async function CampaignsPage() {
                     result.campaigns.map((campaign) => (
                       <tr key={campaign.id} className="hover:bg-slate-50">
                         <td className="px-4 py-4">
-                          <p className="font-semibold text-slate-900">
+                          <Link
+                            href={`/admin/newsletter/campaigns/${campaign.id}`}
+                            className="font-semibold text-slate-900 hover:text-blue-700"
+                          >
                             {campaign.name}
-                          </p>
+                          </Link>
                           <p className="mt-1 text-xs text-slate-500">
                             件名: {campaign.subject}
                           </p>
@@ -133,6 +137,12 @@ export default async function CampaignsPage() {
                               {campaign.preview_text}
                             </p>
                           ) : null}
+                          <Link
+                            href={`/admin/newsletter/campaigns/${campaign.id}`}
+                            className="mt-2 inline-flex text-xs font-semibold text-blue-700 hover:text-blue-800"
+                          >
+                            詳細・編集
+                          </Link>
                         </td>
                         <td className="px-4 py-4">
                           <StatusBadge status={normalizeStatus(campaign.status)} />
@@ -177,7 +187,7 @@ export default async function CampaignsPage() {
           </div>
 
           <p className="mt-4 text-xs text-slate-500">
-            この画面はSupabaseの campaigns テーブルを表示しています。編集、テスト送信、本配信、配信レポートは次のPhaseで追加します。
+            この画面はSupabaseの campaigns テーブルを表示しています。キャンペーン名から詳細・編集画面へ移動できます。本配信、配信レポートは次のPhaseで追加します。
           </p>
         </>
       )}

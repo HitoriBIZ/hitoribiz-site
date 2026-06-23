@@ -54,6 +54,10 @@ type CreateCampaignDraftInput = {
   scheduledAt: string | null;
 };
 
+type UpdateCampaignDraftInput = CreateCampaignDraftInput & {
+  campaignId: string;
+};
+
 async function hashUnsubscribeToken(token: string) {
   const data = new TextEncoder().encode(token);
   const digest = await crypto.subtle.digest("SHA-256", data);
@@ -268,6 +272,50 @@ export async function createNewsletterCampaignDraft(
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`キャンペーン下書き保存に失敗しました。${errorText}`);
+  }
+
+  const rows = (await response.json()) as SupabaseCampaignRow[];
+  return rows[0] ?? null;
+}
+
+export async function updateNewsletterCampaignDraft(
+  input: UpdateCampaignDraftInput
+) {
+  const config = getSupabaseConfig();
+
+  if (!config) {
+    throw new Error(
+      "Supabaseの環境変数が未設定です。SUPABASE_URL と SUPABASE_SERVICE_ROLE_KEY を設定してください。"
+    );
+  }
+
+  const response = await fetch(
+    `${config.url}/rest/v1/campaigns?id=eq.${encodeURIComponent(
+      input.campaignId
+    )}`,
+    {
+      method: "PATCH",
+      headers: {
+        apikey: config.key,
+        Authorization: `Bearer ${config.key}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify({
+        name: input.name,
+        subject: input.subject,
+        preview_text: input.previewText,
+        body: input.body,
+        scheduled_at: input.scheduledAt,
+        updated_at: new Date().toISOString(),
+      }),
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`キャンペーン下書き更新に失敗しました。${errorText}`);
   }
 
   const rows = (await response.json()) as SupabaseCampaignRow[];
