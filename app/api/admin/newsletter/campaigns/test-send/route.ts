@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import {
   getExpectedNewsletterAdminToken,
   NEWSLETTER_ADMIN_COOKIE,
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({
-      message: "テストメールを送信しました。",
+      message: "テストメールを送信しました。受信トレイをご確認ください。",
       resendEmailId,
     });
   } catch (error) {
@@ -86,11 +86,7 @@ export async function POST(request: NextRequest) {
       error instanceof Error
         ? error.message
         : "テスト送信に失敗しました。";
-    const status =
-      message.includes("環境変数が未設定") ||
-      message.includes("Resendの環境変数")
-        ? 503
-        : 500;
+    const status = message.includes("Resendの環境変数") ? 503 : 500;
 
     return NextResponse.json({ message }, { status });
   }

@@ -1,4 +1,4 @@
-import { newsletterConfig } from "./config";
+﻿import { newsletterConfig } from "./config";
 import type { SupabaseCampaignRow } from "./supabase";
 
 type SendNewsletterTestEmailInput = {
@@ -6,14 +6,16 @@ type SendNewsletterTestEmailInput = {
   to: string;
 };
 
+const defaultResendFromEmail = "HitoriBIZ <onboarding@resend.dev>";
+
 function getResendConfig() {
   const apiKey = process.env.RESEND_API_KEY ?? "";
   const from =
     process.env.RESEND_FROM_EMAIL ??
     process.env.NEWSLETTER_FROM_EMAIL ??
-    "";
+    defaultResendFromEmail;
 
-  if (!apiKey || !from) {
+  if (!apiKey) {
     return null;
   }
 
@@ -86,7 +88,7 @@ export async function sendNewsletterTestEmail({
 
   if (!config) {
     throw new Error(
-      "Resendの環境変数が未設定です。RESEND_API_KEY と RESEND_FROM_EMAIL を設定してください。"
+      "Resendの環境変数が未設定です。RESEND_API_KEY を .env.local に設定してください。"
     );
   }
 

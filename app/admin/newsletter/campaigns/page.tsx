@@ -25,6 +25,8 @@ function normalizeStatus(status: string): CampaignStatus {
 
 export default async function CampaignsPage() {
   const result = await listNewsletterCampaigns();
+  const defaultTestEmail = process.env.NEWSLETTER_TEST_EMAIL ?? "";
+  const isResendConfigured = Boolean(process.env.RESEND_API_KEY);
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -84,6 +86,17 @@ export default async function CampaignsPage() {
             </div>
           </div>
 
+          {!isResendConfigured ? (
+            <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm leading-7 text-amber-900">
+              ResendのAPIキーが未設定です。実際にテスト送信するには{" "}
+              <code className="rounded bg-white/70 px-1 py-0.5">
+                RESEND_API_KEY
+              </code>{" "}
+              を .env.local に設定してください。送信元は未設定の場合、
+              Resend公式のテスト送信用アドレスを使います。
+            </div>
+          ) : null}
+
           <div className="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div className="overflow-x-auto">
               <table className="min-w-[1050px] w-full text-left text-sm">
@@ -138,7 +151,10 @@ export default async function CampaignsPage() {
                           </span>
                         </td>
                         <td className="px-4 py-4">
-                          <TestSendForm campaignId={campaign.id} />
+                          <TestSendForm
+                            campaignId={campaign.id}
+                            defaultTestEmail={defaultTestEmail}
+                          />
                         </td>
                         <td className="px-4 py-4 font-semibold text-slate-800">
                           {campaign.sent_at ? "確認中" : "0"}

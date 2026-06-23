@@ -1,10 +1,18 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useState } from "react";
 
 type SubmitState = "idle" | "submitting" | "success" | "error";
 
-export default function TestSendForm({ campaignId }: { campaignId: string }) {
+type TestSendFormProps = {
+  campaignId: string;
+  defaultTestEmail?: string;
+};
+
+export default function TestSendForm({
+  campaignId,
+  defaultTestEmail = "",
+}: TestSendFormProps) {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [message, setMessage] = useState("");
 
@@ -37,7 +45,6 @@ export default function TestSendForm({ campaignId }: { campaignId: string }) {
 
       setSubmitState("success");
       setMessage(result.message ?? "テストメールを送信しました。");
-      form.reset();
     } catch (error) {
       setSubmitState("error");
       setMessage(
@@ -57,7 +64,8 @@ export default function TestSendForm({ campaignId }: { campaignId: string }) {
           name="testEmail"
           type="email"
           required
-          placeholder="test@example.com"
+          defaultValue={defaultTestEmail}
+          placeholder="you@example.com"
           className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
         />
         <button
