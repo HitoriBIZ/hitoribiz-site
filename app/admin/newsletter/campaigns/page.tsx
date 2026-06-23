@@ -5,6 +5,7 @@ import {
   PageHeader,
   StatusBadge,
 } from "../../../components/newsletter/AdminUi";
+import TestSendForm from "./TestSendForm";
 
 export const dynamic = "force-dynamic";
 
@@ -94,6 +95,7 @@ export default async function CampaignsPage() {
                       "作成日",
                       "配信予定日時",
                       "送信者",
+                      "テスト送信",
                       "配信済み件数",
                     ].map((head) => (
                       <th key={head} className="px-4 py-3 font-semibold">
@@ -135,6 +137,9 @@ export default async function CampaignsPage() {
                             {campaign.reply_to}
                           </span>
                         </td>
+                        <td className="px-4 py-4">
+                          <TestSendForm campaignId={campaign.id} />
+                        </td>
                         <td className="px-4 py-4 font-semibold text-slate-800">
                           {campaign.sent_at ? "確認中" : "0"}
                         </td>
@@ -143,7 +148,7 @@ export default async function CampaignsPage() {
                   ) : (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={7}
                         className="px-4 py-12 text-center text-sm text-slate-500"
                       >
                         まだキャンペーンが作成されていません。

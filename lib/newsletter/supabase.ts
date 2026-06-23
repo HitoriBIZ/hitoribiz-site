@@ -203,6 +203,35 @@ export async function listNewsletterCampaigns() {
   };
 }
 
+export async function getNewsletterCampaign(campaignId: string) {
+  const config = getSupabaseConfig();
+
+  if (!config) {
+    throw new Error(
+      "Supabaseの環境変数が未設定です。SUPABASE_URL と SUPABASE_SERVICE_ROLE_KEY を設定してください。"
+    );
+  }
+
+  const response = await fetch(
+    `${config.url}/rest/v1/campaigns?select=id,name,subject,preview_text,body,status,scheduled_at,sent_at,sender_name,reply_to,created_at,updated_at&id=eq.${campaignId}&limit=1`,
+    {
+      headers: {
+        apikey: config.key,
+        Authorization: `Bearer ${config.key}`,
+      },
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`キャンペーン取得に失敗しました。${errorText}`);
+  }
+
+  const campaigns = (await response.json()) as SupabaseCampaignRow[];
+  return campaigns[0] ?? null;
+}
+
 export async function createNewsletterCampaignDraft(
   input: CreateCampaignDraftInput
 ) {
