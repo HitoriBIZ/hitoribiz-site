@@ -40,6 +40,44 @@ function escapeHtml(value: string) {
     .replace(/"/g, "&quot;");
 }
 
+function isHtmlEmailBody(value: string) {
+  const trimmed = value.trim().toLowerCase();
+
+  return (
+    trimmed.startsWith("<!doctype html") ||
+    trimmed.startsWith("<html") ||
+    trimmed.includes("<body") ||
+    trimmed.includes("<table")
+  );
+}
+
+function stripHtmlToText(html: string) {
+  return html
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<br\s*\/?\s*>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<\/tr>/gi, "\n")
+    .replace(/<\/h[1-6]>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function injectBeforeBodyEnd(html: string, fragment: string) {
+  if (/<\/body>/i.test(html)) {
+    return html.replace(/<\/body>/i, `${fragment}</body>`);
+  }
+
+  return `${html}${fragment}`;
+}
+
 function getSiteUrl() {
   return (
     process.env.NEXT_PUBLIC_SITE_URL ??
@@ -54,7 +92,33 @@ function buildUnsubscribeUrl(token: string) {
   )}`;
 }
 
+function buildTestBannerHtml() {
+  return `
+    <div style="margin:0;padding:12px 16px;background:#dbeafe;color:#1d4ed8;font-family:Arial,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;font-size:13px;font-weight:bold;text-align:center;">
+      TEST SEND｜これはHitoriBIZ Newsletterのテスト送信です
+    </div>
+  `;
+}
+
+function buildCampaignFooterHtml(unsubscribeToken: string) {
+  const unsubscribeUrl = buildUnsubscribeUrl(unsubscribeToken);
+
+  return `
+    <div style="margin:32px auto 0;padding:20px 16px;border-top:1px solid #e2e8f0;color:#64748b;font-family:Arial,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;font-size:12px;line-height:1.8;text-align:center;">
+      ${escapeHtml(newsletterConfig.footerName)}<br />
+      返信先: ${escapeHtml(newsletterConfig.replyTo)}<br />
+      <a href="${escapeHtml(unsubscribeUrl)}" style="color:#2563eb;">${escapeHtml(
+        newsletterConfig.unsubscribeText
+      )}</a>
+    </div>
+  `;
+}
+
 function buildTestEmailHtml(campaign: SupabaseCampaignRow) {
+  if (isHtmlEmailBody(campaign.body)) {
+    return injectBeforeBodyEnd(campaign.body, buildTestBannerHtml());
+  }
+
   const body = escapeHtml(campaign.body).replace(/\n/g, "<br />");
 
   return `
@@ -85,12 +149,16 @@ function buildTestEmailHtml(campaign: SupabaseCampaignRow) {
 }
 
 function buildTestEmailText(campaign: SupabaseCampaignRow) {
+  const bodyText = isHtmlEmailBody(campaign.body)
+    ? stripHtmlToText(campaign.body)
+    : campaign.body;
+
   return [
     "[TEST SEND]",
     campaign.subject,
     campaign.preview_text,
     "",
-    campaign.body,
+    bodyText,
     "",
     "---",
     "これはHitoriBIZ Newsletterのテスト送信です。",
@@ -105,8 +173,14 @@ function buildCampaignEmailHtml(
   recipient: NewsletterRecipientRow,
   unsubscribeToken: string
 ) {
+  if (isHtmlEmailBody(campaign.body)) {
+    return injectBeforeBodyEnd(
+      campaign.body,
+      buildCampaignFooterHtml(unsubscribeToken)
+    );
+  }
+
   const body = escapeHtml(campaign.body).replace(/\n/g, "<br />");
-  const unsubscribeUrl = buildUnsubscribeUrl(unsubscribeToken);
   const recipientName = recipient.name ? `${escapeHtml(recipient.name)} 様` : "";
 
   return `
@@ -123,14 +197,7 @@ function buildCampaignEmailHtml(
           : ""
       }
       <div style="white-space: normal; font-size: 15px;">${body}</div>
-      <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0 16px;" />
-      <p style="font-size: 12px; color: #64748b;">
-        ${escapeHtml(newsletterConfig.footerName)}<br />
-        返信先: ${escapeHtml(newsletterConfig.replyTo)}<br />
-        <a href="${escapeHtml(unsubscribeUrl)}" style="color: #2563eb;">${escapeHtml(
-          newsletterConfig.unsubscribeText
-        )}</a>
-      </p>
+      ${buildCampaignFooterHtml(unsubscribeToken)}
     </div>
   `;
 }
@@ -141,13 +208,16 @@ function buildCampaignEmailText(
   unsubscribeToken: string
 ) {
   const unsubscribeUrl = buildUnsubscribeUrl(unsubscribeToken);
+  const bodyText = isHtmlEmailBody(campaign.body)
+    ? stripHtmlToText(campaign.body)
+    : campaign.body;
 
   return [
     recipient.name ? `${recipient.name} 様` : "",
     campaign.subject,
     campaign.preview_text,
     "",
-    campaign.body,
+    bodyText,
     "",
     "---",
     newsletterConfig.footerName,

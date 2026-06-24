@@ -40,6 +40,15 @@ export default async function CampaignsPage() {
         }}
       />
 
+      <div className="mt-4 flex flex-wrap gap-3">
+        <Link
+          href="/admin/newsletter/campaigns/import-html"
+          className="inline-flex rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-700 hover:bg-blue-100"
+        >
+          HTMLメルマガを取り込む
+        </Link>
+      </div>
+
       {!result.configured ? (
         <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm leading-7 text-amber-900">
           Supabase環境変数が未設定のため、キャンペーン実データを表示できません。

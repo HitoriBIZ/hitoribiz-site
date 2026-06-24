@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import {
   getExpectedNewsletterAdminToken,
   NEWSLETTER_ADMIN_COOKIE,
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       error instanceof Error
         ? error.message
         : "キャンペーン下書き保存に失敗しました。";
-    const status = message.includes("環境変数が未設定") ? 503 : 500;
+    const status = message.includes("Supabaseの環境変数") ? 503 : 500;
 
     return NextResponse.json({ message }, { status });
   }
