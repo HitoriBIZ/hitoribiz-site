@@ -72,7 +72,7 @@ export default function RootLayout({
         <SiteHeader />
 
         {/* Main */}
-        <main className="relative z-0 pt-16 flex-1">{children}</main>
+        <main className="relative z-0 flex-1">{children}</main>
 
         {/* Footer */}
         <Footer />
