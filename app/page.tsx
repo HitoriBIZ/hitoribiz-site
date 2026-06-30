@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <main className="mx-auto max-w-6xl px-4 py-16">
+    <main className="mx-auto max-w-6xl px-4 pb-16 pt-4 sm:py-16">
       {/* Hero */}
       <section className="grid items-center gap-10 lg:grid-cols-2">
         <div>
