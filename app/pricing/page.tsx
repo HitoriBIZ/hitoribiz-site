@@ -59,16 +59,12 @@ export default function PricingPage() {
             </p>
 
             <h1 className="mt-4 text-3xl font-extrabold leading-tight text-slate-900 sm:text-4xl">
-              料金の目安
-              <span className="block text-slate-700">
-                まずは状況に合わせて、最適な進め方をご提案します
-              </span>
+              料金のお見積もりについて
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-7 text-slate-700">
-              HitoriBIZは、<span className="font-medium">小規模事業のためのWeb制作</span>と
-              <span className="font-medium">AI・デジタル活用</span>を伴走支援します。
-              料金は一律ではなく、ゴールと作業範囲に合わせてお見積りします。
+              HitoriBIZは、小規模事業者の皆さまに向けて、Webサイト制作やAI・デジタル活用をわかりやすくサポートします。
+              制作費はできるだけ抑え、公開後に必要なメンテナンスや保守についても、無理なく続けられる料金をご相談しながら決めていきます。
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
