@@ -1,0 +1,24 @@
+{
+  "name": "Wind & Brass Tuner",
+  "short_name": "W&B Tuner",
+  "description": "Wind and brass tuner with Written Pitch and Concert Pitch support.",
+  "start_url": "/wind-brass-tuner",
+  "scope": "/wind-brass-tuner",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#b8872a",
+  "icons": [
+    {
+      "src": "/icons/wind-brass-tuner/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/wind-brass-tuner/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
