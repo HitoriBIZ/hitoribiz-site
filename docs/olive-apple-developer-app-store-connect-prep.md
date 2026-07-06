@@ -71,6 +71,46 @@ Before selling a paid app, prepare:
   - Any regional trader or business compliance requirements shown in App Store Connect.
 - Price and availability settings.
 
+## D-U-N-S Lookup And Request Plan
+
+Use Apple's D-U-N-S lookup flow first. If 有限会社オリーブ is already in the D&B database, record the D-U-N-S Number and compare the listed legal name, address, and phone number with company records. If it is not listed, submit the company information through the same Apple/D&B flow to request a free D-U-N-S Number.
+
+Apple's lookup page requires Apple Account sign-in:
+
+- https://developer.apple.com/enroll/duns-lookup/
+
+Prepare these fields before starting:
+
+- Legal entity name: `有限会社オリーブ`
+- English display currently used: `Olive Co.,Ltd.`
+- Headquarters address
+- Mailing address, if different
+- Work contact name
+- Work contact email: `matsumura@hitori-biz.com`
+- Work contact phone number
+- Public website: `https://www.hitori-biz.com`
+- Business registration documents, in case D&B asks for verification
+- Business type and approximate employee count, in case D&B asks
+
+Expected timing from Apple's current guidance:
+
+- D&B may take up to 5 business days to send a requested D-U-N-S Number.
+- If the request takes longer than two weeks, contact D&B support.
+- After the D-U-N-S Number is issued or updated, allow up to 2 business days before Apple receives the updated information.
+
+Important matching rule:
+
+- Use the legal entity name and address consistently. A mismatch between Apple enrollment input and the D&B profile can delay Apple Developer Program enrollment.
+
+Current D-U-N-S status:
+
+- [ ] Search Apple's D-U-N-S lookup using `有限会社オリーブ`.
+- [ ] If found, record the D-U-N-S Number.
+- [ ] If found, verify legal entity status, address, phone, and website.
+- [ ] If not found, submit a D-U-N-S request.
+- [ ] Prepare registration documents for D&B verification.
+- [ ] After issue/update, wait up to 2 business days before Apple Developer organization enrollment.
+
 ## App Privacy Preparation
 
 Current intended privacy posture for Wind and Brass Tuner:
@@ -142,7 +182,7 @@ After the 有限会社オリーブ Apple Developer account is ready:
 - [x] Confirm Japanese registered legal entity name: `有限会社オリーブ`.
 - [x] Record current English display used on business cards: `Olive Co.,Ltd.`
 - [ ] Confirm final English spelling for Apple/D-U-N-S records.
-- [ ] Confirm or request 有限会社オリーブ D-U-N-S Number.
+- [ ] Confirm or request 有限会社オリーブ D-U-N-S Number using Apple's D-U-N-S lookup flow.
 - [x] Record company-domain email candidate: `matsumura@hitori-biz.com`.
 - [ ] Prepare a company-domain Apple Account with two-factor authentication.
 - [ ] Confirm who will be the legal Account Holder.
