@@ -18,6 +18,25 @@ The existing web version at `https://www.hitori-biz.com/wind-brass-tuner` must r
   - `3f0c7d0 Refine iOS Wind Brass Tuner UI`
 - The existing web tuner files were not changed during the iOS prototype work.
 
+## Apple Developer Enrollment Status
+
+- Organization enrollment was submitted on 2026-07-06.
+- Apple enrollment status shown after submission: currently processing.
+- Enrollment ID: `WH65M47BU8`
+- Apple message shown after submission: Apple will email the next steps after confirming that the account holder has signing authority for legal agreements.
+- Submitted organization details:
+  - Legal entity name: `Olive Co., Ltd.`
+  - D-U-N-S Number: `701815110`
+  - Local business name: `（有）オリーブ`
+  - Address: `1-17-11, TAKAISHI, ASAO-KU`
+  - City: `KAWASAKI`
+  - State/Prefecture: `KANAGAWA`
+  - Postal code: `215-0003`
+  - Region: `JP`
+  - Website: `https://www.hitori-biz.com`
+  - Phone: `+81 9086459908`
+  - Work email: `matsumura@hitori-biz.com`
+
 ## Apple Developer Organization Enrollment Requirements
 
 Apple's organization enrollment requirements should be checked again at the time of enrollment, but the current preparation items are:
@@ -106,7 +125,7 @@ Current D-U-N-S status:
 
 - [x] Search Apple's D-U-N-S lookup using `Olive Co., Ltd.`.
 - [x] If found, record the D-U-N-S Number: `701815110`.
-- [ ] If found, verify legal entity status, address, phone, and website.
+- [x] If found, verify legal entity status, address, phone, and website in the Apple enrollment flow.
 - [x] If not found, submit a D-U-N-S request. Not needed because a D-U-N-S Number was found.
 - [ ] Prepare registration documents for Apple or D&B verification, if requested.
 - [ ] Allow up to 2 business days for Apple to use updated D&B information if any D&B profile update is requested.
@@ -184,13 +203,14 @@ After the 有限会社オリーブ Apple Developer account is ready:
 - [x] Confirm final English spelling for Apple/D-U-N-S lookup result: `Olive Co., Ltd.`
 - [x] Confirm D-U-N-S Number for Olive Co., Ltd.: `701815110`.
 - [x] Record company-domain email candidate: `matsumura@hitori-biz.com`.
-- [ ] Prepare a company-domain Apple Account with two-factor authentication.
-- [ ] Confirm who will be the legal Account Holder.
+- [x] Prepare a company-domain Apple Account with two-factor authentication.
+- [x] Confirm who will be the legal Account Holder.
 - [x] Record public website candidate: `https://www.hitori-biz.com`.
-- [ ] Confirm the website clearly represents 有限会社オリーブ for Apple organization verification.
+- [x] Confirm the website was accepted in the Apple enrollment flow.
 - [ ] Prepare Privacy Policy URL.
 - [ ] Prepare Support URL.
-- [ ] Enroll in the Apple Developer Program as an organization.
+- [x] Submit Apple Developer Program organization enrollment.
+- [ ] Complete Apple Developer Program organization enrollment after Apple confirms signing authority.
 - [ ] Complete App Store Connect paid app agreements, banking, and tax.
 - [ ] Switch Xcode signing from Personal Team to Olive team.
 - [ ] Create the App Store Connect app record.
