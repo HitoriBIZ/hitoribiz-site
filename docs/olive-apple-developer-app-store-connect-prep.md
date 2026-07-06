@@ -4,7 +4,7 @@ Last updated: 2026-07-06
 
 ## Purpose
 
-Prepare Olive Co., Ltd. to release the iOS version of Wind and Brass Tuner as a paid App Store app.
+Prepare 有限会社オリーブ to release the iOS version of Wind and Brass Tuner as a paid App Store app.
 
 The existing web version at `https://www.hitori-biz.com/wind-brass-tuner` must remain unchanged unless a later task explicitly asks for web changes.
 
@@ -23,18 +23,19 @@ The existing web version at `https://www.hitori-biz.com/wind-brass-tuner` must r
 Apple's organization enrollment requirements should be checked again at the time of enrollment, but the current preparation items are:
 
 - Apple Account with two-factor authentication.
-- A person with legal authority to bind Olive Co., Ltd. to Apple agreements.
-- Olive Co., Ltd. must be a legal entity. Apple does not accept a DBA, trade name, or branch as the enrolling organization.
+- A person with legal authority to bind 有限会社オリーブ to Apple agreements.
+- 有限会社オリーブ must be a legal entity. Apple does not accept a DBA, trade name, or branch as the enrolling organization.
 - The organization name is displayed as the seller name on the App Store.
-- D-U-N-S Number for Olive Co., Ltd.
+- D-U-N-S Number for 有限会社オリーブ.
 - Work email address associated with the organization's domain.
 - Public, functional website whose domain is associated with the organization.
 - Apple Developer Program annual membership fee. Apple currently lists this as 99 USD per membership year; local currency and taxes may vary.
 
-## Olive Co., Ltd. Items To Prepare
+## 有限会社オリーブ Items To Prepare
 
 - Official legal entity name and spelling.
-  - Example candidate: `Olive Co., Ltd.`
+  - Confirmed Japanese registered name: `有限会社オリーブ`
+  - English display candidate: `Olive Co., Ltd.`
   - Confirm this matches corporate registration and D-U-N-S records.
 - Corporate registration information.
 - D-U-N-S Number.
@@ -42,19 +43,19 @@ Apple's organization enrollment requirements should be checked again at the time
 - Company-domain email address for the Account Holder.
   - Prefer a company domain address over a personal email address.
 - Public company website.
-  - The domain should clearly belong to Olive Co., Ltd.
+  - The domain should clearly belong to 有限会社オリーブ.
   - The site should be functional and not only a placeholder page.
 - Company phone number and address.
   - These should match legal and D-U-N-S records as closely as possible.
 - Authorized Account Holder.
-  - This person must be allowed to accept Apple contracts for Olive Co., Ltd.
+  - This person must be allowed to accept Apple contracts for 有限会社オリーブ.
 - Payment method for the annual Apple Developer Program membership.
 
 ## App Store Connect Paid App Requirements
 
 Before selling a paid app, prepare:
 
-- Apple Developer Program membership under Olive Co., Ltd.
+- Apple Developer Program membership under 有限会社オリーブ.
 - App Store Connect access for the Account Holder and any collaborators.
 - Paid Apps Agreement.
 - Banking information.
@@ -110,7 +111,7 @@ Prepare these before App Store submission:
 
 ## Xcode And Signing Workflow After Olive Enrollment
 
-After the Olive Co., Ltd. Apple Developer account is ready:
+After the 有限会社オリーブ Apple Developer account is ready:
 
 - Add or select the Olive developer team in Xcode.
 - Change the Xcode signing team from the current Personal Team to the Olive team.
@@ -133,11 +134,12 @@ After the Olive Co., Ltd. Apple Developer account is ready:
 
 ## Next Action Checklist
 
-- [ ] Confirm Olive Co., Ltd. legal entity spelling.
-- [ ] Confirm or request Olive Co., Ltd. D-U-N-S Number.
+- [x] Confirm Japanese registered legal entity name: `有限会社オリーブ`.
+- [ ] Confirm English spelling for Apple/D-U-N-S records.
+- [ ] Confirm or request 有限会社オリーブ D-U-N-S Number.
 - [ ] Prepare a company-domain Apple Account with two-factor authentication.
 - [ ] Confirm who will be the legal Account Holder.
-- [ ] Prepare or confirm Olive Co., Ltd. public website.
+- [ ] Prepare or confirm 有限会社オリーブ public website.
 - [ ] Prepare Privacy Policy URL.
 - [ ] Prepare Support URL.
 - [ ] Enroll in the Apple Developer Program as an organization.
