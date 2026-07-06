@@ -35,14 +35,19 @@ Apple's organization enrollment requirements should be checked again at the time
 
 - Official legal entity name and spelling.
   - Confirmed Japanese registered name: `有限会社オリーブ`
-  - English display candidate: `Olive Co., Ltd.`
-  - Confirm this matches corporate registration and D-U-N-S records.
+  - Common English display used on business cards: `Olive Co.,Ltd.`
+  - English name is not registered.
+  - Confirm final Apple/D-U-N-S English spelling before enrollment.
 - Corporate registration information.
 - D-U-N-S Number.
+  - Previous D-U-N-S registration was attempted, but completion is not confirmed.
+  - Treat D-U-N-S as not yet obtained until an active number is verified.
   - If Olive does not have one, request or update it before Apple enrollment.
 - Company-domain email address for the Account Holder.
+  - Current candidate: `matsumura@hitori-biz.com`
   - Prefer a company domain address over a personal email address.
 - Public company website.
+  - Current candidate: `https://www.hitori-biz.com`
   - The domain should clearly belong to 有限会社オリーブ.
   - The site should be functional and not only a placeholder page.
 - Company phone number and address.
@@ -135,11 +140,14 @@ After the 有限会社オリーブ Apple Developer account is ready:
 ## Next Action Checklist
 
 - [x] Confirm Japanese registered legal entity name: `有限会社オリーブ`.
-- [ ] Confirm English spelling for Apple/D-U-N-S records.
+- [x] Record current English display used on business cards: `Olive Co.,Ltd.`
+- [ ] Confirm final English spelling for Apple/D-U-N-S records.
 - [ ] Confirm or request 有限会社オリーブ D-U-N-S Number.
+- [x] Record company-domain email candidate: `matsumura@hitori-biz.com`.
 - [ ] Prepare a company-domain Apple Account with two-factor authentication.
 - [ ] Confirm who will be the legal Account Holder.
-- [ ] Prepare or confirm 有限会社オリーブ public website.
+- [x] Record public website candidate: `https://www.hitori-biz.com`.
+- [ ] Confirm the website clearly represents 有限会社オリーブ for Apple organization verification.
 - [ ] Prepare Privacy Policy URL.
 - [ ] Prepare Support URL.
 - [ ] Enroll in the Apple Developer Program as an organization.
