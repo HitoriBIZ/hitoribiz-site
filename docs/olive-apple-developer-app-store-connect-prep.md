@@ -41,8 +41,8 @@ Apple's organization enrollment requirements should be checked again at the time
 - Corporate registration information.
 - D-U-N-S Number.
   - Previous D-U-N-S registration was attempted, but completion is not confirmed.
-  - Treat D-U-N-S as not yet obtained until an active number is verified.
-  - If Olive does not have one, request or update it before Apple enrollment.
+  - Confirmed D-U-N-S Number for `Olive Co., Ltd.`: `701815110`
+  - Verify the D&B profile details before Apple enrollment.
 - Company-domain email address for the Account Holder.
   - Current candidate: `matsumura@hitori-biz.com`
   - Prefer a company domain address over a personal email address.
@@ -104,12 +104,12 @@ Important matching rule:
 
 Current D-U-N-S status:
 
-- [ ] Search Apple's D-U-N-S lookup using `有限会社オリーブ`.
-- [ ] If found, record the D-U-N-S Number.
+- [x] Search Apple's D-U-N-S lookup using `Olive Co., Ltd.`.
+- [x] If found, record the D-U-N-S Number: `701815110`.
 - [ ] If found, verify legal entity status, address, phone, and website.
-- [ ] If not found, submit a D-U-N-S request.
-- [ ] Prepare registration documents for D&B verification.
-- [ ] After issue/update, wait up to 2 business days before Apple Developer organization enrollment.
+- [x] If not found, submit a D-U-N-S request. Not needed because a D-U-N-S Number was found.
+- [ ] Prepare registration documents for Apple or D&B verification, if requested.
+- [ ] Allow up to 2 business days for Apple to use updated D&B information if any D&B profile update is requested.
 
 ## App Privacy Preparation
 
@@ -181,8 +181,8 @@ After the 有限会社オリーブ Apple Developer account is ready:
 
 - [x] Confirm Japanese registered legal entity name: `有限会社オリーブ`.
 - [x] Record current English display used on business cards: `Olive Co.,Ltd.`
-- [ ] Confirm final English spelling for Apple/D-U-N-S records.
-- [ ] Confirm or request 有限会社オリーブ D-U-N-S Number using Apple's D-U-N-S lookup flow.
+- [x] Confirm final English spelling for Apple/D-U-N-S lookup result: `Olive Co., Ltd.`
+- [x] Confirm D-U-N-S Number for Olive Co., Ltd.: `701815110`.
 - [x] Record company-domain email candidate: `matsumura@hitori-biz.com`.
 - [ ] Prepare a company-domain Apple Account with two-factor authentication.
 - [ ] Confirm who will be the legal Account Holder.
