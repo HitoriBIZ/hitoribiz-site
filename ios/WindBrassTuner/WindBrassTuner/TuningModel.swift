@@ -21,6 +21,19 @@ enum Transposition: String, CaseIterable, Identifiable {
         }
     }
 
+    var shortName: String {
+        switch self {
+        case .concert:
+            return "Concert"
+        case .bFlat:
+            return "B-flat"
+        case .eFlat:
+            return "E-flat"
+        case .f:
+            return "F"
+        }
+    }
+
     var concertOffsetFromWritten: Int {
         switch self {
         case .concert:
@@ -93,4 +106,3 @@ final class TuningModel: ObservableObject {
         a4 * pow(2, Double(midiNote - 69) / 12)
     }
 }
-
