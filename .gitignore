@@ -4,3 +4,7 @@ node_modules/
 .env*
 archives/
 *.tsbuildinfo
+.build/
+Package.resolved
+xcuserdata/
+*.xcuserstate
