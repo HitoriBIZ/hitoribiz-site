@@ -1,13 +1,68 @@
 import AVFoundation
 import Foundation
 
+enum MicrophonePermissionState {
+    case unknown
+    case granted
+    case denied
+}
+
+@MainActor
 final class PitchDetector: ObservableObject, @unchecked Sendable {
     @Published private(set) var detectedFrequency: Double?
     @Published private(set) var isRunning = false
+    @Published private(set) var microphonePermission: MicrophonePermissionState = .unknown
+    @Published private(set) var statusMessage = "Ready"
 
     private let engine = AVAudioEngine()
 
     func start(targetFrequency: Double) {
+        switch AVAudioApplication.shared.recordPermission {
+        case .granted:
+            microphonePermission = .granted
+            startEngine(targetFrequency: targetFrequency)
+        case .denied:
+            microphonePermission = .denied
+            detectedFrequency = nil
+            isRunning = false
+            statusMessage = "Microphone access is off"
+        case .undetermined:
+            microphonePermission = .unknown
+            statusMessage = "Requesting microphone access"
+            AVAudioApplication.requestRecordPermission { [weak self] granted in
+                Task { @MainActor in
+                    guard let self else {
+                        return
+                    }
+
+                    self.microphonePermission = granted ? .granted : .denied
+                    if granted {
+                        self.startEngine(targetFrequency: targetFrequency)
+                    } else {
+                        self.detectedFrequency = nil
+                        self.isRunning = false
+                        self.statusMessage = "Microphone access is off"
+                    }
+                }
+            }
+        @unknown default:
+            microphonePermission = .denied
+            detectedFrequency = nil
+            isRunning = false
+            statusMessage = "Microphone permission is unavailable"
+        }
+    }
+
+    func stop() {
+        engine.inputNode.removeTap(onBus: 0)
+        engine.stop()
+
+        detectedFrequency = nil
+        isRunning = false
+        statusMessage = "Ready"
+    }
+
+    private func startEngine(targetFrequency: Double) {
         if isRunning {
             stop()
         }
@@ -27,24 +82,19 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
 
             DispatchQueue.main.async { [weak self] in
                 self?.detectedFrequency = frequency
+                self?.statusMessage = frequency == nil ? "Listening..." : "Pitch detected"
             }
         }
 
         do {
             try engine.start()
             isRunning = true
+            statusMessage = "Listening..."
         } catch {
             detectedFrequency = nil
             isRunning = false
+            statusMessage = "Could not start microphone"
         }
-    }
-
-    func stop() {
-        engine.inputNode.removeTap(onBus: 0)
-        engine.stop()
-
-        detectedFrequency = nil
-        isRunning = false
     }
 
     private func configureAudioSession() {
@@ -55,6 +105,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
             try session.setActive(true)
         } catch {
             // The UI remains usable even if the audio session cannot be configured.
+            statusMessage = "Audio session setup failed"
         }
     }
 

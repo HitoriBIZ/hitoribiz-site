@@ -9,6 +9,7 @@ struct ContentView: View {
             ScrollView {
                 VStack(spacing: 18) {
                     statusPanel
+                    microphoneNotice
                     startButton
                     controlsPanel
                 }
@@ -28,11 +29,11 @@ struct ContentView: View {
     }
 
     private var statusPanel: some View {
-        VStack(spacing: 18) {
+        VStack(spacing: 20) {
             HStack {
-                Label(detector.isRunning ? "Listening" : "Ready", systemImage: detector.isRunning ? "waveform" : "checkmark.circle")
+                Label(detector.statusMessage, systemImage: statusIconName)
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(detector.isRunning ? .green : .secondary)
+                    .foregroundStyle(statusColor)
 
                 Spacer()
 
@@ -45,17 +46,30 @@ struct ContentView: View {
                 Text(model.concertTarget.label)
                     .font(.system(size: 58, weight: .bold, design: .rounded))
 
-                Text(String(format: "Target %.2f Hz", model.concertTarget.frequency))
+                Text("Concert target  \(String(format: "%.2f Hz", model.concertTarget.frequency))")
                     .font(.headline.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
 
-            VStack(spacing: 6) {
+            VStack(spacing: 8) {
                 Text(detectedFrequencyText)
-                    .font(.system(size: 34, weight: .semibold, design: .rounded).monospacedDigit())
+                    .font(.system(size: 32, weight: .semibold, design: .rounded).monospacedDigit())
+                    .foregroundStyle(model.detectedFrequency == nil ? .secondary : .primary)
 
-                Text(centsStatusText)
-                    .font(.system(size: 38, weight: .bold, design: .rounded).monospacedDigit())
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(centsValueText)
+                        .font(.system(size: 46, weight: .bold, design: .rounded).monospacedDigit())
+                        .foregroundStyle(centsColor(model.cents))
+
+                    if model.cents != nil {
+                        Text("cents")
+                            .font(.headline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Text(centsDirectionText)
+                    .font(.headline.weight(.semibold))
                     .foregroundStyle(centsColor(model.cents))
             }
 
@@ -65,6 +79,24 @@ struct ContentView: View {
         .padding(22)
         .background(Self.panelBackground)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    @ViewBuilder
+    private var microphoneNotice: some View {
+        if detector.microphonePermission == .denied {
+            VStack(alignment: .leading, spacing: 8) {
+                Label("Microphone access is required", systemImage: "mic.slash.fill")
+                    .font(.headline.weight(.semibold))
+
+                Text("Open iPhone Settings and allow microphone access for WindBrassTuner, then return and tap Start again.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+            .background(Color.orange.opacity(0.12))
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        }
     }
 
     private var tuningMeter: some View {
@@ -116,8 +148,11 @@ struct ContentView: View {
     }
 
     private var controlsPanel: some View {
-        VStack(spacing: 14) {
-            PickerRow(title: "Instrument") {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Tuning Setup")
+                .font(.headline.weight(.bold))
+
+            ControlBlock(title: "Instrument", value: model.transposition.displayName, systemImage: "music.note.list") {
                 Picker("Instrument", selection: $model.transposition) {
                     ForEach(Transposition.allCases) { option in
                         Text(option.displayName).tag(option)
@@ -126,7 +161,7 @@ struct ContentView: View {
                 .pickerStyle(.menu)
             }
 
-            PickerRow(title: "Target Note") {
+            ControlBlock(title: "Target Note", value: model.writtenNote.label, systemImage: "target") {
                 Picker("Target Note", selection: $model.writtenNote) {
                     ForEach(TunerNote.targetNotes) { note in
                         Text(note.label).tag(note)
@@ -135,7 +170,7 @@ struct ContentView: View {
                 .pickerStyle(.menu)
             }
 
-            PickerRow(title: "A4 Reference") {
+            ControlBlock(title: "A4 Reference", value: "\(Int(model.a4Reference)) Hz", systemImage: "slider.horizontal.3") {
                 Picker("A4 Reference", selection: $model.a4Reference) {
                     ForEach([440, 441, 442, 443, 444], id: \.self) { value in
                         Text("\(value) Hz").tag(Double(value))
@@ -164,22 +199,34 @@ struct ContentView: View {
 
     private var detectedFrequencyText: String {
         guard let frequency = model.detectedFrequency else {
-            return "-- Hz"
+            return detector.isRunning ? "Listening..." : "-- Hz"
         }
 
         return String(format: "%.2f Hz", frequency)
     }
 
-    private var centsStatusText: String {
+    private var centsValueText: String {
         guard let cents = model.cents else {
-            return detector.isRunning ? "Listening" : "Ready"
+            return detector.isRunning ? "--" : "0.0"
+        }
+
+        if abs(cents) < 3 {
+            return "0.0"
+        }
+
+        return String(format: "%+.1f", cents)
+    }
+
+    private var centsDirectionText: String {
+        guard let cents = model.cents else {
+            return detector.isRunning ? "Waiting for a steady tone" : "Ready to tune"
         }
 
         if abs(cents) < 3 {
             return "In Tune"
         }
 
-        return String(format: "%+.1f cents", cents)
+        return cents > 0 ? "Sharp" : "Flat"
     }
 
     private var meterPosition: CGFloat {
@@ -188,6 +235,22 @@ struct ContentView: View {
         }
 
         return CGFloat(max(-1, min(1, cents / 50)))
+    }
+
+    private var statusIconName: String {
+        if detector.microphonePermission == .denied {
+            return "mic.slash.fill"
+        }
+
+        return detector.isRunning ? "waveform" : "checkmark.circle"
+    }
+
+    private var statusColor: Color {
+        if detector.microphonePermission == .denied {
+            return .orange
+        }
+
+        return detector.isRunning ? .green : .secondary
     }
 
     private func toggleDetector() {
@@ -214,19 +277,35 @@ struct ContentView: View {
     private static let panelBackground = Color(red: 1.0, green: 1.0, blue: 1.0)
 }
 
-private struct PickerRow<Content: View>: View {
+private struct ControlBlock<Content: View>: View {
     let title: String
+    let value: String
+    let systemImage: String
     @ViewBuilder let content: Content
 
     var body: some View {
-        HStack {
-            Text(title)
-                .fontWeight(.medium)
+        HStack(spacing: 12) {
+            Image(systemName: systemImage)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(.blue)
+                .frame(width: 28)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+
+                Text(value)
+                    .font(.body.weight(.semibold))
+            }
 
             Spacer()
 
             content
         }
+        .padding(12)
+        .background(Color(red: 0.96, green: 0.97, blue: 0.99))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
 
