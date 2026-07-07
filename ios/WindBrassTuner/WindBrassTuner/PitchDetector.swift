@@ -1,4 +1,4 @@
-import AVFoundation
+@preconcurrency import AVFoundation
 import Foundation
 
 enum MicrophonePermissionState {
@@ -7,7 +7,6 @@ enum MicrophonePermissionState {
     case denied
 }
 
-@MainActor
 final class PitchDetector: ObservableObject, @unchecked Sendable {
     @Published private(set) var detectedFrequency: Double?
     @Published private(set) var isRunning = false
@@ -17,7 +16,9 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
     private let engine = AVAudioEngine()
 
     func start(targetFrequency: Double) {
-        switch AVAudioApplication.shared.recordPermission {
+        let session = AVAudioSession.sharedInstance()
+
+        switch session.recordPermission {
         case .granted:
             microphonePermission = .granted
             startEngine(targetFrequency: targetFrequency)
@@ -29,21 +30,8 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
         case .undetermined:
             microphonePermission = .unknown
             statusMessage = "Requesting microphone access"
-            AVAudioApplication.requestRecordPermission { [weak self] granted in
-                Task { @MainActor in
-                    guard let self else {
-                        return
-                    }
-
-                    self.microphonePermission = granted ? .granted : .denied
-                    if granted {
-                        self.startEngine(targetFrequency: targetFrequency)
-                    } else {
-                        self.detectedFrequency = nil
-                        self.isRunning = false
-                        self.statusMessage = "Microphone access is off"
-                    }
-                }
+            session.requestRecordPermission { _ in
+                // The next Start tap will re-check permission and begin listening.
             }
         @unknown default:
             microphonePermission = .denied
