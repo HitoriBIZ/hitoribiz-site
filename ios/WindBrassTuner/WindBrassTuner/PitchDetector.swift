@@ -14,6 +14,8 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
     @Published private(set) var statusMessage = "Ready"
 
     private let engine = AVAudioEngine()
+    private var smoothedFrequency: Double?
+    private var missedFrameCount = 0
 
     func start(targetFrequency: Double) {
         let session = AVAudioSession.sharedInstance()
@@ -45,6 +47,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
 
+        resetStabilityState()
         detectedFrequency = nil
         isRunning = false
         statusMessage = "Ready"
@@ -55,6 +58,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
             stop()
         }
 
+        resetStabilityState()
         configureAudioSession()
 
         let inputNode = engine.inputNode
@@ -69,8 +73,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
             )
 
             DispatchQueue.main.async { [weak self] in
-                self?.detectedFrequency = frequency
-                self?.statusMessage = frequency == nil ? "Listening..." : "Pitch detected"
+                self?.publishStableFrequency(frequency)
             }
         }
 
@@ -83,6 +86,44 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
             isRunning = false
             statusMessage = "Could not start microphone"
         }
+    }
+
+    private func publishStableFrequency(_ frequency: Double?) {
+        guard let frequency, frequency > 0 else {
+            missedFrameCount += 1
+
+            if missedFrameCount <= 5, let smoothedFrequency {
+                detectedFrequency = smoothedFrequency
+                statusMessage = "Holding tone"
+            } else {
+                detectedFrequency = nil
+                statusMessage = "Listening..."
+            }
+
+            return
+        }
+
+        missedFrameCount = 0
+
+        if let smoothedFrequency {
+            let distanceInCents = abs(1200 * log2(frequency / smoothedFrequency))
+
+            if distanceInCents < 700 {
+                self.smoothedFrequency = (smoothedFrequency * 0.72) + (frequency * 0.28)
+            } else {
+                self.smoothedFrequency = frequency
+            }
+        } else {
+            smoothedFrequency = frequency
+        }
+
+        detectedFrequency = smoothedFrequency
+        statusMessage = "Pitch detected"
+    }
+
+    private func resetStabilityState() {
+        smoothedFrequency = nil
+        missedFrameCount = 0
     }
 
     private func configureAudioSession() {
@@ -137,6 +178,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
 
         let mean = samples.reduce(0.0) { $0 + Double($1) } / Double(samples.count)
         let centeredSamples = samples.map { Double($0) - mean }
+        var scores = Array(repeating: 0.0, count: maxLag + 1)
         var bestLag = minLag
         var bestScore = -Double.infinity
 
@@ -160,6 +202,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
             }
 
             let score = correlation / denominator
+            scores[lag] = score
 
             if score > bestScore {
                 bestScore = score
@@ -171,6 +214,20 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
             return nil
         }
 
-        return sampleRate / Double(bestLag)
+        var refinedLag = Double(bestLag)
+
+        if bestLag > minLag, bestLag < maxLag {
+            let left = scores[bestLag - 1]
+            let center = scores[bestLag]
+            let right = scores[bestLag + 1]
+            let curvature = left - (2 * center) + right
+
+            if abs(curvature) > 0.000_001 {
+                let adjustment = 0.5 * (left - right) / curvature
+                refinedLag += max(-0.5, min(0.5, adjustment))
+            }
+        }
+
+        return sampleRate / refinedLag
     }
 }
