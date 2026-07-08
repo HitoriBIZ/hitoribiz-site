@@ -82,6 +82,9 @@ final class TuningModel: ObservableObject {
     @Published var a4Reference: Double = 442
     @Published private(set) var detectedFrequency: Double?
     @Published private(set) var cents: Double?
+    @Published private(set) var isStableTone = false
+
+    private var recentCents: [Double] = []
 
     var concertTarget: ConcertTarget {
         let concertMidi = writtenNote.midiNote + transposition.concertOffsetFromWritten
@@ -96,13 +99,34 @@ final class TuningModel: ObservableObject {
 
         guard let frequency, frequency > 0 else {
             cents = nil
+            isStableTone = false
+            recentCents.removeAll()
             return
         }
 
-        cents = 1200 * log2(frequency / concertTarget.frequency)
+        let newCents = 1200 * log2(frequency / concertTarget.frequency)
+        cents = newCents
+        updateStableToneState(with: newCents)
     }
 
     private func frequency(forMIDINote midiNote: Int, a4: Double) -> Double {
         a4 * pow(2, Double(midiNote - 69) / 12)
+    }
+
+    private func updateStableToneState(with cents: Double) {
+        recentCents.append(cents)
+
+        if recentCents.count > 8 {
+            recentCents.removeFirst(recentCents.count - 8)
+        }
+
+        guard recentCents.count >= 6 else {
+            isStableTone = false
+            return
+        }
+
+        let average = recentCents.reduce(0, +) / Double(recentCents.count)
+        let spread = recentCents.map { abs($0 - average) }.max() ?? 0
+        isStableTone = abs(average) <= 5 && spread <= 3.5
     }
 }

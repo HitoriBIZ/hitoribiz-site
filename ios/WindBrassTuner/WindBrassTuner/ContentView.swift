@@ -71,6 +71,8 @@ struct ContentView: View {
                 Text(centsDirectionText)
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(centsColor(model.cents))
+
+                stableToneBadge
             }
 
             tuningMeter
@@ -79,6 +81,19 @@ struct ContentView: View {
         .padding(22)
         .background(Self.panelBackground)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    @ViewBuilder
+    private var stableToneBadge: some View {
+        if model.isStableTone {
+            Label("Stable tone", systemImage: "checkmark.seal.fill")
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(.green)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Color.green.opacity(0.12))
+                .clipShape(Capsule())
+        }
     }
 
     @ViewBuilder

@@ -173,6 +173,13 @@ Prepare these before App Store submission:
 - Copyright text.
 - Price tier for paid upfront sale.
 
+Current local drafts:
+
+- App Store metadata draft: `docs/wind-brass-tuner-app-store-metadata.md`
+- Instrument test plan: `docs/wind-brass-tuner-instrument-test-plan.md`
+- Support URL draft: `https://www.hitori-biz.com/wind-brass-tuner/support`
+- Privacy Policy URL draft: `https://www.hitori-biz.com/wind-brass-tuner/privacy`
+
 ## Xcode And Signing Workflow After Olive Enrollment
 
 After the 有限会社オリーブ Apple Developer account is ready:
@@ -207,15 +214,17 @@ After the 有限会社オリーブ Apple Developer account is ready:
 - [x] Confirm who will be the legal Account Holder.
 - [x] Record public website candidate: `https://www.hitori-biz.com`.
 - [x] Confirm the website was accepted in the Apple enrollment flow.
-- [ ] Prepare Privacy Policy URL.
-- [ ] Prepare Support URL.
+- [x] Prepare Privacy Policy URL draft.
+- [x] Prepare Support URL draft.
 - [x] Submit Apple Developer Program organization enrollment.
 - [ ] Complete Apple Developer Program organization enrollment after Apple confirms signing authority.
 - [ ] Complete App Store Connect paid app agreements, banking, and tax.
 - [ ] Switch Xcode signing from Personal Team to Olive team.
 - [ ] Create the App Store Connect app record.
-- [ ] Prepare App Store metadata, screenshots, and app icon.
-- [ ] Create a TestFlight plan.
+- [x] Prepare App Store metadata draft.
+- [ ] Prepare screenshots and app icon.
+- [x] Create an instrument validation checklist for TestFlight planning.
+- [ ] Create a full TestFlight invite plan.
 
 ## Official References
 
