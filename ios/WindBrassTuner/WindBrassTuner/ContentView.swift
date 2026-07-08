@@ -103,9 +103,9 @@ struct ContentView: View {
         GeometryReader { proxy in
             let width = proxy.size.width
             let center = width / 2
-            let offset = center * meterPosition
+            let indicatorX = max(11, min(width - 11, center + (center * meterPosition)))
 
-            ZStack(alignment: .center) {
+            ZStack(alignment: .topLeading) {
                 Capsule()
                     .fill(
                         LinearGradient(
@@ -115,19 +115,30 @@ struct ContentView: View {
                         )
                     )
                     .frame(height: 12)
+                    .position(x: center, y: 18)
 
-                Rectangle()
-                    .fill(.primary.opacity(0.35))
-                    .frame(width: 2, height: 34)
+                ForEach(Self.meterTicks, id: \.self) { tick in
+                    Rectangle()
+                        .fill(tick == 0 ? Color.primary.opacity(0.46) : Color.primary.opacity(0.26))
+                        .frame(width: tick == 0 ? 2 : 1, height: meterTickHeight(tick))
+                        .position(x: meterXPosition(for: tick, width: width), y: 18)
+                }
 
                 Circle()
                     .fill(centsColor(model.cents))
                     .frame(width: 22, height: 22)
                     .shadow(radius: 3)
-                    .offset(x: offset)
+                    .position(x: indicatorX, y: 18)
+
+                ForEach(Self.meterLabelTicks, id: \.self) { tick in
+                    Text(meterTickLabel(tick))
+                        .font(.caption2.monospacedDigit().weight(tick == 0 ? .bold : .medium))
+                        .foregroundStyle(tick == 0 ? Color.primary.opacity(0.75) : Color.secondary)
+                        .position(x: meterLabelXPosition(for: tick, width: width), y: 44)
+                }
             }
         }
-        .frame(height: 36)
+        .frame(height: 58)
         .padding(.horizontal, 8)
     }
 
@@ -237,6 +248,35 @@ struct ContentView: View {
         return CGFloat(max(-1, min(1, cents / 50)))
     }
 
+    private func meterXPosition(for tick: Double, width: CGFloat) -> CGFloat {
+        let center = width / 2
+        return center + (center * CGFloat(max(-1, min(1, tick / 50))))
+    }
+
+    private func meterLabelXPosition(for tick: Double, width: CGFloat) -> CGFloat {
+        max(18, min(width - 18, meterXPosition(for: tick, width: width)))
+    }
+
+    private func meterTickHeight(_ tick: Double) -> CGFloat {
+        if tick == 0 || abs(tick) == 50 {
+            return 32
+        }
+
+        if abs(tick) == 25 {
+            return 24
+        }
+
+        return 16
+    }
+
+    private func meterTickLabel(_ tick: Double) -> String {
+        if tick == 0 {
+            return "0"
+        }
+
+        return String(format: "%+.0f", tick)
+    }
+
     private var statusIconName: String {
         if detector.microphonePermission == .denied {
             return "mic.slash.fill"
@@ -275,6 +315,8 @@ struct ContentView: View {
 
     private static let appBackground = Color(red: 0.95, green: 0.96, blue: 0.98)
     private static let panelBackground = Color(red: 1.0, green: 1.0, blue: 1.0)
+    private static let meterTicks: [Double] = [-50, -25, -10, -5, 0, 5, 10, 25, 50]
+    private static let meterLabelTicks: [Double] = [-50, -25, 0, 25, 50]
 }
 
 private struct ControlBlock<Content: View>: View {
