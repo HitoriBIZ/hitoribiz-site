@@ -178,31 +178,46 @@ struct ContentView: View {
             Text("Tuning Setup")
                 .font(.headline.weight(.bold))
 
-            ControlBlock(title: "Instrument", value: model.transposition.displayName, systemImage: "music.note.list") {
+            Menu {
                 Picker("Instrument", selection: $model.transposition) {
                     ForEach(Transposition.allCases) { option in
                         Text(option.displayName).tag(option)
                     }
                 }
-                .pickerStyle(.menu)
+            } label: {
+                ControlMenuRow(
+                    title: "Instrument",
+                    value: model.transposition.displayName,
+                    systemImage: "music.note.list"
+                )
             }
 
-            ControlBlock(title: "Target Note", value: model.writtenNote.label, systemImage: "target") {
+            Menu {
                 Picker("Target Note", selection: $model.writtenNote) {
                     ForEach(TunerNote.targetNotes) { note in
                         Text(note.label).tag(note)
                     }
                 }
-                .pickerStyle(.menu)
+            } label: {
+                ControlMenuRow(
+                    title: "Target Note",
+                    value: model.writtenNote.label,
+                    systemImage: "target"
+                )
             }
 
-            ControlBlock(title: "A4 Reference", value: "\(Int(model.a4Reference)) Hz", systemImage: "slider.horizontal.3") {
+            Menu {
                 Picker("A4 Reference", selection: $model.a4Reference) {
                     ForEach([440, 441, 442, 443, 444], id: \.self) { value in
                         Text("\(value) Hz").tag(Double(value))
                     }
                 }
-                .pickerStyle(.menu)
+            } label: {
+                ControlMenuRow(
+                    title: "A4 Reference",
+                    value: "\(Int(model.a4Reference)) Hz",
+                    systemImage: "slider.horizontal.3"
+                )
             }
 
             Divider()
@@ -334,11 +349,10 @@ struct ContentView: View {
     private static let meterLabelTicks: [Double] = [-50, -25, 0, 25, 50]
 }
 
-private struct ControlBlock<Content: View>: View {
+private struct ControlMenuRow: View {
     let title: String
     let value: String
     let systemImage: String
-    @ViewBuilder let content: Content
 
     var body: some View {
         HStack(spacing: 12) {
@@ -358,8 +372,11 @@ private struct ControlBlock<Content: View>: View {
 
             Spacer()
 
-            content
+            Image(systemName: "chevron.up.chevron.down")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(.secondary)
         }
+        .contentShape(Rectangle())
         .padding(12)
         .background(Color(red: 0.96, green: 0.97, blue: 0.99))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
