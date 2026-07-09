@@ -1,6 +1,6 @@
 # Olive Co., Ltd. Apple Developer / App Store Connect Preparation Checklist
 
-Last updated: 2026-07-06
+Last updated: 2026-07-09
 
 ## Purpose
 
@@ -21,9 +21,9 @@ The existing web version at `https://www.hitori-biz.com/wind-brass-tuner` must r
 ## Apple Developer Enrollment Status
 
 - Organization enrollment was submitted on 2026-07-06.
-- Apple enrollment status shown after submission: currently processing.
 - Enrollment ID: `WH65M47BU8`
-- Apple message shown after submission: Apple will email the next steps after confirming that the account holder has signing authority for legal agreements.
+- Initial Apple email received on 2026-07-06 at 18:57: Apple accepted the enrollment request and will email completion steps after confirming signing authority.
+- Follow-up Apple email received on 2026-07-06 at 18:57: Apple could not confirm identity and relationship with the organization, and requested document upload.
 - Submitted organization details:
   - Legal entity name: `Olive Co., Ltd.`
   - D-U-N-S Number: `701815110`
@@ -36,6 +36,33 @@ The existing web version at `https://www.hitori-biz.com/wind-brass-tuner` must r
   - Website: `https://www.hitori-biz.com`
   - Phone: `+81 9086459908`
   - Work email: `matsumura@hitori-biz.com`
+
+## Apple Requested Documents
+
+Apple requested that the following documents be uploaded securely:
+
+- Government-issued photo ID for the applicant.
+- Employment certificate for the applicant.
+- One business document for Olive Co., Ltd.:
+  - Official Certificate of the Corporation from the Company Register issued by the Ministry of Justice.
+  - In Japan, Apple explicitly mentions `履歴事項全部証明書` or `登記事項証明書`.
+
+Upload URL shown in the Apple email:
+
+- `https://developer.apple.com/contact/file-upload/`
+
+Language note from Apple:
+
+- Documents must be in one of Apple's supported languages, including Japanese.
+- If a document is not in a supported language, attach an English translation certified by a notary.
+
+Current action:
+
+- [ ] Prepare applicant government-issued photo ID.
+- [ ] Prepare applicant employment certificate or equivalent proof of role/relationship with Olive Co., Ltd.
+- [ ] Obtain a current `履歴事項全部証明書` or `登記事項証明書` for 有限会社オリーブ.
+- [ ] Upload requested documents through Apple's secure upload page.
+- [ ] Wait for Apple's next enrollment completion email.
 
 ## Apple Developer Organization Enrollment Requirements
 
@@ -217,6 +244,7 @@ After the 有限会社オリーブ Apple Developer account is ready:
 - [x] Prepare Privacy Policy URL draft.
 - [x] Prepare Support URL draft.
 - [x] Submit Apple Developer Program organization enrollment.
+- [ ] Upload Apple-requested verification documents.
 - [ ] Complete Apple Developer Program organization enrollment after Apple confirms signing authority.
 - [ ] Complete App Store Connect paid app agreements, banking, and tax.
 - [ ] Switch Xcode signing from Personal Team to Olive team.
