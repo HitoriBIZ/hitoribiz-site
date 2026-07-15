@@ -1,4 +1,5 @@
 // components/Footer.tsx
+import Link from "next/link";
 import { FaYoutube, FaBlog } from "react-icons/fa";
 
 export default function Footer() {
@@ -28,6 +29,15 @@ export default function Footer() {
           <FaBlog size={26} />
         </a>
 
+      </div>
+
+      <div className="mt-5 flex justify-center">
+        <Link
+          href="/company"
+          className="text-sm text-gray-500 transition hover:text-gray-800"
+        >
+          {"\u4f1a\u793e\u60c5\u5831"}
+        </Link>
       </div>
 
       <p className="text-center text-xs text-gray-400 mt-4">

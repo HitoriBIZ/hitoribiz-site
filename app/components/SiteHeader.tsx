@@ -10,6 +10,7 @@ const navItems = [
   { href: "/works", label: "Works" },
   { href: "/pricing", label: "Pricing" },
   { href: "/about", label: "About" },
+  { href: "/company", label: "Company" },
   // Contact は使わず、相談は booking に統一
 ];
 
