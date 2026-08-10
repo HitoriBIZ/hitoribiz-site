@@ -1,6 +1,7 @@
 // app/components/Footer.tsx
 import Link from "next/link";
-import { FaYoutube, FaBlog, FaLine } from "react-icons/fa";
+import { FaYoutube, FaBlog } from "react-icons/fa";
+import { SiLine } from "react-icons/si";
 
 export default function Footer() {
   return (
@@ -36,7 +37,7 @@ export default function Footer() {
           aria-label="HitoriBIZ 公式LINE"
           className="text-gray-500 transition hover:text-green-600"
         >
-          <FaLine size={28} />
+          <SiLine size={28} />
         </a>
       </div>
 
