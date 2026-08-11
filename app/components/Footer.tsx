@@ -1,7 +1,7 @@
 // app/components/Footer.tsx
 import Link from "next/link";
 import { FaYoutube, FaBlog } from "react-icons/fa";
-import { SiLine } from "react-icons/si";
+import { SiLine, SiInstagram } from "react-icons/si";
 
 export default function Footer() {
   return (
@@ -39,8 +39,20 @@ export default function Footer() {
         >
           <SiLine size={28} />
         </a>
+
+        {/* Instagram */}
+        <a
+          href="https://www.instagram.com/hitoribiz/"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="HitoriBIZ Instagram"
+          className="text-gray-500 transition hover:text-pink-600"
+        >
+          <SiInstagram size={28} />
+        </a>
       </div>
 
+      {/* Company */}
       <div className="mt-5 flex justify-center">
         <Link
           href="/company"
@@ -50,6 +62,7 @@ export default function Footer() {
         </Link>
       </div>
 
+      {/* Copyright */}
       <p className="mt-4 text-center text-xs text-gray-400">
         © 2026 HitoriBIZ. All rights reserved.
       </p>
