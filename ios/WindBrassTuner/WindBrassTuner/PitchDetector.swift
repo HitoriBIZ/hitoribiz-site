@@ -34,21 +34,8 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
         case .undetermined:
             microphonePermission = .unknown
             statusMessage = "Requesting microphone access"
-            session.requestRecordPermission { [weak self] granted in
-                Task { @MainActor in
-                    guard let self else { return }
-
-                    if granted {
-                        self.microphonePermission = .granted
-                        self.startEngine(targetFrequency: targetFrequency)
-                    } else {
-                        self.microphonePermission = .denied
-                        self.detectedFrequency = nil
-                        self.inputLevel = 0
-                        self.isRunning = false
-                        self.statusMessage = "Microphone access is off"
-                    }
-                }
+            session.requestRecordPermission { _ in
+                // The next Listen tap re-checks permission and starts the microphone.
             }
         @unknown default:
             microphonePermission = .denied
