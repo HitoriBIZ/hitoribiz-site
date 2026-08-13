@@ -5,36 +5,32 @@ final class TonePlayer: ObservableObject, @unchecked Sendable {
     @Published private(set) var isPlaying = false
 
     private let engine = AVAudioEngine()
-    private let sourceNode: AVAudioSourceNode
+    private lazy var sourceNode = AVAudioSourceNode { [weak self] _, _, frameCount, audioBufferList -> OSStatus in
+        guard let self else { return noErr }
+
+        let ablPointer = UnsafeMutableAudioBufferListPointer(audioBufferList)
+        let thetaIncrement = 2.0 * Double.pi * self.frequency / self.sampleRate
+        let amplitude: Float = 0.18
+
+        for frame in 0..<Int(frameCount) {
+            let sample = Float(sin(self.phase)) * amplitude
+            self.phase += thetaIncrement
+
+            if self.phase >= 2.0 * Double.pi {
+                self.phase -= 2.0 * Double.pi
+            }
+
+            for buffer in ablPointer {
+                let pointer = buffer.mData?.assumingMemoryBound(to: Float.self)
+                pointer?[frame] = sample
+            }
+        }
+
+        return noErr
+    }
     private var phase = 0.0
     private var frequency = 440.0
     private var sampleRate = 44_100.0
-
-    init() {
-        sourceNode = AVAudioSourceNode { [weak self] _, _, frameCount, audioBufferList -> OSStatus in
-            guard let self else { return noErr }
-
-            let ablPointer = UnsafeMutableAudioBufferListPointer(audioBufferList)
-            let thetaIncrement = 2.0 * Double.pi * self.frequency / self.sampleRate
-            let amplitude: Float = 0.18
-
-            for frame in 0..<Int(frameCount) {
-                let sample = Float(sin(self.phase)) * amplitude
-                self.phase += thetaIncrement
-
-                if self.phase >= 2.0 * Double.pi {
-                    self.phase -= 2.0 * Double.pi
-                }
-
-                for buffer in ablPointer {
-                    let pointer = buffer.mData?.assumingMemoryBound(to: Float.self)
-                    pointer?[frame] = sample
-                }
-            }
-
-            return noErr
-        }
-    }
 
     func start(frequency: Double) {
         self.frequency = max(40, min(2_000, frequency))
