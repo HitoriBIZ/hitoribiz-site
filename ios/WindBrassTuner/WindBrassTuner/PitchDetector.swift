@@ -32,8 +32,20 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
         case .undetermined:
             microphonePermission = .unknown
             statusMessage = "Requesting microphone access"
-            session.requestRecordPermission { _ in
-                // The next Start tap will re-check permission and begin listening.
+            session.requestRecordPermission { [weak self] granted in
+                DispatchQueue.main.async {
+                    guard let self else { return }
+
+                    if granted {
+                        self.microphonePermission = .granted
+                        self.startEngine(targetFrequency: targetFrequency)
+                    } else {
+                        self.microphonePermission = .denied
+                        self.detectedFrequency = nil
+                        self.isRunning = false
+                        self.statusMessage = "Microphone access is off"
+                    }
+                }
             }
         @unknown default:
             microphonePermission = .denied
@@ -46,6 +58,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
     func stop() {
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
+        engine.reset()
 
         resetStabilityState()
         detectedFrequency = nil
@@ -92,12 +105,12 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
         guard let frequency, frequency > 0 else {
             missedFrameCount += 1
 
-            if missedFrameCount <= 5, let smoothedFrequency {
+            if missedFrameCount <= 8, let smoothedFrequency {
                 detectedFrequency = smoothedFrequency
                 statusMessage = "Holding tone"
             } else {
                 detectedFrequency = nil
-                statusMessage = "Listening..."
+                statusMessage = missedFrameCount > 24 ? "No input detected" : "Listening..."
             }
 
             return
@@ -130,7 +143,10 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
         let session = AVAudioSession.sharedInstance()
 
         do {
-            try session.setCategory(.record, mode: .measurement, options: [.allowBluetoothHFP])
+            try session.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker])
+            if let builtInMic = session.availableInputs?.first(where: { $0.portType == .builtInMic }) {
+                try? session.setPreferredInput(builtInMic)
+            }
             try session.setActive(true)
         } catch {
             // The UI remains usable even if the audio session cannot be configured.
@@ -155,7 +171,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
         let samples = Array(UnsafeBufferPointer(start: channel, count: frameLength))
         let rms = sqrt(samples.reduce(0) { $0 + Double($1 * $1) } / Double(samples.count))
 
-        guard rms > 0.01 else {
+        guard rms > 0.0025 else {
             return nil
         }
 
