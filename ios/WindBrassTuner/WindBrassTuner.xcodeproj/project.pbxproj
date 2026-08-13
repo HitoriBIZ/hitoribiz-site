@@ -12,6 +12,7 @@
 		1A0000010000000000000003 /* TuningModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000010000000000000013 /* TuningModel.swift */; };
 		1A0000010000000000000004 /* PitchDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000010000000000000014 /* PitchDetector.swift */; };
 		1A0000010000000000000005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000010000000000000016 /* Assets.xcassets */; };
+		1A0000010000000000000006 /* TonePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000010000000000000017 /* TonePlayer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +23,7 @@
 		1A0000010000000000000014 /* PitchDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchDetector.swift; sourceTree = "<group>"; };
 		1A0000010000000000000015 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1A0000010000000000000016 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		1A0000010000000000000017 /* TonePlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TonePlayer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,6 +52,7 @@
 				1A0000010000000000000012 /* ContentView.swift */,
 				1A0000010000000000000013 /* TuningModel.swift */,
 				1A0000010000000000000014 /* PitchDetector.swift */,
+				1A0000010000000000000017 /* TonePlayer.swift */,
 				1A0000010000000000000015 /* Info.plist */,
 				1A0000010000000000000016 /* Assets.xcassets */,
 			);
@@ -137,6 +140,7 @@
 				1A0000010000000000000002 /* ContentView.swift in Sources */,
 				1A0000010000000000000003 /* TuningModel.swift in Sources */,
 				1A0000010000000000000004 /* PitchDetector.swift in Sources */,
+				1A0000010000000000000006 /* TonePlayer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -184,7 +188,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -210,7 +214,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};

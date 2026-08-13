@@ -9,6 +9,7 @@ enum MicrophonePermissionState {
 
 final class PitchDetector: ObservableObject, @unchecked Sendable {
     @Published private(set) var detectedFrequency: Double?
+    @Published private(set) var inputLevel: Double = 0
     @Published private(set) var isRunning = false
     @Published private(set) var microphonePermission: MicrophonePermissionState = .unknown
     @Published private(set) var statusMessage = "Ready"
@@ -27,6 +28,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
         case .denied:
             microphonePermission = .denied
             detectedFrequency = nil
+            inputLevel = 0
             isRunning = false
             statusMessage = "Microphone access is off"
         case .undetermined:
@@ -42,6 +44,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
                     } else {
                         self.microphonePermission = .denied
                         self.detectedFrequency = nil
+                        self.inputLevel = 0
                         self.isRunning = false
                         self.statusMessage = "Microphone access is off"
                     }
@@ -50,6 +53,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
         @unknown default:
             microphonePermission = .denied
             detectedFrequency = nil
+            inputLevel = 0
             isRunning = false
             statusMessage = "Microphone permission is unavailable"
         }
@@ -62,6 +66,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
 
         resetStabilityState()
         detectedFrequency = nil
+        inputLevel = 0
         isRunning = false
         statusMessage = "Ready"
     }
@@ -79,14 +84,15 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
 
         inputNode.removeTap(onBus: 0)
         inputNode.installTap(onBus: 0, bufferSize: 4096, format: format) { [weak self] buffer, _ in
-            let frequency = Self.process(
+            let result = Self.process(
                 buffer: buffer,
-                sampleRate: format.sampleRate,
+                sampleRate: buffer.format.sampleRate,
                 targetFrequency: targetFrequency
             )
 
             DispatchQueue.main.async { [weak self] in
-                self?.publishStableFrequency(frequency)
+                self?.inputLevel = result.level
+                self?.publishStableFrequency(result.frequency)
             }
         }
 
@@ -144,6 +150,8 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
 
         do {
             try session.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker])
+            try? session.setPreferredSampleRate(44_100)
+            try? session.setPreferredIOBufferDuration(0.02)
             if let builtInMic = session.availableInputs?.first(where: { $0.portType == .builtInMic }) {
                 try? session.setPreferredInput(builtInMic)
             }
@@ -158,24 +166,28 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
         buffer: AVAudioPCMBuffer,
         sampleRate: Double,
         targetFrequency: Double
-    ) -> Double? {
+    ) -> (frequency: Double?, level: Double) {
         guard let channel = buffer.floatChannelData?[0] else {
-            return nil
+            return (nil, 0)
         }
 
         let frameLength = Int(buffer.frameLength)
         guard frameLength > 0 else {
-            return nil
+            return (nil, 0)
         }
 
         let samples = Array(UnsafeBufferPointer(start: channel, count: frameLength))
         let rms = sqrt(samples.reduce(0) { $0 + Double($1 * $1) } / Double(samples.count))
+        let level = min(1, rms * 22)
 
         guard rms > 0.0025 else {
-            return nil
+            return (nil, level)
         }
 
-        return Self.detectPitch(samples: samples, sampleRate: sampleRate, targetFrequency: targetFrequency)
+        return (
+            Self.detectPitch(samples: samples, sampleRate: sampleRate, targetFrequency: targetFrequency),
+            level
+        )
     }
 
     nonisolated static func detectPitch(samples: [Float], sampleRate: Double, targetFrequency: Double) -> Double? {

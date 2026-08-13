@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var model = TuningModel()
     @StateObject private var detector = PitchDetector()
+    @StateObject private var tonePlayer = TonePlayer()
 
     var body: some View {
         NavigationStack {
@@ -10,7 +11,7 @@ struct ContentView: View {
                 VStack(spacing: 18) {
                     statusPanel
                     microphoneNotice
-                    startButton
+                    actionButtons
                     controlsPanel
                 }
                 .padding()
@@ -23,6 +24,10 @@ struct ContentView: View {
             .onChange(of: model.concertTarget.frequency) { _, newValue in
                 if detector.isRunning {
                     detector.start(targetFrequency: newValue)
+                }
+
+                if tonePlayer.isPlaying {
+                    tonePlayer.start(frequency: newValue)
                 }
             }
         }
@@ -76,6 +81,7 @@ struct ContentView: View {
             }
 
             tuningMeter
+            inputLevelView
         }
         .frame(maxWidth: .infinity)
         .padding(22)
@@ -157,20 +163,58 @@ struct ContentView: View {
         .padding(.horizontal, 8)
     }
 
-    private var startButton: some View {
-        Button {
-            toggleDetector()
-        } label: {
+    private var inputLevelView: some View {
+        VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Image(systemName: detector.isRunning ? "stop.fill" : "play.fill")
-                Text(detector.isRunning ? "Stop" : "Start")
+                Text("Mic Input")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+
+                Spacer()
+
+                Text(inputLevelText)
+                    .font(.caption.monospacedDigit().weight(.semibold))
+                    .foregroundStyle(.secondary)
             }
-            .font(.title3.weight(.bold))
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 15)
+
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.secondary.opacity(0.16))
+
+                    Capsule()
+                        .fill(detector.inputLevel > 0.08 ? Color.green.opacity(0.85) : Color.orange.opacity(0.75))
+                        .frame(width: max(4, proxy.size.width * detector.inputLevel))
+                }
+            }
+            .frame(height: 8)
         }
-        .buttonStyle(.borderedProminent)
-        .tint(detector.isRunning ? .red : .blue)
+    }
+
+    private var actionButtons: some View {
+        HStack(spacing: 12) {
+            Button {
+                toggleDetector()
+            } label: {
+                Label(detector.isRunning ? "Stop" : "Listen", systemImage: detector.isRunning ? "stop.fill" : "mic.fill")
+                    .font(.headline.weight(.bold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(detector.isRunning ? .red : .blue)
+
+            Button {
+                tonePlayer.toggle(frequency: model.concertTarget.frequency)
+            } label: {
+                Label(tonePlayer.isPlaying ? "Stop Tone" : "Tone", systemImage: tonePlayer.isPlaying ? "speaker.slash.fill" : "speaker.wave.2.fill")
+                    .font(.headline.weight(.bold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            }
+            .buttonStyle(.bordered)
+            .tint(.green)
+        }
     }
 
     private var controlsPanel: some View {
@@ -268,6 +312,10 @@ struct ContentView: View {
         }
 
         return cents > 0 ? "Sharp" : "Flat"
+    }
+
+    private var inputLevelText: String {
+        detector.isRunning ? "\(Int(detector.inputLevel * 100))%" : "--"
     }
 
     private var meterPosition: CGFloat {
