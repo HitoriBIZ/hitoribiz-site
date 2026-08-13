@@ -35,7 +35,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
             microphonePermission = .unknown
             statusMessage = "Requesting microphone access"
             session.requestRecordPermission { [weak self] granted in
-                DispatchQueue.main.async {
+                Task { @MainActor in
                     guard let self else { return }
 
                     if granted {
