@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.olive.windbrasstuner.audio.PitchDetector
+import com.olive.windbrasstuner.audio.TonePlayer
 import com.olive.windbrasstuner.model.Transposition
 import com.olive.windbrasstuner.model.TunerNote
 import com.olive.windbrasstuner.model.TuningModel
@@ -62,14 +63,16 @@ import kotlin.math.abs
 
 class MainActivity : ComponentActivity() {
     private val detector = PitchDetector()
+    private val tonePlayer = TonePlayer()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { WindBrassTunerApp(detector) }
+        setContent { WindBrassTunerApp(detector, tonePlayer) }
     }
 
     override fun onStop() {
         detector.stop()
+        tonePlayer.stop()
         super.onStop()
     }
 }
@@ -82,19 +85,20 @@ private val InTuneGreen = Color(0xFF238C4D)
 private val SharpOrange = Color(0xFFD66B1E)
 
 @Composable
-private fun WindBrassTunerApp(detector: PitchDetector) {
+private fun WindBrassTunerApp(detector: PitchDetector, tonePlayer: TonePlayer) {
     MaterialTheme(colorScheme = lightColorScheme(primary = TunerBlue, background = AppBackground)) {
         Surface(Modifier.fillMaxSize(), color = AppBackground) {
-            TunerScreen(detector)
+            TunerScreen(detector, tonePlayer)
         }
     }
 }
 
 @Composable
-private fun TunerScreen(detector: PitchDetector) {
+private fun TunerScreen(detector: PitchDetector, tonePlayer: TonePlayer) {
     val context = LocalContext.current
     val model = remember { TuningModel() }
     val detectorState by detector.state.collectAsStateWithLifecycle()
+    val isTonePlaying by tonePlayer.isPlaying.collectAsStateWithLifecycle()
     var modelRevision by remember { mutableIntStateOf(0) }
     var permissionDenied by remember { mutableStateOf(false) }
 
@@ -111,7 +115,7 @@ private fun TunerScreen(detector: PitchDetector) {
     }
     modelRevision // Read to make model changes observable to Compose.
 
-    DisposableEffect(Unit) { onDispose { detector.stop() } }
+    DisposableEffect(Unit) { onDispose { detector.stop(); tonePlayer.stop() } }
 
     Column(
         Modifier
@@ -144,24 +148,29 @@ private fun TunerScreen(detector: PitchDetector) {
             }
         }
 
-        Button(
-            onClick = {
-                if (detectorState.isRunning) {
-                    detector.stop()
-                } else if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-                    permissionDenied = false
-                    detector.start(model.concertTarget.frequency)
-                } else {
-                    permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                }
-            },
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (detectorState.isRunning) Color(0xFFC83B35) else TunerBlue,
-            ),
-            shape = RoundedCornerShape(14.dp),
-        ) {
-            Text(if (detectorState.isRunning) "■  Stop" else "▶  Start", fontSize = 19.sp, fontWeight = FontWeight.Bold)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Button(
+                onClick = {
+                    if (detectorState.isRunning) detector.stop()
+                    else if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                        permissionDenied = false
+                        detector.start(model.concertTarget.frequency)
+                    } else permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                },
+                modifier = Modifier.weight(1f).height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = if (detectorState.isRunning) Color(0xFFC83B35) else TunerBlue),
+                shape = RoundedCornerShape(14.dp),
+            ) {
+                Text(if (detectorState.isRunning) "■  Stop" else "🎙  Listen", fontSize = 17.sp, fontWeight = FontWeight.Bold)
+            }
+            Button(
+                onClick = { tonePlayer.toggle(model.concertTarget.frequency) },
+                modifier = Modifier.weight(1f).height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = if (isTonePlaying) Color(0xFF3B7650) else Color(0xFF4D8D62)),
+                shape = RoundedCornerShape(14.dp),
+            ) {
+                Text(if (isTonePlaying) "■  Stop Tone" else "🔊  Tone", fontSize = 17.sp, fontWeight = FontWeight.Bold)
+            }
         }
 
         ControlsPanel(
@@ -170,6 +179,7 @@ private fun TunerScreen(detector: PitchDetector) {
                 model.updateDetectedFrequency(null)
                 modelRevision++
                 if (detectorState.isRunning) detector.start(model.concertTarget.frequency)
+                if (isTonePlaying) tonePlayer.start(model.concertTarget.frequency)
             },
         )
     }
