@@ -1,7 +1,9 @@
 package com.olive.windbrasstuner
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -32,6 +34,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -182,6 +185,20 @@ private fun TunerScreen(detector: PitchDetector, tonePlayer: TonePlayer) {
                 if (isTonePlaying) tonePlayer.start(model.concertTarget.frequency)
             },
         )
+
+        TextButton(
+            onClick = {
+                context.startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://www.hitori-biz.com/wind-brass-tuner/privacy"),
+                    ),
+                )
+            },
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        ) {
+            Text("Privacy Policy")
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 # Wind Brass Tuner — Google Play metadata
 
-Last updated: 2026-08-13
+Last updated: 2026-08-14
 
 ## App identity
 
@@ -17,6 +17,12 @@ Last updated: 2026-08-13
 
 ```text
 Concert-pitch tuning for wind and brass instruments.
+```
+
+### Short description (Japanese)
+
+```text
+管楽器の移調に対応した、シンプルで使いやすいチューナー。
 ```
 
 ### Full description
@@ -42,6 +48,32 @@ Privacy-friendly by design:
 • No audio upload
 
 Wind Brass Tuner is designed for individual practice, rehearsal preparation, lessons, long-tone work, and quick concert-pitch checks.
+```
+
+### Full description (Japanese)
+
+```text
+Wind Brass Tunerは、木管楽器・金管楽器のための、シンプルで使いやすいチューナーです。
+
+楽器の移調、記譜上の目標音、A4基準周波数を選び、音を伸ばして演奏してください。記譜音を実音へ換算し、検出周波数、セント値、音程の高低、チューニングメーターをわかりやすく表示します。Toneボタンでは、選択した実音の基準音を再生できます。
+
+主な機能：
+• マイクによるリアルタイム音程検出
+• 実音、B♭管、E♭管、F管に対応
+• A4、B♭4、C5、D5、E♭5、F5、G5の目標音
+• A4基準周波数を440〜444 Hzから選択
+• 基準音（Tone）の再生
+• 安定した音の表示
+• 端末内での音声処理
+
+プライバシーへの配慮：
+• アカウント不要
+• 広告なし
+• 解析・トラッキングなし
+• 音声を録音・保存しません
+• 音声を外部へ送信しません
+
+個人練習、合奏前の確認、レッスン、ロングトーン、実音確認にご利用いただけます。
 ```
 
 ## URLs
@@ -75,7 +107,13 @@ Recheck these answers against the final release bundle in Play Console before su
 ## Release notes
 
 ```text
-Initial Google Play release of Wind Brass Tuner for Android.
+Initial Google Play release of Wind Brass Tuner 1.1 for Android, including real-time tuning and reference-tone playback.
+```
+
+### Release notes (Japanese)
+
+```text
+Wind Brass Tuner 1.1 Android版の初回リリースです。リアルタイムチューニングと基準音再生に対応しています。
 ```
 
 ## Screenshot plan

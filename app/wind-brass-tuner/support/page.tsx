@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Wind and Brass Tuner Support | HitoriBIZ",
+  title: "Wind Brass Tuner Support | HitoriBIZ",
   description:
-    "Support information for Wind and Brass Tuner by Olive Co., Ltd.",
+    "Support information for Wind Brass Tuner by Olive Co., Ltd.",
 };
 
 export default function WindBrassTunerSupportPage() {
@@ -12,11 +12,11 @@ export default function WindBrassTunerSupportPage() {
       <section className="border-b bg-white">
         <div className="mx-auto max-w-3xl px-4 py-10">
           <p className="text-sm font-semibold text-sky-700">
-            Wind and Brass Tuner
+            Wind Brass Tuner
           </p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight">Support</h1>
           <p className="mt-3 text-sm leading-7 text-slate-600">
-            Help and contact information for the iOS app by Olive Co., Ltd.
+            Help and contact information for the iOS and Android apps by Olive Co., Ltd.
           </p>
         </div>
       </section>
@@ -26,8 +26,8 @@ export default function WindBrassTunerSupportPage() {
           <section>
             <h2 className="text-xl font-semibold">Contact Support</h2>
             <p className="mt-3 text-sm leading-7 text-slate-700">
-              For app support, bug reports, or App Store questions, contact us
-              by email at{" "}
+              For app support, bug reports, App Store questions, or Google Play
+              questions, contact us by email at{" "}
               <a
                 className="font-semibold text-sky-700 underline underline-offset-4"
                 href="mailto:matsumura@hitori-biz.com"
@@ -52,8 +52,8 @@ export default function WindBrassTunerSupportPage() {
             <h2 className="text-xl font-semibold">Microphone Troubleshooting</h2>
             <p className="mt-3 text-sm leading-7 text-slate-700">
               If the tuner does not respond, confirm that microphone access is
-              allowed for Wind and Brass Tuner in iPhone Settings. Use the app
-              in a quiet place and play one clear sustained note.
+              allowed for Wind Brass Tuner in your iPhone or Android settings.
+              Use the app in a quiet place and play one clear sustained note.
             </p>
           </section>
 

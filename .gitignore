@@ -8,3 +8,11 @@ archives/
 Package.resolved
 xcuserdata/
 *.xcuserstate
+
+# Android signing credentials must never be committed.
+*.jks
+*.keystore
+keystore.properties
+
+# Locally generated signed Android release artifacts.
+android/WindBrassTuner/app/release/

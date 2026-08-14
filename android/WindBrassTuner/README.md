@@ -6,7 +6,7 @@ Native Android version of Wind Brass Tuner for Google Play. It matches the iOS v
 
 - App name: Wind Brass Tuner
 - Application ID: `com.olive.windbrasstuner`
-- Version: `1.0.0` (`versionCode 1`)
+- Version: `1.1` (`versionCode 3`)
 - Minimum Android: Android 8.0 / API 26
 - Target Android: Android 16 / API 36
 - Publisher: Olive Co., Ltd.
@@ -39,5 +39,6 @@ Never commit the upload keystore, its password, or `local.properties`.
 - Audio samples are analyzed in memory on device.
 - Audio is not recorded, saved, or uploaded.
 - No account, ads, analytics, tracking, network permission, or third-party SDK is included.
+- The in-app Privacy Policy link opens the public policy in the user's browser.
 
 If any of these properties change, update the privacy policy and Play Console Data safety answers before release.
