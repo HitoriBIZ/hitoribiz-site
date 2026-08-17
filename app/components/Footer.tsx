@@ -20,7 +20,7 @@ export default function Footer() {
 
         {/* Blog */}
         <a
-          href="https://www.hitoribiz-blog.com"
+          href="https://blog-platform-roan-five.vercel.app"
           target="_blank"
           rel="noopener noreferrer"
           aria-label="HitoriBIZ Blog"
