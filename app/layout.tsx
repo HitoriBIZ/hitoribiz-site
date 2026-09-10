@@ -1,16 +1,18 @@
 // app/layout.tsx
 import "./globals.css";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import SiteHeader from "./components/SiteHeader";
 import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.hitori-biz.com"),
   title: "HitoriBIZ｜スモールビジネスにAIとWebの力を",
   description:
     "HitoriBIZは、個人事業主・フリーランスなど小規模事業のための、Web制作とAI・デジタル活用支援を行うプロジェクトです。",
 
   // PWA / ホーム画面追加用
-  manifest: "/manifest.json",
+  manifest: "/hitoribiz.webmanifest",
 
   // ブラウザ・スマホ用アイコン
   icons: {
@@ -65,8 +67,10 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const locale = headers().get("x-hitoribiz-locale") === "en" ? "en" : "ja";
+
   return (
-    <html lang="ja">
+    <html lang={locale}>
       <body className="min-h-screen flex flex-col bg-white text-slate-900 antialiased">
         {/* Header */}
         <SiteHeader />

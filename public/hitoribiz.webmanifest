@@ -1,0 +1,25 @@
+{
+  "id": "/",
+  "name": "HitoriBIZ",
+  "short_name": "HitoriBIZ",
+  "description": "Web and practical AI support for small businesses",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#061b49",
+  "icons": [
+    {
+      "src": "/icons/hitoribiz/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/hitoribiz/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

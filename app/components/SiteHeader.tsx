@@ -3,16 +3,22 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { en } from "@/dictionaries/en";
+import { ja } from "@/dictionaries/ja";
+import { languageSwitchPath, localizedPath, type Locale, type MarketingPath } from "@/lib/i18n";
 
 const navItems = [
-  { href: "/", label: "Home" },
-  { href: "/services", label: "Services" },
-  { href: "/works", label: "Works" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/about", label: "About" },
-  { href: "/company", label: "Company" },
-  // Contact は使わず、相談は booking に統一
-];
+  { href: "/", key: "home", localized: true },
+  { href: "/services", key: "services", localized: true },
+  { href: "/works", key: "works", localized: true },
+  { href: "/pricing", key: "pricing", localized: true },
+  { href: "/about", key: "about", localized: true },
+  { href: "/company", key: "company", localized: false },
+] as const;
+
+function navHref(item: (typeof navItems)[number], locale: Locale) {
+  return item.localized ? localizedPath(item.href as MarketingPath, locale) : item.href;
+}
 
 const hideHeaderPaths = [
   "/metronome-app",
@@ -26,6 +32,9 @@ const hideHeaderPaths = [
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const locale: Locale = pathname === "/en" || pathname.startsWith("/en/") ? "en" : "ja";
+  const dictionary = locale === "en" ? en : ja;
+  const alternateLocale = locale === "en" ? "ja" : "en";
 
   const shouldHideHeader = hideHeaderPaths.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`)
@@ -40,7 +49,7 @@ export default function SiteHeader() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         {/* Logo */}
         <Link
-          href="/"
+          href={localizedPath("/", locale)}
           className="text-lg font-extrabold tracking-tight text-slate-900"
         >
           HitoriBIZ
@@ -51,19 +60,28 @@ export default function SiteHeader() {
           {navItems.map((item) => (
             <Link
               key={item.href}
-              href={item.href}
+              href={navHref(item, locale)}
               className="text-sm font-medium text-slate-700 hover:text-slate-900"
             >
-              {item.label}
+              {dictionary.nav[item.key]}
             </Link>
           ))}
 
+          <Link
+            href={languageSwitchPath(pathname)}
+            hrefLang={alternateLocale}
+            className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+            aria-label={dictionary.nav.switchLanguage}
+          >
+            {locale === "ja" ? "JP / EN" : "EN / JP"}
+          </Link>
+
           {/* CTA */}
           <Link
-            href="/booking"
+            href={localizedPath("/booking", locale)}
             className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
           >
-            オンライン相談
+            {dictionary.nav.booking}
           </Link>
         </nav>
 
@@ -71,7 +89,7 @@ export default function SiteHeader() {
         <button
           onClick={() => setOpen(!open)}
           className="inline-flex items-center justify-center rounded-lg border border-slate-300 p-2 text-slate-700 md:hidden"
-          aria-label="Open menu"
+          aria-label={open ? dictionary.nav.menuClose : dictionary.nav.menuOpen}
           type="button"
         >
           <svg
@@ -107,20 +125,29 @@ export default function SiteHeader() {
             {navItems.map((item) => (
               <Link
                 key={item.href}
-                href={item.href}
+                href={navHref(item, locale)}
                 onClick={() => setOpen(false)}
                 className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
               >
-                {item.label}
+                {dictionary.nav[item.key]}
               </Link>
             ))}
 
             <Link
-              href="/booking"
+              href={languageSwitchPath(pathname)}
+              hrefLang={alternateLocale}
+              onClick={() => setOpen(false)}
+              className="rounded-lg border border-slate-300 px-3 py-2 text-center text-sm font-semibold text-slate-700 hover:bg-slate-100"
+            >
+              {dictionary.nav.switchLanguage}
+            </Link>
+
+            <Link
+              href={localizedPath("/booking", locale)}
               onClick={() => setOpen(false)}
               className="mt-2 inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
             >
-              オンライン相談
+              {dictionary.nav.booking}
             </Link>
           </nav>
         </div>

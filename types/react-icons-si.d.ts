@@ -1,7 +1,7 @@
-declare module "react-icons/fa" {
+declare module "react-icons/si" {
   import type { ComponentType, SVGProps } from "react";
 
-  export type IconType = ComponentType<
+  type IconType = ComponentType<
     SVGProps<SVGSVGElement> & {
       size?: number | string;
       color?: string;
@@ -10,7 +10,6 @@ declare module "react-icons/fa" {
     }
   >;
 
-  export const FaYoutube: IconType;
-  export const FaBlog: IconType;
-  export const FaLine: IconType;
+  export const SiLine: IconType;
+  export const SiInstagram: IconType;
 }

@@ -5,6 +5,12 @@ import {
 } from "./lib/newsletter/auth";
 
 export async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname === "/en" || request.nextUrl.pathname.startsWith("/en/")) {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-hitoribiz-locale", "en");
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
+
   const expectedToken = await getExpectedNewsletterAdminToken();
   const loginUrl = new URL("/admin/newsletter-login", request.url);
 
@@ -24,5 +30,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/newsletter", "/admin/newsletter/:path*"],
+  matcher: ["/en", "/en/:path*", "/admin/newsletter", "/admin/newsletter/:path*"],
 };
