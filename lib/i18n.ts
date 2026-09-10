@@ -3,10 +3,10 @@ import { en } from "@/dictionaries/en";
 import { ja, type SiteDictionary } from "@/dictionaries/ja";
 
 export type Locale = "ja" | "en";
-export type MarketingPath = "/" | "/services" | "/works" | "/about" | "/pricing" | "/contact" | "/booking" | "/privacy" | "/legal";
+export type MarketingPath = "/" | "/services" | "/works" | "/about" | "/pricing" | "/contact" | "/booking" | "/company" | "/privacy" | "/legal";
 
 export const siteUrl = "https://www.hitori-biz.com";
-export const marketingPaths: MarketingPath[] = ["/", "/services", "/works", "/about", "/pricing", "/contact", "/booking", "/privacy", "/legal"];
+export const marketingPaths: MarketingPath[] = ["/", "/services", "/works", "/about", "/pricing", "/contact", "/booking", "/company", "/privacy", "/legal"];
 
 export function getDictionary(locale: Locale): SiteDictionary {
   return locale === "en" ? en : ja;

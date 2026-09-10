@@ -14,6 +14,7 @@ export const en: SiteDictionary = {
     pricing: { title: "Pricing | HitoriBIZ", description: "Indicative pricing for websites, e-commerce stores, and practical AI support for small businesses." },
     contact: { title: "Contact | HitoriBIZ", description: "Contact HitoriBIZ about website development, e-commerce, or practical AI support." },
     booking: { title: "Book a Free Consultation | HitoriBIZ", description: "Book a free 30-minute online consultation with HitoriBIZ." },
+    company: { title: "Company Information | HitoriBIZ", description: "Company information for Olive Co., Ltd., the operator of HitoriBIZ." },
     privacy: { title: "Privacy Policy | HitoriBIZ", description: "How HitoriBIZ collects, uses, and protects personal information." },
     legal: { title: "Legal Information | HitoriBIZ", description: "Legal and operator information for HitoriBIZ." },
   },
@@ -78,6 +79,22 @@ export const en: SiteDictionary = {
   },
   booking: {
     title: "Book a Free Online Consultation (about 30 minutes)", leadBefore: "Talk through the challenges facing your solo or small business in a ", leadStrong: "free 30-minute online consultation", leadAfter: ". Sessions are available via Zoom or Google Meet.", instruction: "Choose a convenient time from the calendar below.", iframeTitle: "HitoriBIZ consultation booking calendar", note: "After booking, you will receive an automatic email with the Zoom or Google Meet link.",
+  },
+  company: {
+    eyebrow: "COMPANY",
+    title: "Company Information",
+    lead: "HitoriBIZ is a digital business support service operated by Olive Co., Ltd.",
+    details: [
+      ["Company Name", "Olive Co., Ltd."],
+      ["Representative", "Shuzo Matsumura"],
+      ["Address", "1-17-11 Takai, Asao-ku, Kawasaki, Kanagawa 215-0003, Japan"],
+      ["Telephone", "+81-90-8645-9908"],
+      ["Email", "matsumura@hitori-biz.com"],
+      ["Business Activities", "Website and e-commerce development; practical AI adoption and workflow improvement; digital service and application development"],
+    ],
+    contactTitle: "Contact",
+    contactBody: "For service inquiries or project discussions, please contact us through our inquiry page.",
+    contactCta: "Contact us",
   },
   privacy: {
     title: "Privacy Policy", intro: "HitoriBIZ (referred to below as “we”) recognizes the protection and proper handling of personal information as an important responsibility. This policy explains what information we collect, why we use it, and how we protect it.",

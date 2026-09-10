@@ -13,7 +13,7 @@ const navItems = [
   { href: "/works", key: "works", localized: true },
   { href: "/pricing", key: "pricing", localized: true },
   { href: "/about", key: "about", localized: true },
-  { href: "/company", key: "company", localized: false },
+  { href: "/company", key: "company", localized: true },
 ] as const;
 
 function navHref(item: (typeof navItems)[number], locale: Locale) {
