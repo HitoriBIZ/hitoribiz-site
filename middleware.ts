@@ -8,7 +8,9 @@ export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname === "/en" || request.nextUrl.pathname.startsWith("/en/")) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-hitoribiz-locale", "en");
-    return NextResponse.next({ request: { headers: requestHeaders } });
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
+    response.headers.set("Content-Language", "en");
+    return response;
   }
 
   const expectedToken = await getExpectedNewsletterAdminToken();

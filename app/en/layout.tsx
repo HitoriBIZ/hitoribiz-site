@@ -1,3 +1,8 @@
 export default function EnglishLayout({ children }: { children: React.ReactNode }) {
-  return <div lang="en">{children}</div>;
+  return (
+    <>
+      <script dangerouslySetInnerHTML={{ __html: 'document.documentElement.lang="en"' }} />
+      <div lang="en">{children}</div>
+    </>
+  );
 }
