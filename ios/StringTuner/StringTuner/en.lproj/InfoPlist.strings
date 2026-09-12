@@ -1,0 +1,2 @@
+"CFBundleDisplayName" = "String Tuner";
+"NSMicrophoneUsageDescription" = "This app uses the microphone to detect instrument pitch in real time. Audio is not recorded, stored, or transmitted.";
