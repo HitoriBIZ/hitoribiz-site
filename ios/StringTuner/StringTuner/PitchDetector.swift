@@ -3,6 +3,7 @@ import Foundation
 
 enum MicrophonePermissionState { case unknown, granted, denied }
 
+@MainActor
 final class PitchDetector: ObservableObject, @unchecked Sendable {
     @Published private(set) var detectedFrequency: Double?
     @Published private(set) var inputLevel = 0.0
@@ -26,7 +27,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
             microphonePermission = .unknown
             statusMessage = L10n.requestingMicrophone
             AVAudioApplication.requestRecordPermission { [weak self] granted in
-                DispatchQueue.main.async {
+                Task { @MainActor in
                     self?.microphonePermission = granted ? .granted : .denied
                     if granted {
                         self?.startEngine(targetFrequency: targetFrequency, rangeCents: rangeCents)
@@ -71,7 +72,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
                                       sampleRate: buffer.format.sampleRate,
                                       targetFrequency: targetFrequency,
                                       rangeCents: rangeCents)
-            DispatchQueue.main.async {
+            Task { @MainActor [weak self] in
                 self?.inputLevel = result.level
                 self?.publish(result.frequency)
             }
