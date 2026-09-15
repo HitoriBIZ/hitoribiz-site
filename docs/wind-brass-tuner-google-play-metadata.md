@@ -107,13 +107,13 @@ Recheck these answers against the final release bundle in Play Console before su
 ## Release notes
 
 ```text
-Initial Google Play release of Wind Brass Tuner 1.1 for Android, including real-time tuning and reference-tone playback.
+Wind Brass Tuner 1.3 for Android, including real-time tuning and reference-tone playback.
 ```
 
 ### Release notes (Japanese)
 
 ```text
-Wind Brass Tuner 1.1 Android版の初回リリースです。リアルタイムチューニングと基準音再生に対応しています。
+Wind Brass Tuner 1.3 Android版です。リアルタイムチューニングと基準音再生に対応しています。
 ```
 
 ## Screenshot plan

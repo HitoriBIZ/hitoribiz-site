@@ -1,12 +1,12 @@
-# Wind Brass Tuner 1.1 — Google Play release checklist
+# Wind Brass Tuner 1.3 — Google Play release checklist
 
 Last updated: 2026-08-14
 
 ## Release identity
 
 - Application ID: `com.olive.windbrasstuner`
-- Version name: `1.1`
-- Version code: `3`
+- Version name: `1.3`
+- Version code: `4`
 - Minimum Android: Android 8.0 / API 26
 - Target Android: Android 16 / API 36
 - Category: Music & Audio

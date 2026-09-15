@@ -6,7 +6,7 @@ Native Android version of Wind Brass Tuner for Google Play. It matches the iOS v
 
 - App name: Wind Brass Tuner
 - Application ID: `com.olive.windbrasstuner`
-- Version: `1.1` (`versionCode 3`)
+- Version: `1.3` (`versionCode 4`)
 - Minimum Android: Android 8.0 / API 26
 - Target Android: Android 16 / API 36
 - Publisher: Olive Co., Ltd.
