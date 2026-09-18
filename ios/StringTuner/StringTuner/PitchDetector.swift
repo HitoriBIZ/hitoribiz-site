@@ -12,6 +12,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
     @Published private(set) var statusMessage = L10n.ready
 
     private let engine = AVAudioEngine()
+    private var isInputTapInstalled = false
     private var smoothedFrequency: Double?
     private var missedFrameCount = 0
 
@@ -43,7 +44,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
     }
 
     func stop() {
-        engine.inputNode.removeTap(onBus: 0)
+        removeInputTapIfNeeded()
         engine.stop()
         engine.reset()
         smoothedFrequency = nil
@@ -66,7 +67,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
 
         let input = engine.inputNode
         let format = input.outputFormat(forBus: 0)
-        input.removeTap(onBus: 0)
+        removeInputTapIfNeeded()
         input.installTap(onBus: 0, bufferSize: 8192, format: format) { [weak self] buffer, _ in
             let result = Self.process(buffer: buffer,
                                       sampleRate: buffer.format.sampleRate,
@@ -77,14 +78,23 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
                 self?.publish(result.frequency)
             }
         }
+        isInputTapInstalled = true
 
         do {
             try engine.start()
             isRunning = true
             statusMessage = L10n.listening
         } catch {
+            removeInputTapIfNeeded()
+            engine.reset()
             clear(message: L10n.microphoneFailed)
         }
+    }
+
+    private func removeInputTapIfNeeded() {
+        guard isInputTapInstalled else { return }
+        engine.inputNode.removeTap(onBus: 0)
+        isInputTapInstalled = false
     }
 
     private func configureAudioSession() {
