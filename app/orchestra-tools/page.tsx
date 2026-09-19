@@ -12,7 +12,7 @@ type Tool = {
   points: string[];
   iconType: ToolIconType;
   iconBg: string;
-  href?: string;
+  href: string;
   manualUrl?: string;
 };
 
@@ -25,6 +25,7 @@ const tools: Tool[] = [
     points: ["テンポ確認", "基礎練習", "合奏前の準備"],
     iconType: "metronome",
     iconBg: "from-cyan-300 to-sky-400",
+    href: "/metronome-app",
     manualUrl: "/manuals/metronome.pdf",
   },
   {
@@ -35,6 +36,7 @@ const tools: Tool[] = [
     points: ["音程確認", "楽器調整", "練習前チェック"],
     iconType: "tuner",
     iconBg: "from-emerald-300 to-teal-400",
+    href: "/tuner-app",
     manualUrl: "/manuals/tuner.pdf",
   },
   {
@@ -61,6 +63,7 @@ const tools: Tool[] = [
     points: ["ロングトーン", "純正律感覚", "ハーモニー練習"],
     iconType: "drone",
     iconBg: "from-violet-300 to-fuchsia-400",
+    href: "/drone-tone",
     manualUrl: "/manuals/drone-tone.pdf",
   },
   {
@@ -71,6 +74,7 @@ const tools: Tool[] = [
     points: ["反復練習", "段階的テンポアップ", "苦手箇所の克服"],
     iconType: "tempo",
     iconBg: "from-amber-300 to-orange-400",
+    href: "/tempo-practice",
     manualUrl: "/manuals/tempo-practice.pdf",
   },
 ];
@@ -273,26 +277,26 @@ export default function OrchestraToolsPage() {
 
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-200">
               Metronome、Tuner、Wind Brass Tuner、Drone Tone、Tempo Practice。
-              演奏者の毎日を支える5つの無料ツールをご案内します。
+              演奏者の毎日を支える5つの無料ツールを、ブラウザですぐに使えます。
             </p>
 
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <a
-                href="#register"
+                href="#tools"
                 className="rounded-full bg-cyan-300 px-7 py-3 text-center text-sm font-bold text-slate-950 shadow-lg shadow-cyan-300/20 transition hover:bg-cyan-200"
               >
-                無料ツールを受け取る
+                ツールを使う
               </a>
               <a
-                href="#tools"
+                href="#register"
                 className="rounded-full border border-white/20 px-7 py-3 text-center text-sm font-bold text-white transition hover:bg-white/10"
               >
-                ツールを見る
+                URL・説明書をメールで受け取る
               </a>
             </div>
 
             <p className="mt-5 text-sm text-slate-400">
-              ※5ツールのURLと使い方説明書PDFは、登録後の自動返信メールでご案内します。Wind Brass Tunerはカードからも直接開けます。
+              5ツールともカードから直接開けます。メール登録すると、各ツールのURLと使い方説明書PDFをまとめて受け取れます。
             </p>
           </div>
 
@@ -325,7 +329,7 @@ export default function OrchestraToolsPage() {
               </div>
 
               <div className="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-4 text-sm text-cyan-50">
-                5ツールのURLと説明書PDFを登録後にメールでお届けします。Wind Brass Tunerはカードからも利用できます。
+                5ツールともカードからすぐに利用できます。URLと説明書PDFは登録後のメールでもご案内します。
               </div>
             </div>
           </div>
@@ -363,8 +367,8 @@ export default function OrchestraToolsPage() {
               演奏者を支える5つの無料ツール
             </h2>
             <p className="mt-5 text-lg leading-8 text-slate-600">
-              各ツールはスマートフォンやPCから使えます。5ツールのURLと説明書PDFはメール登録後にご案内します。
-              Wind Brass Tunerはカードからも直接開けます。
+              5つのツールを、スマートフォンやPCから直接開けます。
+              URLと説明書PDFをまとめて受け取りたい方には、メールでもご案内します。
             </p>
           </div>
 
@@ -372,7 +376,7 @@ export default function OrchestraToolsPage() {
             {tools.map((tool) => (
               <article
                 key={tool.name}
-                className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+                className="flex flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
               >
                 <div
                   className={`mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${tool.iconBg}`}
@@ -389,7 +393,7 @@ export default function OrchestraToolsPage() {
                 <p className="mt-4 text-sm leading-7 text-slate-600">
                   {tool.description}
                 </p>
-                <ul className="mt-5 space-y-2">
+                <ul className="mt-5 space-y-2 pb-6">
                   {tool.points.map((point) => (
                     <li
                       key={point}
@@ -400,14 +404,12 @@ export default function OrchestraToolsPage() {
                     </li>
                   ))}
                 </ul>
-                {tool.href && (
-                  <a
-                    href={tool.href}
-                    className="mt-6 inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950"
-                  >
-                    ツールを開く
-                  </a>
-                )}
+                <a
+                  href={tool.href}
+                  className="mt-auto inline-flex self-start items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950"
+                >
+                  ツールを開く
+                </a>
               </article>
             ))}
           </div>
@@ -420,10 +422,10 @@ export default function OrchestraToolsPage() {
           <div className="grid gap-10 lg:grid-cols-3">
             <div className="lg:col-span-1">
               <p className="text-sm font-bold uppercase tracking-[0.25em] text-cyan-700">
-                How to Get
+                How to Use
               </p>
               <h2 className="mt-4 text-3xl font-bold">
-                無料ツールの受け取り方法
+                無料ツールを使い始める方法
               </h2>
             </div>
 
@@ -431,18 +433,18 @@ export default function OrchestraToolsPage() {
               {[
                 {
                   step: "01",
-                  title: "メールアドレスを登録",
-                  text: "メールアドレスとニックネームを入力して、無料メルマガに登録します。",
+                  title: "使いたいツールを選ぶ",
+                  text: "5つのカードから、使いたいツールの「ツールを開く」を選びます。",
                 },
                 {
                   step: "02",
-                  title: "自動返信メールを受信",
-                  text: "登録後、5ツールのURLと使い方説明書PDFをメールでお送りします。",
+                  title: "ブラウザですぐ使う",
+                  text: "スマートフォンやPCのブラウザで、そのまま練習にご利用いただけます。",
                 },
                 {
                   step: "03",
-                  title: "スマホやPCで利用開始",
-                  text: "メール記載のURLを開いて、すぐに練習でご利用いただけます。",
+                  title: "URL・説明書をメールで受け取る",
+                  text: "無料メルマガに登録すると、5ツールのURLと使い方説明書PDFをまとめて受け取れます。",
                 },
               ].map((item) => (
                 <div
