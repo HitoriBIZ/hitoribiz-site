@@ -3,16 +3,27 @@
 import { useState } from "react";
 
 type FormState = "idle" | "submitting" | "success" | "error";
-type ToolIconType = "metronome" | "tuner" | "drone" | "tempo";
+type ToolIconType = "metronome" | "tuner" | "windBrass" | "drone" | "tempo";
 
-const tools = [
+type Tool = {
+  name: string;
+  subtitle: string;
+  description: string;
+  points: string[];
+  iconType: ToolIconType;
+  iconBg: string;
+  href?: string;
+  manualUrl?: string;
+};
+
+const tools: Tool[] = [
   {
     name: "Metronome",
     subtitle: "Orchestra Practice Metronome",
     description:
       "オーケストラ練習・個人練習に使いやすい、視認性の高いメトロノームツール。",
     points: ["テンポ確認", "基礎練習", "合奏前の準備"],
-    iconType: "metronome" as ToolIconType,
+    iconType: "metronome",
     iconBg: "from-cyan-300 to-sky-400",
     manualUrl: "/manuals/metronome.pdf",
   },
@@ -22,9 +33,24 @@ const tools = [
     description:
       "弦楽器・管楽器・声楽など、日々の音程確認をサポートするシンプルなチューナー。",
     points: ["音程確認", "楽器調整", "練習前チェック"],
-    iconType: "tuner" as ToolIconType,
+    iconType: "tuner",
     iconBg: "from-emerald-300 to-teal-400",
     manualUrl: "/manuals/tuner.pdf",
+  },
+  {
+    name: "Wind Brass Tuner",
+    subtitle: "管楽器・金管楽器のための移調対応チューナー",
+    description:
+      "Concert Pitch / B♭ / E♭ / F Instrument の切替に対応。吹奏楽やオーケストラ練習で、移調楽器の音程確認をサポートします。",
+    points: [
+      "B♭ / E♭ / F Instrument に対応",
+      "管楽器・金管楽器の音程確認に活用",
+      "スマホ・タブレット・PCで利用可能",
+      "URLからすぐに使える無料ツール",
+    ],
+    iconType: "windBrass",
+    iconBg: "from-rose-300 to-pink-400",
+    href: "/wind-brass-tuner",
   },
   {
     name: "Drone Tone",
@@ -32,7 +58,7 @@ const tools = [
     description:
       "ロングトーン、音程感、ハーモニー練習に役立つ持続音トレーニングツール。",
     points: ["ロングトーン", "純正律感覚", "ハーモニー練習"],
-    iconType: "drone" as ToolIconType,
+    iconType: "drone",
     iconBg: "from-violet-300 to-fuchsia-400",
     manualUrl: "/manuals/drone-tone.pdf",
   },
@@ -42,7 +68,7 @@ const tools = [
     description:
       "難しいパッセージを、ゆっくりから段階的にテンポアップして練習するためのツール。",
     points: ["反復練習", "段階的テンポアップ", "苦手箇所の克服"],
-    iconType: "tempo" as ToolIconType,
+    iconType: "tempo",
     iconBg: "from-amber-300 to-orange-400",
     manualUrl: "/manuals/tempo-practice.pdf",
   },
@@ -102,6 +128,25 @@ function ToolIcon({
           <path d="M16 4c2 0 3 1.5 3 3.5V12" />
           <path d="M12 10v10" />
           <path d="M9 20h6" />
+        </svg>
+      );
+
+    case "windBrass":
+      return (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={className}
+          aria-hidden="true"
+        >
+          <path d="M2 10h3v4H2z" />
+          <path d="M5 12h10l6-4v8l-6-4H5" />
+          <path d="M9 10V6h2v4" />
+          <path d="M13 10V5h2v5" />
         </svg>
       );
 
@@ -226,8 +271,8 @@ export default function OrchestraToolsPage() {
             </h1>
 
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-200">
-              Metronome、Tuner、Drone Tone、Tempo Practice。
-              演奏者の毎日を支える4つの無料ツールを、メール登録者限定でご案内します。
+              Metronome、Tuner、Wind Brass Tuner、Drone Tone、Tempo Practice。
+              演奏者の毎日を支える5つの無料ツールをご案内します。
             </p>
 
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -246,7 +291,7 @@ export default function OrchestraToolsPage() {
             </div>
 
             <p className="mt-5 text-sm text-slate-400">
-              ※登録後、自動返信メールにて各アプリのURL・QRコード・使い方説明書PDFをご案内します。
+              ※既存4ツールのURL・QRコード・使い方説明書PDFは、登録後の自動返信メールでご案内します。Wind Brass Tunerはカードから直接開けます。
             </p>
           </div>
 
@@ -279,7 +324,7 @@ export default function OrchestraToolsPage() {
               </div>
 
               <div className="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-4 text-sm text-cyan-50">
-                登録者には、URL・QRコード・説明書PDFをまとめてメールでお届けします。
+                既存4ツールは登録後にURL・QRコード・説明書PDFをお届けします。Wind Brass Tunerはカードから利用できます。
               </div>
             </div>
           </div>
@@ -314,15 +359,15 @@ export default function OrchestraToolsPage() {
               Free Tools
             </p>
             <h2 className="mt-4 text-3xl font-bold sm:text-4xl">
-              登録者限定で受け取れる4つの無料ツール
+              演奏者を支える5つの無料ツール
             </h2>
             <p className="mt-5 text-lg leading-8 text-slate-600">
-              各ツールは、スマートフォンやPCから使えるURL形式を想定しています。
-              QRコードをスマホで読み取れば、すぐに練習で活用できます。
+              各ツールはスマートフォンやPCから使えます。Wind Brass Tunerはカードから直接開けます。
+              既存4ツールはメール登録後、URLとQRコードをご案内します。
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {tools.map((tool) => (
               <article
                 key={tool.name}
@@ -354,6 +399,14 @@ export default function OrchestraToolsPage() {
                     </li>
                   ))}
                 </ul>
+                {tool.href && (
+                  <a
+                    href={tool.href}
+                    className="mt-6 inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-950"
+                  >
+                    ツールを開く
+                  </a>
+                )}
               </article>
             ))}
           </div>
@@ -383,7 +436,7 @@ export default function OrchestraToolsPage() {
                 {
                   step: "02",
                   title: "自動返信メールを受信",
-                  text: "登録後、各ツールのURL・QRコード・使い方説明書PDFをメールでお送りします。",
+                  text: "登録後、既存4ツールのURL・QRコード・使い方説明書PDFをメールでお送りします。",
                 },
                 {
                   step: "03",
@@ -672,7 +725,7 @@ export default function OrchestraToolsPage() {
           </div>
 
           <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {tools.map((tool) => (
+            {tools.filter((tool) => tool.manualUrl).map((tool) => (
               <article
                 key={`${tool.name}-manual`}
                 className="rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
