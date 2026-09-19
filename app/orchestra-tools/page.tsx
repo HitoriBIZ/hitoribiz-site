@@ -51,6 +51,7 @@ const tools: Tool[] = [
     iconType: "windBrass",
     iconBg: "from-rose-300 to-pink-400",
     href: "/wind-brass-tuner",
+    manualUrl: "/manuals/wind-brass-tuner.pdf",
   },
   {
     name: "Drone Tone",
@@ -291,7 +292,7 @@ export default function OrchestraToolsPage() {
             </div>
 
             <p className="mt-5 text-sm text-slate-400">
-              ※既存4ツールのURL・QRコード・使い方説明書PDFは、登録後の自動返信メールでご案内します。Wind Brass Tunerはカードから直接開けます。
+              ※既存4ツールのURL・QRコード・使い方説明書PDFは、登録後の自動返信メールでご案内します。Wind Brass Tunerはカードから開け、説明書も下の「使い方説明書」でご覧いただけます。
             </p>
           </div>
 
@@ -724,7 +725,7 @@ export default function OrchestraToolsPage() {
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {tools.filter((tool) => tool.manualUrl).map((tool) => (
               <article
                 key={`${tool.name}-manual`}
