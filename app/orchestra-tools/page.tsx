@@ -235,7 +235,7 @@ export default function OrchestraToolsPage() {
 
       setFormState("success");
       setMessage(
-        "ご登録ありがとうございます。無料ツールのURL・QRコード・使い方説明書をメールでご案内します。"
+        "ご登録ありがとうございます。5つの無料ツールのURLと使い方説明書PDFをメールでご案内します。"
       );
 
       setEmail("");
@@ -292,7 +292,7 @@ export default function OrchestraToolsPage() {
             </div>
 
             <p className="mt-5 text-sm text-slate-400">
-              ※既存4ツールのURL・QRコード・使い方説明書PDFは、登録後の自動返信メールでご案内します。Wind Brass Tunerはカードから開け、説明書も下の「使い方説明書」でご覧いただけます。
+              ※5ツールのURLと使い方説明書PDFは、登録後の自動返信メールでご案内します。Wind Brass Tunerはカードからも直接開けます。
             </p>
           </div>
 
@@ -325,7 +325,7 @@ export default function OrchestraToolsPage() {
               </div>
 
               <div className="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-4 text-sm text-cyan-50">
-                既存4ツールは登録後にURL・QRコード・説明書PDFをお届けします。Wind Brass Tunerはカードから利用できます。
+                5ツールのURLと説明書PDFを登録後にメールでお届けします。Wind Brass Tunerはカードからも利用できます。
               </div>
             </div>
           </div>
@@ -363,8 +363,8 @@ export default function OrchestraToolsPage() {
               演奏者を支える5つの無料ツール
             </h2>
             <p className="mt-5 text-lg leading-8 text-slate-600">
-              各ツールはスマートフォンやPCから使えます。Wind Brass Tunerはカードから直接開けます。
-              既存4ツールはメール登録後、URLとQRコードをご案内します。
+              各ツールはスマートフォンやPCから使えます。5ツールのURLと説明書PDFはメール登録後にご案内します。
+              Wind Brass Tunerはカードからも直接開けます。
             </p>
           </div>
 
@@ -437,12 +437,12 @@ export default function OrchestraToolsPage() {
                 {
                   step: "02",
                   title: "自動返信メールを受信",
-                  text: "登録後、既存4ツールのURL・QRコード・使い方説明書PDFをメールでお送りします。",
+                  text: "登録後、5ツールのURLと使い方説明書PDFをメールでお送りします。",
                 },
                 {
                   step: "03",
                   title: "スマホやPCで利用開始",
-                  text: "QRコードを読み取るか、URLを開いて、すぐに練習でご利用いただけます。",
+                  text: "メール記載のURLを開いて、すぐに練習でご利用いただけます。",
                 },
               ].map((item) => (
                 <div
@@ -604,7 +604,7 @@ export default function OrchestraToolsPage() {
                 無料ツールをメールで受け取る
               </h2>
               <p className="mt-5 text-slate-600">
-                ご登録いただいた方に、4つの無料ツールのURL・QRコード・使い方説明書PDFをお送りします。
+                ご登録いただいた方に、5つの無料ツールのURLと使い方説明書PDFをお送りします。
               </p>
             </div>
 
