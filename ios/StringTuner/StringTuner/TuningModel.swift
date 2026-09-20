@@ -9,9 +9,9 @@ enum StringInstrument: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .violin: return L10n.text("Violin", "バイオリン")
-        case .viola: return L10n.text("Viola", "ビオラ")
-        case .cello: return L10n.text("Cello", "チェロ")
+        case .violin: return "Violin"
+        case .viola: return "Viola"
+        case .cello: return "Cello"
         }
     }
 

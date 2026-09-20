@@ -68,16 +68,13 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
         let input = engine.inputNode
         let format = input.outputFormat(forBus: 0)
         removeInputTapIfNeeded()
-        input.installTap(onBus: 0, bufferSize: 8192, format: format) { [weak self] buffer, _ in
-            let result = Self.process(buffer: buffer,
-                                      sampleRate: buffer.format.sampleRate,
-                                      targetFrequency: targetFrequency,
-                                      rangeCents: rangeCents)
-            Task { @MainActor [weak self] in
-                self?.inputLevel = result.level
-                self?.publish(result.frequency)
-            }
-        }
+        // Higher open strings have enough cycles in a shorter buffer. Keep a
+        // longer window for the cello's low strings to preserve pitch accuracy.
+        let bufferSize: AVAudioFrameCount = targetFrequency >= 180 ? 2048 : 4096
+        input.installTap(onBus: 0, bufferSize: bufferSize, format: format,
+                         block: Self.makeTapHandler(detector: self,
+                                                    targetFrequency: targetFrequency,
+                                                    rangeCents: rangeCents))
         isInputTapInstalled = true
 
         do {
@@ -88,6 +85,25 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
             removeInputTapIfNeeded()
             engine.reset()
             clear(message: L10n.microphoneFailed)
+        }
+    }
+
+    // AVAudioEngine invokes this block on its own audio queue. Build it in a
+    // nonisolated context so Swift 6 does not infer MainActor isolation for it.
+    nonisolated private static func makeTapHandler(
+        detector: PitchDetector,
+        targetFrequency: Double,
+        rangeCents: Double
+    ) -> AVAudioNodeTapBlock {
+        return { [weak detector] buffer, _ in
+            let result = Self.process(buffer: buffer,
+                                      sampleRate: buffer.format.sampleRate,
+                                      targetFrequency: targetFrequency,
+                                      rangeCents: rangeCents)
+            Task { @MainActor [weak detector] in
+                detector?.inputLevel = result.level
+                detector?.publish(result.frequency)
+            }
         }
     }
 
@@ -125,7 +141,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
         missedFrameCount = 0
         if let current = smoothedFrequency {
             let distance = abs(1200 * log2(frequency / current))
-            smoothedFrequency = distance < 300 ? current * 0.72 + frequency * 0.28 : frequency
+            smoothedFrequency = distance < 300 ? current * 0.55 + frequency * 0.45 : frequency
         } else {
             smoothedFrequency = frequency
         }
@@ -140,12 +156,19 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
         rangeCents: Double
     ) -> (frequency: Double?, level: Double) {
         guard let channel = buffer.floatChannelData?[0] else { return (nil, 0) }
-        let samples = Array(UnsafeBufferPointer(start: channel, count: Int(buffer.frameLength)))
+        let frameCount = Int(buffer.frameLength)
+        // The searched harmonics stay below 2.6 kHz, so half-rate samples
+        // retain them while substantially reducing autocorrelation work.
+        let samples = stride(from: 0, to: frameCount - 1, by: 2).map {
+            (channel[$0] + channel[$0 + 1]) * 0.5
+        }
         guard samples.count > 64 else { return (nil, 0) }
         let rms = sqrt(samples.reduce(0) { $0 + Double($1 * $1) } / Double(samples.count))
         let level = min(1, rms * 24)
-        guard rms >= 0.003 else { return (nil, level) }
-        return (detectPitch(samples: samples, sampleRate: sampleRate,
+        // A softly bowed G string can be much quieter than the upper strings.
+        // Correlation below still rejects unpitched background noise.
+        guard rms >= 0.001 else { return (nil, level) }
+        return (detectPitch(samples: samples, sampleRate: sampleRate / 2,
                             targetFrequency: targetFrequency, rangeCents: rangeCents), level)
     }
 
@@ -190,7 +213,7 @@ final class PitchDetector: ObservableObject, @unchecked Sendable {
             let value = correlation(samples, lag: lag)
             if value > best { best = value; bestLag = lag }
         }
-        guard best >= 0.18 else { return nil }
+        guard best >= 0.16 else { return nil }
 
         let previous = correlation(samples, lag: max(minLag, bestLag - 1))
         let current = correlation(samples, lag: bestLag)

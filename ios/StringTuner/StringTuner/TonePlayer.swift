@@ -35,7 +35,10 @@ final class TonePlayer: ObservableObject, @unchecked Sendable {
     }
 
     private func makeBuffer(frequency: Double, midiNote: Int, format: AVAudioFormat) -> AVAudioPCMBuffer? {
-        let frameCount = AVAudioFrameCount(sampleRate)
+        guard frequency > 0 else { return nil }
+        // Loop an integer number of cycles so the waveform joins smoothly.
+        let cycleCount = max(1, Int(frequency.rounded()))
+        let frameCount = AVAudioFrameCount((Double(cycleCount) * sampleRate / frequency).rounded())
         guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount),
               let channel = buffer.floatChannelData?[0] else { return nil }
         buffer.frameLength = frameCount
@@ -44,13 +47,11 @@ final class TonePlayer: ObservableObject, @unchecked Sendable {
             : midiNote <= 50 ? [(1, 0.15), (2, 0.10), (3, 0.065), (4, 0.035)]
             : midiNote <= 57 ? [(1, 0.14), (2, 0.075), (3, 0.04)]
             : [(1, 0.12), (2, 0.035), (3, 0.018)]
-        let fadeFrames = Int(sampleRate * 0.015)
         for frame in 0..<Int(frameCount) {
-            let fade = min(1, min(Double(frame), Double(Int(frameCount) - frame)) / Double(fadeFrames))
-            let time = Double(frame) / sampleRate
+            let phase = 2 * Double.pi * Double(cycleCount) * Double(frame) / Double(frameCount)
             channel[frame] = Float(harmonics.reduce(0) { sum, item in
-                sum + sin(2 * .pi * frequency * item.0 * time) * item.1
-            } * fade)
+                sum + sin(phase * item.0) * item.1
+            })
         }
         return buffer
     }
