@@ -16,3 +16,6 @@ keystore.properties
 
 # Locally generated signed Android release artifacts.
 android/WindBrassTuner/app/release/
+
+# Keep raw App Store device captures local; commit only final delivery assets.
+ios/StringTuner/AppStore/v1.1/source/

@@ -5,7 +5,7 @@
 - Japanese name: 弦楽チューナー
 - English name: String Tuner
 - Bundle ID: `com.olive.stringtuner`
-- Version: 1.0
+- Version: 1.1
 - Minimum OS: iOS 17.0
 - Devices: iPhone and iPad
 - Price: ¥600（App Store Connect で日本の表示価格が ¥600 になる価格ポイントを選択）
@@ -24,7 +24,7 @@
 
 ### Keywords
 
-チューナー,弦楽器,バイオリン,ビオラ,チェロ,調弦,音程,基準音,オーケストラ,開放弦
+弦楽器用チューナー,ヴァイオリン用チューナー,ヴィオラ用チューナー,チェロ用チューナー
 
 ### Promotional text
 
@@ -44,7 +44,7 @@
 ・A4基準周波数を440 / 441 / 442 / 443 / 444 Hzから選択
 ・各開放弦の基準音を再生
 ・iPhoneとiPadに対応
-・日本語と英語に対応
+・世界中の演奏者が使いやすい英語インターフェース
 
 練習前の確認にも、オーケストラやアンサンブルの合奏前にもお使いいただけます。基準音の再生中はマイク検出を停止するため、再生音を誤って測定しません。
 
@@ -58,7 +58,7 @@ Violin, Viola & Cello Tuning
 
 ### Keywords
 
-tuner,violin,viola,cello,strings,pitch,tuning,orchestra,reference tone,open string
+Strings Tuner,Violin Tuner,Viola Tuner,Cello Tuner
 
 ### Promotional text
 
@@ -78,7 +78,7 @@ Key features:
 • Adjustable A4 reference: 440 / 441 / 442 / 443 / 444 Hz
 • Reference tone for every supported open string
 • Designed for iPhone and iPad
-• Available in English and Japanese
+• English interface designed for musicians worldwide
 
 Use it before individual practice, orchestra rehearsal, or ensemble preparation. Microphone detection stops while a reference tone is playing, preventing the app from measuring its own output.
 
@@ -105,14 +105,12 @@ These answers assume no analytics, advertising SDK, crash-report upload, or othe
 - Japanese: このアプリは、楽器の音程を測定するためにマイクを使用します。録音データは保存・送信されません。
 - English: This app uses the microphone to detect instrument pitch. Audio data is not recorded, stored, or transmitted.
 
-## Screenshot checklist
+## App Store media checklist for version 1.1
 
-Prepare localized screenshots for the current App Store Connect-required iPhone and iPad display sizes:
+Prepare localized media for the current App Store Connect-required iPhone and iPad display sizes:
 
-1. Violin tuning screen with an in-tune reading
-2. Viola open-string selection
-3. Cello C2 tuning screen
-4. A4 reference selector (440–444 Hz)
-5. Reference-tone playback
+1. Violin App Preview video (15–30 seconds, Apple-compatible H.264/AAC)
+2. Viola tuning screen
+3. Cello tuning screen
 
 Avoid placing unverified claims or prices inside screenshot artwork. Confirm the exact required screenshot sizes in App Store Connect immediately before upload.
