@@ -2,7 +2,7 @@
 
 Final iPhone 6.5-inch delivery assets are in `iphone-6.5/`.
 
-- `01-violin-app-preview.mov`: 886 x 1920, H.264 High Profile Level 4.0, 30 fps, stereo AAC, 28.53 seconds
+- `01-violin-app-preview-v2.mov`: 886 x 1920, H.264 High Profile Level 4.0, standard-range YUV 4:2:0, constant 30 fps, stereo AAC, 28.53 seconds
 - `01-violin-poster.png`: 1242 x 2688, RGB PNG
 - `02-viola.png`: 1242 x 2688, RGB PNG
 - `03-cello.png`: 1242 x 2688, RGB PNG
